@@ -1629,9 +1629,9 @@ void CMBaseMonster :: MonsterInit ( void )
 	// set eye position
 	SetEyePosition();
 
-	SetThink( MonsterInitThink );
+	SetThink( &CMBaseMonster::MonsterInitThink );
 	pev->nextthink = gpGlobals->time + 0.1;
-	SetUse ( MonsterUse );
+	SetUse ( &CMBaseMonster::MonsterUse );
 }
 
 //=========================================================
@@ -1733,7 +1733,7 @@ void CMBaseMonster :: StartMonster ( void )
 
 	// Delay drop to floor to make sure each door in the level has had its chance to spawn
 	// Spread think times so that they don't all happen at the same time (Carmack)
-	SetThink ( CallMonsterThink );
+	SetThink ( &CMBaseMonster::CallMonsterThink );
 	pev->nextthink += RANDOM_FLOAT(0.1, 0.4); // spread think times.
 	
 	if ( !FStringNull(pev->targetname) )// wait until triggered
@@ -2770,7 +2770,7 @@ void CMBaseMonster :: MonsterInitDead( void )
 
 	// Setup health counters, etc.
 	BecomeDead();
-	SetThink( CorpseFallThink );
+	SetThink( &CMBaseMonster::CorpseFallThink );
 	pev->nextthink = gpGlobals->time + 0.5;
 }
 

@@ -53,19 +53,19 @@ void CMApache :: Spawn( void )
 
 	if (pev->spawnflags & SF_WAITFORTRIGGER)
 	{
-		SetUse( StartupUse );
+		SetUse( &CMApache::StartupUse );
 	}
 	else
 	{
-		SetThink( HuntThink );
-		SetTouch( FlyTouch );
+		SetThink( &CMApache::HuntThink );
+		SetTouch( &CMApache::FlyTouch );
 		pev->nextthink = gpGlobals->time + 1.0;
 	}
 
 	m_iRockets = 10;
 	m_pBeam = NULL;
 
-   m_pGoalEnt = NULL;
+	m_pGoalEnt = NULL;
 	m_flGoalSpeed = 0.0f;
 
 	m_flForce = 0.0f;
@@ -122,8 +122,8 @@ void CMApache::NullThink( void )
 
 void CMApache::StartupUse( edict_t *pActivator, edict_t *pCaller, USE_TYPE useType, float value )
 {
-	SetThink( HuntThink );
-	SetTouch( FlyTouch );
+	SetThink( &CMApache::HuntThink );
+	SetTouch( &CMApache::FlyTouch );
 	pev->nextthink = gpGlobals->time + 0.1;
 	SetUse( NULL );
 }
@@ -136,8 +136,8 @@ void CMApache :: Killed( entvars_t *pevAttacker, int iGib )
 	STOP_SOUND( ENT(pev), CHAN_STATIC, "apache/ap_rotor2.wav" );
 
 	UTIL_SetSize( pev, Vector( -32, -32, -64), Vector( 32, 32, 0) );
-	SetThink( DyingThink );
-	SetTouch( CrashTouch );
+	SetThink( &CMApache::DyingThink );
+	SetTouch( &CMApache::CrashTouch );
 	pev->nextthink = gpGlobals->time + 0.1;
 	pev->health = 0;
 	pev->takedamage = DAMAGE_NO;
@@ -346,7 +346,7 @@ jlb*/
 			WRITE_BYTE( BREAK_METAL );
 		MESSAGE_END();
 
-		SetThink( SUB_Remove );
+		SetThink( &CMApache::SUB_Remove );
 		pev->nextthink = gpGlobals->time + 0.1;
 	}
 }
@@ -899,8 +899,8 @@ void CMApacheHVR :: Spawn( void )
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin( pev, pev->origin );
 
-	SetThink( IgniteThink );
-	SetTouch( ExplodeTouch );
+	SetThink( &CMApacheHVR::IgniteThink );
+	SetTouch( &CMApacheHVR::ExplodeTouch );
 
 	UTIL_MakeAimVectors( pev->angles );
 	m_vecForward = gpGlobals->v_forward;
@@ -946,7 +946,7 @@ void CMApacheHVR :: IgniteThink( void  )
 	MESSAGE_END();  // move PHS/PVS data sending into here (SEND_ALL, SEND_PVS, SEND_PHS)
 
 	// set to accelerate
-	SetThink( AccelerateThink );
+	SetThink( &CMApacheHVR::AccelerateThink );
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 

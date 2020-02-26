@@ -37,6 +37,7 @@
 #ifndef ENGINE_API_H
 #define ENGINE_API_H
 
+#include <stdint.h> // why?
 #include "comp_dep.h"
 
 // Plugin's GetEngineFunctions, called by metamod.
@@ -125,7 +126,7 @@ typedef void (*FN_ENGINEFPRINTF) (FILE *pfile, char *szFmt, ...);
 typedef void * (*FN_PVALLOCENTPRIVATEDATA) (edict_t *pEdict, long cb);
 #else
 typedef void (*FN_ENGINEFPRINTF) (void *pfile, char *szFmt, ...);
-typedef void * (*FN_PVALLOCENTPRIVATEDATA) (edict_t *pEdict, int32 cb);
+typedef void * (*FN_PVALLOCENTPRIVATEDATA) (edict_t *pEdict, int32_t cb);
 #endif
 typedef void * (*FN_PVENTPRIVATEDATA) (edict_t *pEdict);
 typedef void (*FN_FREEENTPRIVATEDATA) (edict_t *pEdict);
@@ -145,8 +146,8 @@ typedef void (*FN_GETBONEPOSITION) (const edict_t *pEdict, int iBone, float *rgf
 typedef unsigned long (*FN_FUNCTIONFROMNAME) ( const char *pName );
 typedef const char * (*FN_NAMEFORFUNCTION) ( unsigned long function );
 #else
-typedef uint32 (*FN_FUNCTIONFROMNAME) ( const char *pName );
-typedef const char * (*FN_NAMEFORFUNCTION) ( uint32 function );
+typedef uint32_t (*FN_FUNCTIONFROMNAME) ( const char *pName );
+typedef const char * (*FN_NAMEFORFUNCTION) ( uint32_t function );
 #endif
 typedef void (*FN_CLIENTPRINTF) ( edict_t *pEdict, PRINT_TYPE ptype, const char *szMsg );
 typedef void (*FN_SERVERPRINT) ( const char *szMsg );
@@ -161,7 +162,7 @@ typedef CRC32_t (*FN_CRC32_FINAL) (CRC32_t pulCRC);
 #ifdef HLSDK_3_2_OLD_EIFACE
 typedef long (*FN_RANDOMLONG) (long lLow, long lHigh);
 #else
-typedef int32 (*FN_RANDOMLONG) (int32 lLow, int32 lHigh);
+typedef int32_t (*FN_RANDOMLONG) (int32_t lLow, int32_t lHigh);
 #endif
 typedef float (*FN_RANDOMFLOAT) (float flLow, float flHigh);
 typedef void (*FN_SETVIEW) (const edict_t *pClient, const edict_t *pViewent );

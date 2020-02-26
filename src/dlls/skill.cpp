@@ -114,7 +114,7 @@ void scan_monster_skill(FILE *fp)
 
       if (!found)
       {
-         META_CONS("[MONSTER] ERROR: unknown monster_skill.cfg item: %s", input);
+         //META_CONS("[MONSTER] ERROR: unknown monster_skill.cfg item: %s", input);
          LOG_MESSAGE(PLID, "ERROR: unknown monster_skill.cfg item: %s", input);
       }
    }
@@ -231,13 +231,13 @@ void monster_skill_init(void)
    {
       if (dllapi_log->value)
       {
-         META_CONS("[MONSTER] Processing monster skill file=%s", filename);
+         //META_CONS("[MONSTER] Processing monster skill file=%s", filename);
          LOG_MESSAGE(PLID, "Processing monster skill file=%s", filename);
       }
 
       if ((fp = fopen(filename, "r")) == NULL)
       {
-         META_CONS("[MONSTER] ERROR: Could not open \"%s\"!", filename);
+         //META_CONS("[MONSTER] ERROR: Could not open \"%s\"!", filename);
          LOG_MESSAGE(PLID, "ERROR: Could not open \"%s\"!", filename);
       }
 
@@ -247,7 +247,7 @@ void monster_skill_init(void)
    }
    else
    {
-      META_CONS("[MONSTER] ERROR: Could not find \"%s\" (default skill used)", filename);
+      //META_CONS("[MONSTER] ERROR: Could not find \"%s\" (default skill used)", filename);
       LOG_MESSAGE(PLID, "ERROR: Could not find \"%s\" (default skill used)", filename);
    }
 }

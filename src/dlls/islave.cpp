@@ -19,7 +19,7 @@
 #include	"extdll.h"
 #include	"util.h"
 #include	"cmbase.h"
-#include "cmbasemonster.h"
+#include	"cmbasemonster.h"
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"effects.h"

@@ -19,7 +19,7 @@
 #include	"extdll.h"
 #include	"util.h"
 #include	"cmbase.h"
-#include "cmbasemonster.h"
+#include	"cmbasemonster.h"
 #include	"monsters.h"
 #include	"weapons.h"
 #include	"hornet.h"
@@ -71,8 +71,8 @@ void CMHornet :: Spawn( void )
 	SET_MODEL(ENT( pev ), "models/hornet.mdl");
 	UTIL_SetSize( pev, Vector( -4, -4, -4 ), Vector( 4, 4, 4 ) );
 
-	SetTouch( DieTouch );
-	SetThink( StartTrack );
+	SetTouch( &CMHornet::DieTouch );
+	SetThink( &CMHornet::StartTrack );
 
 	edict_t *pSoundEnt = pev->owner;
 	if ( !pSoundEnt )
@@ -140,8 +140,8 @@ void CMHornet :: StartTrack ( void )
 {
 	IgniteTrail();
 
-	SetTouch( TrackTouch );
-	SetThink( TrackTarget );
+	SetTouch( &CMHornet::TrackTouch );
+	SetThink( &CMHornet::TrackTarget );
 
 	pev->nextthink = gpGlobals->time + 0.1;
 }
@@ -153,9 +153,9 @@ void CMHornet :: StartDart ( void )
 {
 	IgniteTrail();
 
-	SetTouch( DartTouch );
+	SetTouch( &CMHornet::DartTouch );
 
-	SetThink( SUB_Remove );
+	SetThink( &CMHornet::SUB_Remove );
 	pev->nextthink = gpGlobals->time + 4;
 }
 
@@ -228,7 +228,7 @@ void CMHornet :: TrackTarget ( void )
 	if (gpGlobals->time > m_flStopAttack)
 	{
 		SetTouch( NULL );
-		SetThink( SUB_Remove );
+		SetThink( &CMHornet::SUB_Remove );
 		pev->nextthink = gpGlobals->time + 0.1;
 		return;
 	}
@@ -366,7 +366,7 @@ void CMHornet::DieTouch ( edict_t *pOther )
 	pev->modelindex = 0;// so will disappear for the 0.1 secs we wait until NEXTTHINK gets rid
 	pev->solid = SOLID_NOT;
 
-	SetThink ( SUB_Remove );
+	SetThink ( &CMHornet::SUB_Remove );
 	pev->nextthink = gpGlobals->time + 1;// stick around long enough for the sound to finish!
 }
 

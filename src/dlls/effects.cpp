@@ -366,7 +366,7 @@ void CMSprite::Expand( float scaleSpeed, float fadeSpeed )
 {
 	pev->speed = scaleSpeed;
 	pev->health = fadeSpeed;
-	SetThink( ExpandThink );
+	SetThink( &CMSprite::ExpandThink );
 
 	pev->nextthink	= gpGlobals->time;
 	m_lastTime		= gpGlobals->time;
@@ -421,7 +421,7 @@ void CMSprite::TurnOn( void )
 	pev->effects = 0;
 	if ( (pev->framerate && m_maxFrame > 1.0) || (pev->spawnflags & SF_SPRITE_ONCE) )
 	{
-		SetThink( AnimateThink );
+		SetThink( &CMSprite::AnimateThink );
 		pev->nextthink = gpGlobals->time;
 		m_lastTime = gpGlobals->time;
 	}

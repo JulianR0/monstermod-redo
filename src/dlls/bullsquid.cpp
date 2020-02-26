@@ -19,7 +19,7 @@
 #include	"extdll.h"
 #include	"util.h"
 #include	"cmbase.h"
-#include "cmbasemonster.h"
+#include	"cmbasemonster.h"
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"nodes.h"
@@ -111,9 +111,9 @@ void CSquidSpit::Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity
 	pSpit->pev->velocity = vecVelocity;
 	pSpit->pev->owner = ENT(pevOwner);
 
-	pSpit->SetThink ( Animate );
+	pSpit->SetThink ( &CSquidSpit::Animate );
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;
-   pSpit->SetTouch ( SpitTouch );
+   pSpit->SetTouch ( &CSquidSpit::SpitTouch );
 }
 
 void CSquidSpit :: SpitTouch ( edict_t *pOther )
@@ -168,7 +168,7 @@ void CSquidSpit :: SpitTouch ( edict_t *pOther )
 		}
 	}
 
-	SetThink ( SUB_Remove );
+	SetThink ( &CSquidSpit::SUB_Remove );
 	pev->nextthink = gpGlobals->time;
 }
 

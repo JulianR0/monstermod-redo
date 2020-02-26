@@ -90,13 +90,13 @@ bool scan_monster_cfg(FILE *fp)
             {
                if (origin)
                {
-                  META_CONS("[MONSTER] ERROR: origin found twice: %s", input);
+                  //META_CONS("[MONSTER] ERROR: origin found twice: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: origin found twice: %s", input);
                   return TRUE;  // error
                }
                if (sscanf(&input[7], "%f %f %f", &x, &y, &z) != 3)
                {
-                  META_CONS("[MONSTER] ERROR: invalid origin: %s", input);
+                  //META_CONS("[MONSTER] ERROR: invalid origin: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: invalid origin: %s", input);
                   return TRUE;  // error
                }
@@ -109,13 +109,13 @@ bool scan_monster_cfg(FILE *fp)
             {
                if (delay)
                {
-                  META_CONS("[MONSTER] ERROR: delay found twice: %s", input);
+                  //META_CONS("[MONSTER] ERROR: delay found twice: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: delay found twice: %s", input);
                   return TRUE;  // error
                }
                if (sscanf(&input[6], "%f", &x) != 1)
                {
-                  META_CONS("[MONSTER] ERROR: invalid delay: %s", input);
+                  //META_CONS("[MONSTER] ERROR: invalid delay: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: invalid delay: %s", input);
                   return TRUE;  // error
                }
@@ -126,19 +126,19 @@ bool scan_monster_cfg(FILE *fp)
             {
                if (angle)
                {
-                  META_CONS("[MONSTER] ERROR: angle found twice: %s", input);
+                  //META_CONS("[MONSTER] ERROR: angle found twice: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: angle found twice: %s", input);
                   return TRUE;  // error
                }
                if (angle_min || angle_max)
                {
-                  META_CONS("[MONSTER] ERROR: you can't specify angle AND angle_min or angle_max: %s", input);
+                  //META_CONS("[MONSTER] ERROR: you can't specify angle AND angle_min or angle_max: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: you can't specify angle AND angle_min or angle_max: %s", input);
                   return TRUE;  // error
                }
                if (sscanf(&input[6], "%f", &x) != 1)
                {
-                  META_CONS("[MONSTER] ERROR: invalid angle: %s", input);
+                  //META_CONS("[MONSTER] ERROR: invalid angle: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: invalid angle: %s", input);
                   return TRUE;  // error
                }
@@ -150,19 +150,19 @@ bool scan_monster_cfg(FILE *fp)
             {
                if (angle_min)
                {
-                  META_CONS("[MONSTER] ERROR: angle_min found twice: %s", input);
+                  //META_CONS("[MONSTER] ERROR: angle_min found twice: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: angle_min found twice: %s", input);
                   return TRUE;  // error
                }
                if (angle)
                {
-                  META_CONS("[MONSTER] ERROR: you can't specify angle AND angle_min or angle_max: %s", input);
+                  //META_CONS("[MONSTER] ERROR: you can't specify angle AND angle_min or angle_max: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: you can't specify angle AND angle_min or angle_max: %s", input);
                   return TRUE;  // error
                }
                if (sscanf(&input[10], "%f", &x) != 1)
                {
-                  META_CONS("[MONSTER] ERROR: invalid angle_min: %s", input);
+                  //META_CONS("[MONSTER] ERROR: invalid angle_min: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: invalid angle_min: %s", input);
                   return TRUE;  // error
                }
@@ -173,19 +173,19 @@ bool scan_monster_cfg(FILE *fp)
             {
                if (angle_max)
                {
-                  META_CONS("[MONSTER] ERROR: angle_max found twice: %s", input);
+                  //META_CONS("[MONSTER] ERROR: angle_max found twice: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: angle_max found twice: %s", input);
                   return TRUE;  // error
                }
                if (angle)
                {
-                  META_CONS("[MONSTER] ERROR: you can't specify angle AND angle_min or angle_max: %s", input);
+                  //META_CONS("[MONSTER] ERROR: you can't specify angle AND angle_min or angle_max: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: you can't specify angle AND angle_min or angle_max: %s", input);
                   return TRUE;  // error
                }
                if (sscanf(&input[10], "%f", &x) != 1)
                {
-                  META_CONS("[MONSTER] ERROR: invalid angle_max: %s", input);
+                  //META_CONS("[MONSTER] ERROR: invalid angle_max: %s", input);
                   LOG_MESSAGE(PLID, "ERROR: invalid angle_max: %s", input);
                   return TRUE;  // error
                }
@@ -211,7 +211,7 @@ bool scan_monster_cfg(FILE *fp)
                   }
                   if (monster_types[index].name[0] == 0)
                   {
-                     META_CONS("[MONSTER] ERROR: invalid monster name: %s", input);
+                     //META_CONS("[MONSTER] ERROR: invalid monster name: %s", input);
                      LOG_MESSAGE(PLID, "ERROR: invalid monster name: %s", input);
                      return TRUE;
                   }
@@ -220,7 +220,7 @@ bool scan_monster_cfg(FILE *fp)
             }
             else
             {
-               META_CONS("[MONSTER] ERROR: unknown command: %s", input);
+               //META_CONS("[MONSTER] ERROR: unknown command: %s", input);
                LOG_MESSAGE(PLID, "ERROR: unknown command: %s", input);
                return TRUE;  // error occurred
             }
@@ -229,25 +229,25 @@ bool scan_monster_cfg(FILE *fp)
          // check for all necessary fields here...
          if (!origin)
          {
-            META_CONS("[MONSTER] ERROR: you didn't specify an origin!");
+            //META_CONS("[MONSTER] ERROR: you didn't specify an origin!");
             LOG_MESSAGE(PLID, "ERROR: you didn't specify an origin!");
             return TRUE;
          }
          if (angle_min && !angle_max)
          {
-            META_CONS("[MONSTER] ERROR: you specified angle_min but didn't specify angle_max!");
+            //META_CONS("[MONSTER] ERROR: you specified angle_min but didn't specify angle_max!");
             LOG_MESSAGE(PLID, "ERROR: you specified angle_min but didn't specify angle_max!");
             return TRUE;
          }
          if (angle_max && !angle_min)
          {
-            META_CONS("[MONSTER] ERROR: you specified angle_max but didn't specify angle_min!");
+            //META_CONS("[MONSTER] ERROR: you specified angle_max but didn't specify angle_min!");
             LOG_MESSAGE(PLID, "ERROR: you specified angle_max but didn't specify angle_min!");
             return TRUE;
          }
          if (!monster)
          {
-            META_CONS("[MONSTER] ERROR: No monster key found!");
+            //META_CONS("[MONSTER] ERROR: No monster key found!");
             LOG_MESSAGE(PLID, "ERROR: No monster key found!");
             return TRUE;
          }
@@ -328,13 +328,13 @@ bool process_monster_cfg(void)
    {
       if (dllapi_log->value)
       {
-         META_CONS("[MONSTER] Processing config file=%s", filename);
+         //META_CONS("[MONSTER] Processing config file=%s", filename);
          LOG_MESSAGE(PLID, "Processing config file=%s", filename);
       }
 
       if ((fp = fopen(filename, "r")) == NULL)
       {
-         META_CONS("[MONSTER] ERROR: Could not open \"%s\"!", filename);
+         //META_CONS("[MONSTER] ERROR: Could not open \"%s\"!", filename);
          LOG_MESSAGE(PLID, "ERROR: Could not open \"%s\" file!", filename);
 
          return TRUE;  // return bad status
@@ -370,7 +370,7 @@ bool scan_monster_precache_cfg(FILE *fp)
 
       if (found == FALSE)
       {
-         META_CONS("[MONSTER] ERROR: invalid precache monster name: %s", input);
+         //META_CONS("[MONSTER] ERROR: invalid precache monster name: %s", input);
          LOG_MESSAGE(PLID, "ERROR: invalid precache monster name: %s", input);
       }
    }
@@ -397,13 +397,13 @@ bool process_monster_precache_cfg(void)
    {
       if (dllapi_log->value)
       {
-         META_CONS("[MONSTER] Processing config file=%s", filename);
+         //META_CONS("[MONSTER] Processing config file=%s", filename);
          LOG_MESSAGE(PLID, "Processing config file=%s", filename);
       }
 
       if ((fp = fopen(filename, "r")) == NULL)
       {
-         META_CONS("[MONSTER] ERROR: Could not open \"%s\"!", filename);
+         //META_CONS("[MONSTER] ERROR: Could not open \"%s\"!", filename);
          LOG_MESSAGE(PLID, "ERROR: Could not open \"%s\" file!", filename);
 
          return TRUE;  // return bad status

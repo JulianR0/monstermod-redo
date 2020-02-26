@@ -20,7 +20,7 @@
 #include	"extdll.h"
 #include	"util.h"
 #include	"cmbase.h"
-#include "cmbasemonster.h"
+#include	"cmbasemonster.h"
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"decals.h"
@@ -1141,7 +1141,7 @@ CMBMortar *CMBMortar::Shoot( edict_t *pOwner, Vector vecStart, Vector vecVelocit
 		pSpit->pev->velocity = vecVelocity;
 		pSpit->pev->owner = pOwner;
 		pSpit->pev->scale = 2.5;
-		pSpit->SetThink ( Animate );
+		pSpit->SetThink ( &CMBMortar::Animate );
 		pSpit->pev->nextthink = gpGlobals->time + 0.1;
 	}
 	return pSpit;

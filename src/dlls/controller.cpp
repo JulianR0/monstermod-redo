@@ -21,7 +21,7 @@
 #include	"extdll.h"
 #include	"util.h"
 #include	"cmbase.h"
-#include "cmbasemonster.h"
+#include	"cmbasemonster.h"
 #include	"monsters.h"
 #include	"effects.h"
 #include	"schedule.h"
@@ -1104,8 +1104,8 @@ void CMControllerHeadBall :: Spawn( void )
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin( pev, pev->origin );
 
-	SetThink( HuntThink );
-	SetTouch( BounceTouch );
+	SetThink( &CMControllerHeadBall::HuntThink );
+	SetTouch( &CMControllerHeadBall::BounceTouch );
 
 	m_vecIdeal = Vector( 0, 0, 0 );
 
@@ -1198,7 +1198,7 @@ void CMControllerHeadBall :: HuntThink( void  )
 
 		m_flNextAttack = gpGlobals->time + 3.0;
 
-		SetThink( DieThink );
+		SetThink( &CMControllerHeadBall::DieThink );
 		pev->nextthink = gpGlobals->time + 0.3;
 	}
 
@@ -1291,8 +1291,8 @@ void CMControllerZapBall :: Spawn( void )
 	UTIL_SetSize(pev, Vector( 0, 0, 0), Vector(0, 0, 0));
 	UTIL_SetOrigin( pev, pev->origin );
 
-	SetThink( AnimateThink );
-	SetTouch( ExplodeTouch );
+	SetThink( &CMControllerZapBall::AnimateThink );
+	SetTouch( &CMControllerZapBall::ExplodeTouch );
 
 	m_hOwner = pev->owner;
 	pev->dmgtime = gpGlobals->time; // keep track of when ball spawned

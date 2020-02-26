@@ -79,7 +79,7 @@ public:
 
 	inline void AnimateAndDie( float framerate ) 
 	{ 
-		SetThink(AnimateUntilDead); 
+		SetThink(&CMSprite::AnimateUntilDead); 
 		pev->framerate = framerate;
 		pev->dmgtime = gpGlobals->time + (m_maxFrame / framerate); 
 		pev->nextthink = gpGlobals->time; 
@@ -165,7 +165,7 @@ public:
 
 	static CMBeam *BeamCreate( const char *pSpriteName, int width );
 
-	inline void LiveForTime( float time ) { SetThink(SUB_Remove); pev->nextthink = gpGlobals->time + time; }
+	inline void LiveForTime( float time ) { SetThink(&CMBeam::SUB_Remove); pev->nextthink = gpGlobals->time + time; }
 	inline void	BeamDamageInstant( TraceResult *ptr, float damage ) 
 	{ 
 		pev->dmg = damage; 

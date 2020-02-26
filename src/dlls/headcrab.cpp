@@ -19,7 +19,7 @@
 #include	"extdll.h"
 #include	"util.h"
 #include	"cmbase.h"
-#include "cmbasemonster.h"
+#include	"cmbasemonster.h"
 #include	"monsters.h"
 #include	"schedule.h"
 
@@ -349,7 +349,7 @@ void CMHeadCrab :: StartTask ( Task_t *pTask )
 		{
 			EMIT_SOUND_DYN( edict(), CHAN_WEAPON, pAttackSounds[0], GetSoundVolue(), ATTN_IDLE, 0, GetVoicePitch() );
 			m_IdealActivity = ACT_RANGE_ATTACK1;
-			SetTouch ( LeapTouch );
+			SetTouch ( &CMHeadCrab::LeapTouch );
 			break;
 		}
 	default:

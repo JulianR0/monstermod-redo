@@ -1,6 +1,9 @@
-CPP = gcc
-BASEFLAGS = -Dstricmp=strcasecmp -Dstrcmpi=strcasecmp
-CPPFLAGS = ${BASEFLAGS} -m386 -O2 -w -I. -I../engine -I../common -I../pm_shared -I../../metamod
+# COMPILE ONLY WITH GCC 4.8!
+
+CPP = g++
+BASEFLAGS = -Dstricmp=strcasecmp -Dstrcmpi=strcasecmp -m32
+OPTFLAGS = -O2
+CPPFLAGS = ${BASEFLAGS} ${OPTFLAGS} -w -I. -I../engine -I../common -I../pm_shared -I../metamod
 
 OBJ = \
 	agrunt.o \
@@ -42,7 +45,7 @@ OBJ = \
 	zombie.o
 
 monster_mm_i386.so: ${OBJ}
-	${CPP} -fPIC -shared -o $@ ${OBJ}
+	${CPP} -m32 -fPIC -shared -o $@ ${OBJ}
 
 clean:
 	-rm -f *.o
