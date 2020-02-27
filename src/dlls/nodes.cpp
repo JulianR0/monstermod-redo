@@ -213,6 +213,7 @@ entvars_t* CGraph :: LinkEntForLink ( CLink *pLink, CNode *pNode )
 int	CGraph :: HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODEQUERY queryType )
 {
 	edict_t  *pentWorld;
+	CMBaseEntity	*pDoor;
 	TraceResult	tr;
 
 	if ( !m_fGraphPresent || !m_fGraphPointersSet )
@@ -228,8 +229,49 @@ int	CGraph :: HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, N
 	}
 	pentWorld = NULL;
 
+// func_door
+	if ( FClassnameIs( pevLinkEnt, "func_door" ) || FClassnameIs( pevLinkEnt, "func_door_rotating" ) )
+	{// ent is a door.
+
+		pDoor = ( CMBaseEntity::Instance( pevLinkEnt ) );
+
+		if ( ( pevLinkEnt->spawnflags & SF_DOOR_USE_ONLY ) ) 
+		{// door is use only.
+
+			if  ( ( afCapMask & bits_CAP_OPEN_DOORS ) )
+			{// let monster right through if he can open doors
+				return TRUE;
+			}
+			else 
+			{
+				// monster should try for it if the door is open and looks as if it will stay that way
+				if ( pDoor->GetToggleState()== TS_AT_TOP && ( pevLinkEnt->spawnflags & SF_DOOR_NO_AUTO_RETURN ) )
+				{
+					return TRUE;
+				}
+
+				return FALSE;
+			}
+		}
+		else 
+		{// door must be opened with a button or trigger field.
+			
+			// monster should try for it if the door is open and looks as if it will stay that way
+			if ( pDoor->GetToggleState() == TS_AT_TOP && ( pevLinkEnt->spawnflags & SF_DOOR_NO_AUTO_RETURN ) )
+			{
+				return TRUE;
+			}
+			if  ( ( afCapMask & bits_CAP_OPEN_DOORS ) )
+			{
+				if ( !( pevLinkEnt->spawnflags & SF_DOOR_NOMONSTERS ) || queryType == NODEGRAPH_STATIC )
+					return TRUE;
+			}
+
+			return FALSE;
+		}
+	}
 // func_breakable	
-	if ( FClassnameIs( pevLinkEnt, "func_breakable" ) && queryType == NODEGRAPH_STATIC )
+	else if ( FClassnameIs( pevLinkEnt, "func_breakable" ) && queryType == NODEGRAPH_STATIC )
 	{
 		return TRUE;
 	}
@@ -1482,12 +1524,15 @@ void CNodeEnt :: Spawn( void )
 		REMOVE_ENTITY( edict() );
 		return;
 	}
-
-	if ( WorldGraph.m_cNodes == 0 )
-	{// this is the first node to spawn, spawn the test hull entity that builds and walks the node tree
+	
+	// Give time to the nodes to spawn and get added to the worldgraph,
+	// TestHull is spawned after map start, not before. -Giegue
+	/*if ( WorldGraph.m_cNodes == 0 )
+	{
+		// this is the first node to spawn, spawn the test hull entity that builds and walks the node tree
 		CTestHull *pHull = CreateClassPtr((CTestHull *)NULL);
 		pHull->Spawn( pev );
-	}
+	}*/
 
 	if ( WorldGraph.m_cNodes >= MAX_NODES )
 	{
@@ -1533,13 +1578,13 @@ void CTestHull :: ShowBadNode( void )
 	pev->nextthink = gpGlobals->time + 0.1;
 }
 
-//jlbextern BOOL gTouchDisabled;
+extern BOOL gTouchDisabled;
 void CTestHull::CallBuildNodeGraph( void )
 {
 	// TOUCH HACK -- Don't allow this entity to call anyone's "touch" function
-//jlb	gTouchDisabled = TRUE;
+	gTouchDisabled = TRUE;
 	BuildNodeGraph();
-//jlb	gTouchDisabled = FALSE;
+	gTouchDisabled = FALSE;
 	// Undo TOUCH HACK
 }
 
@@ -3420,3 +3465,183 @@ EnoughSaid:
 	pMyPath = 0;
 	pMyPath2 = 0;
 }
+
+
+//=========================================================
+// CNodeViewer - Draws a graph of the shorted path from all nodes
+// to current location (typically the player).  It then draws
+// as many connects as it can per frame, trying not to overflow the buffer
+//=========================================================
+class CNodeViewer : public CMBaseEntity
+{
+public:
+	void Spawn( void );
+
+	int m_iBaseNode;
+	int m_iDraw;
+	int	m_nVisited;
+	int m_aFrom[128];
+	int m_aTo[128];
+	int m_iHull;
+	int m_afNodeType;
+	Vector m_vecColor;
+
+	void FindNodeConnections( int iNode );
+	void AddNode( int iFrom, int iTo );
+	void EXPORT DrawThink( void );
+
+};
+
+void CNodeViewer::Spawn( )
+{
+	/*CNodeViewer *pViewer = CreateClassPtr((CNodeViewer *)NULL);
+	pViewer->Spawn();*/
+	
+	if ( !WorldGraph.m_fGraphPresent || !WorldGraph.m_fGraphPointersSet )
+	{// protect us in the case that the node graph isn't available or built
+		ALERT ( at_console, "Graph not ready!\n" );
+		UTIL_Remove( this->edict() );
+		return;
+	}
+
+
+	if (FClassnameIs( pev, "node_viewer_fly"))
+	{
+		m_iHull = NODE_FLY_HULL;
+		m_afNodeType = bits_NODE_AIR;
+		m_vecColor = Vector( 160, 100, 255 );
+	}
+	else if (FClassnameIs( pev, "node_viewer_large"))
+	{
+		m_iHull = NODE_LARGE_HULL;
+		m_afNodeType = bits_NODE_LAND | bits_NODE_WATER;
+		m_vecColor = Vector( 100, 255, 160 );
+	}
+	else
+	{
+		m_iHull = NODE_HUMAN_HULL;
+		m_afNodeType = bits_NODE_LAND | bits_NODE_WATER;
+		m_vecColor = Vector( 255, 160, 100 );
+	}
+
+
+	m_iBaseNode = WorldGraph.FindNearestNode ( pev->origin, m_afNodeType );
+
+	if ( m_iBaseNode < 0 )
+	{
+		ALERT( at_console, "No nearby node\n" );
+		return;
+	}
+
+	m_nVisited = 0;
+
+	ALERT( at_aiconsole, "basenode %d\n", m_iBaseNode );
+
+	if (WorldGraph.m_cNodes < 128)
+	{
+		for (int i = 0; i < WorldGraph.m_cNodes; i++)
+		{
+			AddNode( i, WorldGraph.NextNodeInRoute( i, m_iBaseNode, m_iHull, 0 ));
+		}
+	}
+	else
+	{
+		// do a depth traversal
+		FindNodeConnections( m_iBaseNode );
+
+		int start = 0;
+		int end;
+		do {
+			end = m_nVisited;
+			// ALERT( at_console, "%d :", m_nVisited );
+			for (end = m_nVisited; start < end; start++)
+			{
+				FindNodeConnections( m_aFrom[start] );
+				FindNodeConnections( m_aTo[start] );
+			}
+		} while (end != m_nVisited);
+	}
+
+	ALERT( at_aiconsole, "%d nodes\n", m_nVisited );
+
+	m_iDraw = 0;
+	SetThink( &CNodeViewer::DrawThink );
+	pev->nextthink = gpGlobals->time;
+}
+
+
+void CNodeViewer :: FindNodeConnections ( int iNode )
+{
+	AddNode( iNode, WorldGraph.NextNodeInRoute( iNode, m_iBaseNode, m_iHull, 0 ));
+	for ( int i = 0 ; i < WorldGraph.m_pNodes[ iNode ].m_cNumLinks ; i++ )
+	{
+		CLink *pToLink = &WorldGraph.NodeLink( iNode, i);
+		AddNode( pToLink->m_iDestNode, WorldGraph.NextNodeInRoute( pToLink->m_iDestNode, m_iBaseNode, m_iHull, 0 ));
+	}
+}
+
+void CNodeViewer::AddNode( int iFrom, int iTo )
+{
+	if (m_nVisited >= 128)
+	{
+		return;
+	}
+	else
+	{
+		if (iFrom == iTo)
+			return;
+
+		for (int i = 0; i < m_nVisited; i++)
+		{
+			if (m_aFrom[i] == iFrom && m_aTo[i] == iTo)
+				return;
+			if (m_aFrom[i] == iTo && m_aTo[i] == iFrom)
+				return;
+		}
+		m_aFrom[m_nVisited] = iFrom;
+		m_aTo[m_nVisited] = iTo;
+		m_nVisited++;
+	}
+}
+
+
+void CNodeViewer :: DrawThink( void )
+{
+	pev->nextthink = gpGlobals->time;
+
+	for (int i = 0; i < 10; i++)
+	{
+		if (m_iDraw == m_nVisited)
+		{
+			UTIL_Remove( this->edict() );
+			return;
+		}
+
+		extern short g_sModelIndexLaser;
+		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+			WRITE_BYTE( TE_BEAMPOINTS );
+			WRITE_COORD( WorldGraph.m_pNodes[ m_aFrom[m_iDraw] ].m_vecOrigin.x );
+			WRITE_COORD( WorldGraph.m_pNodes[ m_aFrom[m_iDraw] ].m_vecOrigin.y );
+			WRITE_COORD( WorldGraph.m_pNodes[ m_aFrom[m_iDraw] ].m_vecOrigin.z + NODE_HEIGHT );
+
+			WRITE_COORD( WorldGraph.m_pNodes[ m_aTo[m_iDraw] ].m_vecOrigin.x );
+			WRITE_COORD( WorldGraph.m_pNodes[ m_aTo[m_iDraw] ].m_vecOrigin.y );
+			WRITE_COORD( WorldGraph.m_pNodes[ m_aTo[m_iDraw] ].m_vecOrigin.z + NODE_HEIGHT );
+			WRITE_SHORT( g_sModelIndexLaser );
+			WRITE_BYTE( 0 ); // framerate
+			WRITE_BYTE( 0 ); // framerate
+			WRITE_BYTE( 250 ); // life
+			WRITE_BYTE( 40 );  // width
+			WRITE_BYTE( 0 );   // noise
+			WRITE_BYTE( m_vecColor.x );   // r, g, b
+			WRITE_BYTE( m_vecColor.y );   // r, g, b
+			WRITE_BYTE( m_vecColor.z );   // r, g, b
+			WRITE_BYTE( 128 );	// brightness
+			WRITE_BYTE( 0 );		// speed
+		MESSAGE_END();
+
+		m_iDraw++;
+	}
+}
+
+
