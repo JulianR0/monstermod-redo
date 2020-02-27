@@ -1,5 +1,9 @@
 //
-// botman's monster - MetaMOD plugin
+// Monster Mod is a modification based on Botman's original "Monster" plugin.
+// The "forgotten" modification was made by Rick90.
+// This is an attempt to recreate the plugin so it does not become lost again.
+//
+// Recreated by Giegue.
 //
 // h_export.cpp
 //

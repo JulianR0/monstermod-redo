@@ -1,5 +1,9 @@
 //
-// botman's monster - MetaMOD plugin
+// Monster Mod is a modification based on Botman's original "Monster" plugin.
+// The "forgotten" modification was made by Rick90.
+// This is an attempt to recreate the plugin so it does not become lost again.
+//
+// Recreated by Giegue.
 //
 // monster_api.cpp
 //
@@ -49,15 +53,15 @@ static META_FUNCTIONS gMetaFunctionTable = {
 
 // Description of plugin
 plugin_info_t Plugin_info = {
-   META_INTERFACE_VERSION,                // interface version
-   "Monster",                             // name
-   "3.00.00",                             // version
-   "06/30/2002",                          // date
-   "botman <botman@planethalflife.com>",  // author
-   "http://planethalflife.com/botman/",   // url
-   "MONSTER",                             // logtag
-   PT_CHANGELEVEL,                        // (when) loadable
-   PT_CHANGELEVEL,                        // (when) unloadable
+   META_INTERFACE_VERSION,							// interface version
+   "MonsterMod",									// name
+   "UNVERSIONED",									// version | We are not going to give it a version yet. -Giegue
+   "26/02/2020",									// date in DD/MM/YYYY format
+   "botman, Rick90, Giegue",						// original authors + recreation by...
+   "https://github.com/JulianR0/monstermod-redo",	// url
+   "MONSTER",										// logtag
+   PT_CHANGELEVEL,									// (when) loadable
+   PT_CHANGELEVEL,									// (when) unloadable
 };
 
 char *VNAME=Plugin_info.name;
@@ -115,9 +119,9 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS *pFunctionTable,
    memcpy(pFunctionTable, &gMetaFunctionTable, sizeof(META_FUNCTIONS));
    gpGamedllFuncs=pGamedllFuncs;
 
-   LOG_MESSAGE(PLID, "%s v%s, %s", VNAME, VVERSION, VDATE);
+   LOG_MESSAGE(PLID, "%s %s, %s", VNAME, VVERSION, VDATE);
    LOG_MESSAGE(PLID, "by %s", VAUTHOR);
-   LOG_MESSAGE(PLID, "   %s", VURL);
+   LOG_MESSAGE(PLID, "%s", VURL);
    LOG_MESSAGE(PLID, "compiled: %s CDT", COMPILE_TIME);
 
    LOG_CONSOLE(PLID, "[%s] %s v%s, %s", VLOGTAG, VNAME, VVERSION, VDATE);
