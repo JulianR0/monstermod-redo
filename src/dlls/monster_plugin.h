@@ -28,15 +28,11 @@ typedef struct
 
 extern monster_t monsters[MAX_MONSTER_ENTS];
 
-
-#define MAX_MONSTER_COUNT 20
-
 typedef struct {
    Vector origin;
-   float angle_min, angle_max;
+   Vector angles;
    float delay;
-   unsigned char monster[MAX_MONSTER_COUNT];
-   int monster_count;
+   unsigned char monster;
    float respawn_time;
    bool need_to_respawn;
 } monster_spawnpoint_t;

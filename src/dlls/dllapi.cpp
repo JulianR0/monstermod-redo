@@ -1,5 +1,9 @@
 //
-// botman's monster - MetaMOD plugin
+// Monster Mod is a modification based on Botman's original "Monster" plugin.
+// The "forgotten" modification was made by Rick90.
+// This is an attempt to recreate the plugin so it does not become lost again.
+//
+// Recreated by Giegue.
 //
 // dllapi.cpp
 //
@@ -101,20 +105,23 @@ DLL_DECALLIST gDecals[] = {
 
 monster_type_t monster_types[]=
 {
-	"agrunt", FALSE,
-	"apache", FALSE,
-	"barney", FALSE,
-	"bigmomma", FALSE,
-	"bullsquid", FALSE,
-	"controller", FALSE,
-	"hassassin", FALSE,
-	"headcrab", FALSE,
-	"hgrunt", FALSE,
-	"houndeye", FALSE,
-	"islave", FALSE,
-	"scientist", FALSE,
-	"snark", FALSE,
-	"zombie", FALSE,
+	// These are just names. But to keep it consistent
+	// with the new KVD format, ensure these are exactly
+	// like an actual, entity classname.
+	"monster_alien_grunt", FALSE,
+	"monster_apache", FALSE,
+	"monster_barney", FALSE,
+	"monster_bigmomma", FALSE,
+	"monster_bullsquid", FALSE,
+	"monster_alien_controller", FALSE,
+	"monster_hassassin", FALSE,
+	"monster_headcrab", FALSE,
+	"monster_human_grunt", FALSE,
+	"monster_houndeye", FALSE,
+	"monster_alien_slave", FALSE,
+	"monster_scientist", FALSE,
+	"monster_snark", FALSE,
+	"monster_zombie", FALSE,
 	"", FALSE
 };
 
@@ -320,7 +327,7 @@ void check_monster_dead(void)
 }
 
 
-bool spawn_monster(int monster_type, Vector origin, float angle, int respawn_index)
+bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_index)
 {
 	int monster_index;
 	edict_t *monster_pent;
@@ -399,8 +406,12 @@ bool spawn_monster(int monster_type, Vector origin, float angle, int respawn_ind
 	monsters[monster_index].monster_index = (*g_engfuncs.pfnIndexOfEdict)(monster_pent);
 
 	monster_pent->v.origin = origin;
-	monster_pent->v.angles.y = angle;
-
+	monster_pent->v.angles = angles;
+	
+	// Since the entity is now linked to the class above,
+	// it's pev->classname should be, theorically, safe to edit.
+	// The pev->classname is set in the monster's Spawn() function.
+	//monster_pent->v.classname = MAKE_STRING("monster_zombie");
 	monsters[monster_index].pMonster->Spawn();
 
 	monster_pent->v.spawnflags = SF_MONSTER_FADECORPSE;
@@ -412,10 +423,9 @@ bool spawn_monster(int monster_type, Vector origin, float angle, int respawn_ind
 
 void check_respawn(void)
 {
-	int type_index;
 	int monster_type;
 	Vector origin;
-	float angle;
+	Vector angles;
 
 	if (!monster_spawn->value)
 		return;  // monster_spawn is turned off, retry again later
@@ -427,20 +437,13 @@ void check_respawn(void)
 		{
 			monster_spawnpoint[index].need_to_respawn = FALSE;
 
-			type_index = RANDOM_LONG(0, monster_spawnpoint[index].monster_count-1);
-
-			monster_type = monster_spawnpoint[index].monster[type_index];
+			monster_type = monster_spawnpoint[index].monster;
 
 			origin = monster_spawnpoint[index].origin;
 
-			angle = monster_spawnpoint[index].angle_min;
+			angles = monster_spawnpoint[index].angles;
 
-			if (angle != monster_spawnpoint[index].angle_max)
-			{
-				angle = RANDOM_FLOAT(angle, monster_spawnpoint[index].angle_max);
-			}
-
-			if (spawn_monster(monster_type, origin, angle, index))
+			if (spawn_monster(monster_type, origin, angles, index))
 			{
 				// spawn_monster failed, retry again after delay...
 				monster_spawnpoint[index].need_to_respawn = TRUE;
@@ -573,7 +576,7 @@ void MonsterCommand(void)
 				Vector origin = pPlayer->v.origin;
 				Vector view_angle = pPlayer->v.v_angle;
 				Vector v_src, v_dest;
-				float monster_angle;
+				Vector monster_angle;
 
 				// try to determine the best place to spawn the monster...
 
@@ -596,11 +599,11 @@ void MonsterCommand(void)
 
 					if (tr.flFraction < 1.0)	 // hit something?
 					{
-						monster_angle = view_angle.y + 180.0f;  // face the player
-						if (monster_angle > 360)
-							monster_angle -= 360;
-						if (monster_angle < 0)
-							monster_angle += 360;
+						monster_angle.y = view_angle.y + 180.0f;  // face the player
+						if (monster_angle.y > 360)
+							monster_angle.y -= 360;
+						if (monster_angle.y < 0)
+							monster_angle.y += 360;
 
 						spawn_monster(monster_type, v_src, monster_angle, -1);
 
@@ -624,11 +627,11 @@ void MonsterCommand(void)
 
 					if (tr.flFraction < 1.0)	 // hit something?
 					{
-						monster_angle = view_angle.y - 135.0f;  // face the player
-						if (monster_angle > 360)
-							monster_angle -= 360;
-						if (monster_angle < 0)
-							monster_angle += 360;
+						monster_angle.y = view_angle.y - 135.0f;  // face the player
+						if (monster_angle.y > 360)
+							monster_angle.y -= 360;
+						if (monster_angle.y < 0)
+							monster_angle.y += 360;
 
 						spawn_monster(monster_type, v_src, monster_angle, -1);
 
@@ -652,11 +655,11 @@ void MonsterCommand(void)
 
 					if (tr.flFraction < 1.0)	 // hit something?
 					{
-						monster_angle = view_angle.y + 135.0f;  // face the player
-						if (monster_angle > 360)
-							monster_angle -= 360;
-						if (monster_angle < 0)
-							monster_angle += 360;
+						monster_angle.y = view_angle.y + 135.0f;  // face the player
+						if (monster_angle.y > 360)
+							monster_angle.y -= 360;
+						if (monster_angle.y < 0)
+							monster_angle.y += 360;
 
 						spawn_monster(monster_type, v_src, monster_angle, -1);
 
@@ -679,11 +682,11 @@ void MonsterCommand(void)
 
 					if (tr.flFraction < 1.0)	 // hit something?
 					{
-						monster_angle = view_angle.y + 90.0f;	 // face the player
-						if (monster_angle > 360)
-							monster_angle -= 360;
-						if (monster_angle < 0)
-							monster_angle += 360;
+						monster_angle.y = view_angle.y + 90.0f;	 // face the player
+						if (monster_angle.y > 360)
+							monster_angle.y -= 360;
+						if (monster_angle.y < 0)
+							monster_angle.y += 360;
 
 						spawn_monster(monster_type, v_src, monster_angle, -1);
 
@@ -706,11 +709,11 @@ void MonsterCommand(void)
 
 					if (tr.flFraction < 1.0)	 // hit something?
 					{
-						monster_angle = view_angle.y - 90.0f;	 // face the player
-						if (monster_angle > 360)
-							monster_angle -= 360;
-						if (monster_angle < 0)
-							monster_angle += 360;
+						monster_angle.y = view_angle.y - 90.0f;	 // face the player
+						if (monster_angle.y > 360)
+							monster_angle.y -= 360;
+						if (monster_angle.y < 0)
+							monster_angle.y += 360;
 
 						spawn_monster(monster_type, v_src, monster_angle, -1);
 
@@ -733,11 +736,11 @@ void MonsterCommand(void)
 
 					if (tr.flFraction < 1.0)	 // hit something?
 					{
-						monster_angle = view_angle.y;	 // face the player
-						if (monster_angle > 360)
-							monster_angle -= 360;
-						if (monster_angle < 0)
-							monster_angle += 360;
+						monster_angle.y = view_angle.y;	 // face the player
+						if (monster_angle.y > 360)
+							monster_angle.y -= 360;
+						if (monster_angle.y < 0)
+							monster_angle.y += 360;
 
 						spawn_monster(monster_type, v_src, monster_angle, -1);
 
@@ -850,9 +853,14 @@ void mmDispatchThink( edict_t *pent )
 
 	RETURN_META(MRES_IGNORED);
 }
-
+// HACKHACK -- this is a hack to keep the node graph entity from "touching" things (like triggers)
+// while it builds the graph
+BOOL gTouchDisabled = FALSE;
 void mmDispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 {
+	if (gTouchDisabled)
+		RETURN_META(MRES_SUPERCEDE);
+	
 	for (int index=0; index < monster_ents_used; index++)
 	{
 		if ((pentTouched != NULL) && (pentTouched == monsters[index].monster_pent))
