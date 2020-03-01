@@ -40,6 +40,18 @@ typedef struct {
 #define MAX_MONSTERS 100
 extern monster_spawnpoint_t monster_spawnpoint[MAX_MONSTERS];
 
+// this is here to store if a node we want to spawn is an ordinary one, or a flying one
+typedef struct
+{
+	Vector origin;
+	bool is_air_node;
+} node_spawnpoint_t;
+
+// nodes.cpp defines 1024 max nodes, but that amount is likely to trigger a
+// no free edicts crash if the server num_edicts is low. Increase if needed.
+#define MAX_NODES 256
+extern node_spawnpoint_t node_spawnpoint[MAX_NODES];
+
 extern DLL_GLOBAL short g_sModelIndexFireball;// holds the index for the fireball
 extern DLL_GLOBAL short g_sModelIndexSmoke;// holds the index for the smoke cloud
 extern DLL_GLOBAL short g_sModelIndexWExplosion;// holds the index for the underwater explosion

@@ -1452,7 +1452,8 @@ void CTestHull :: Spawn( entvars_t *pevMasterNode )
 {
 	SET_MODEL(ENT(pev), "models/player.mdl");
 	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
-
+	
+	
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
 	pev->effects		= 0;
@@ -1474,6 +1475,8 @@ void CTestHull :: Spawn( entvars_t *pevMasterNode )
 	// UNDONE: Shouldn't we just use EF_NODRAW?  This doesn't need to go to the client.
 	pev->rendermode = kRenderTransTexture;
 	pev->renderamt = 0;
+	
+	pev->classname 		= MAKE_STRING("testhull");
 }
 
 //=========================================================
@@ -1482,13 +1485,15 @@ void CTestHull :: Spawn( entvars_t *pevMasterNode )
 //=========================================================
 void CTestHull::DropDelay ( void )
 {
-	UTIL_CenterPrintAll( "Node Graph out of Date. Rebuilding..." );
-
+	// Do NOT uncomment or you'll get a "Tried to create a message with a bogus message type ( 0 )" crash!
+	// Left here only because it's on the original HLSDK, and for comedy purposes. -Giegue
+	//UTIL_CenterPrintAll( "Node Graph out of Date. Rebuilding..." );
+	
 	UTIL_SetOrigin ( VARS(pev), WorldGraph.m_pNodes[ 0 ].m_vecOrigin );
 
 	SetThink ( &CTestHull::CallBuildNodeGraph );
 
-	pev->nextthink = gpGlobals->time + 1;
+	pev->nextthink = gpGlobals->time + 2; // think called earlier, so add extra second. -Giegue
 }
 
 //=========================================================
@@ -1525,15 +1530,13 @@ void CNodeEnt :: Spawn( void )
 		return;
 	}
 	
-	// Give time to the nodes to spawn and get added to the worldgraph,
-	// TestHull is spawned after map start, not before. -Giegue
-	/*if ( WorldGraph.m_cNodes == 0 )
+	if ( WorldGraph.m_cNodes == 0 )
 	{
 		// this is the first node to spawn, spawn the test hull entity that builds and walks the node tree
-		CTestHull *pHull = CreateClassPtr((CTestHull *)NULL);
+		CTestHull *pHull = CreateNormalClassPtr((CTestHull *)NULL);
 		pHull->Spawn( pev );
-	}*/
-
+	}
+	
 	if ( WorldGraph.m_cNodes >= MAX_NODES )
 	{
 		ALERT ( at_aiconsole, "cNodes > MAX_NODES\n" );
@@ -1552,7 +1555,7 @@ void CNodeEnt :: Spawn( void )
 		WorldGraph.m_pNodes[ WorldGraph.m_cNodes ].m_afNodeInfo = 0;
 
 	WorldGraph.m_cNodes++;
-
+	
 	REMOVE_ENTITY( edict() );
 }
 
@@ -1665,7 +1668,7 @@ void CTestHull :: BuildNodeGraph( void )
 	if ( !file )
 	{// file error
 		ALERT ( at_aiconsole, "Couldn't create %s!\n", szNrpFilename );
-
+		
 		if ( pTempPool )
 		{
 			free ( pTempPool );
@@ -2464,7 +2467,7 @@ int CGraph :: FLoadGraph ( char *szMapName )
 		// Set the graph present flag, clear the pointers set flag
 		//
 		m_fGraphPresent = TRUE;
-		m_fGraphPointersSet = FALSE;
+		m_fGraphPointersSet = TRUE; // what if...?
 		
 		FREE_FILE(aMemFile);
 
@@ -3472,26 +3475,6 @@ EnoughSaid:
 // to current location (typically the player).  It then draws
 // as many connects as it can per frame, trying not to overflow the buffer
 //=========================================================
-class CNodeViewer : public CMBaseEntity
-{
-public:
-	void Spawn( void );
-
-	int m_iBaseNode;
-	int m_iDraw;
-	int	m_nVisited;
-	int m_aFrom[128];
-	int m_aTo[128];
-	int m_iHull;
-	int m_afNodeType;
-	Vector m_vecColor;
-
-	void FindNodeConnections( int iNode );
-	void AddNode( int iFrom, int iTo );
-	void EXPORT DrawThink( void );
-
-};
-
 void CNodeViewer::Spawn( )
 {
 	/*CNodeViewer *pViewer = CreateClassPtr((CNodeViewer *)NULL);
@@ -3567,6 +3550,8 @@ void CNodeViewer::Spawn( )
 	m_iDraw = 0;
 	SetThink( &CNodeViewer::DrawThink );
 	pev->nextthink = gpGlobals->time;
+	
+	pev->classname = MAKE_STRING( "node_viewer" );
 }
 
 

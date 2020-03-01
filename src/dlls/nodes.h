@@ -271,6 +271,29 @@ class CNodeEnt : public CMBaseEntity
 
 
 //=========================================================
+// Node viewer
+//=========================================================
+class CNodeViewer : public CMBaseEntity
+{
+public:
+	void Spawn( void );
+
+	int m_iBaseNode;
+	int m_iDraw;
+	int	m_nVisited;
+	int m_aFrom[128];
+	int m_aTo[128];
+	int m_iHull;
+	int m_afNodeType;
+	Vector m_vecColor;
+
+	void FindNodeConnections( int iNode );
+	void AddNode( int iFrom, int iTo );
+	void EXPORT DrawThink( void );
+
+};
+
+//=========================================================
 // CStack - last in, first out.
 //=========================================================
 class CStack 

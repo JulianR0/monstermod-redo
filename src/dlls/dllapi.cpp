@@ -48,6 +48,9 @@
 #include "decals.h"
 #include "shake.h"
 #include "skill.h"
+#include "nodes.h"
+
+extern CGraph WorldGraph;
 
 extern globalvars_t	 *gpGlobals;
 extern enginefuncs_t g_engfuncs;
@@ -108,7 +111,12 @@ monster_type_t monster_types[]=
 	// These are just names. But to keep it consistent
 	// with the new KVD format, ensure these are exactly
 	// like an actual, entity classname.
-	"monster_alien_grunt", FALSE,
+	
+	// We are going to use this as a list of what entities
+	// can be spawned. Monsters should go first.
+	// DO NOT ALTER THE ORDER OF ELEMENTS!
+	
+	"monster_alien_grunt", FALSE, // Monsters
 	"monster_apache", FALSE,
 	"monster_barney", FALSE,
 	"monster_bigmomma", FALSE,
@@ -122,6 +130,8 @@ monster_type_t monster_types[]=
 	"monster_scientist", FALSE,
 	"monster_snark", FALSE,
 	"monster_zombie", FALSE,
+	"info_node", FALSE, // Nodes
+	"info_node_air", FALSE,
 	"", FALSE
 };
 
@@ -130,6 +140,9 @@ int monster_ents_used = 0;
 
 monster_spawnpoint_t monster_spawnpoint[MAX_MONSTERS];
 int monster_spawn_count = 0;
+
+node_spawnpoint_t node_spawnpoint[MAX_NODES];
+int node_spawn_count = 0;
 
 float check_respawn_time;
 
@@ -779,6 +792,102 @@ void MonsterCommand(void)
 	}
 }
 
+void SpawnViewerCommand(void)
+{
+	int index;
+	
+	// debug command to spawn a node_viewer at a player's location
+	if (CMD_ARGC() >= 2)
+	{
+		// check for a valid player name or index...
+		const char *parg2 = CMD_ARGV(1);
+		int player_index = -1;
+		edict_t *pPlayer;
+		const char *player_name;
+
+		if (*parg2 == '#')	 // player index
+		{
+			if (sscanf(&parg2[1], "%d", &player_index) != 1)
+			player_index = -1;
+
+			if ((player_index < 1) || (player_index > gpGlobals->maxClients))
+			{
+				//META_CONS("[MONSTER] invalid player index!	 (%d to %d allowed)", 1, gpGlobals->maxClients);
+				LOG_MESSAGE(PLID, "invalid player index! (%d to %d allowed)", 1, gpGlobals->maxClients);
+				player_index = -1;
+				return;
+			}
+		}
+		else
+		{
+			for (index = 1; index <= gpGlobals->maxClients; index++)
+			{
+				pPlayer = INDEXENT(index);
+	
+				if (pPlayer && !pPlayer->free)
+				{
+					if (stricmp(STRING(pPlayer->v.netname), parg2) == 0)
+					{
+						player_index = index;	// found the matching player name
+						break;
+					}
+				}
+			}
+
+			if (player_index == -1)
+			{
+				//META_CONS("[MONSTER] can't find player named \"%s\"!", parg2);
+				LOG_MESSAGE(PLID, "can't find player named \"%s\"!", parg2);
+				return;
+			}
+		}
+		
+		if (player_index != -1)
+		{
+			pPlayer = INDEXENT(player_index);
+
+			if ((pPlayer == NULL) || (pPlayer->free))
+			{
+				//META_CONS("[MONSTER] player index %d is not a valid player!", player_index);
+				LOG_MESSAGE(PLID, "player index %d is not a valid player!", player_index);
+				return;
+			}
+
+			player_name = STRING(pPlayer->v.netname);
+
+			if (player_name[0] == 0)
+			{
+				//META_CONS("[MONSTER] player index %d is not a valid player!", player_index);
+				LOG_MESSAGE(PLID, "player index %d is not a valid player!", player_index);
+				return;
+			}
+
+			if (!UTIL_IsAlive(pPlayer))
+			{
+				//META_CONS("[MONSTER] player \"%s\" is not alive or is an observer!", player_name);
+				LOG_MESSAGE(PLID, "player \"%s\" is not alive or is an observer!", player_name);
+				return;
+			}
+
+			Vector origin = pPlayer->v.origin;
+			
+			CMBaseEntity *pViewer = CreateClassPtr((CNodeViewer *)NULL);
+			if (pViewer == NULL)
+			{
+				//META_CONS("[MONSTER] ERROR: Error Creating Node!" );
+				LOG_MESSAGE(PLID, "ERROR: Error Creating Viewer!");
+				return;
+			}
+			
+			pViewer->pev->origin = origin;
+			pViewer->Spawn();
+			return;
+		}
+	}
+
+	LOG_MESSAGE(PLID, "usage: node_viewer player_name | #player_index");
+	LOG_MESSAGE(PLID, "spawns a node viewer at the player's location");
+}
 
 void mmGameDLLInit( void )
 {
@@ -810,13 +919,39 @@ int mmDispatchSpawn( edict_t *pent )
 		world_precache();
 
 		monster_spawn_count = 0;
-
+		node_spawn_count = 0;
+		
 		monster_skill_init();
 
 		process_monster_precache_cfg();
 
 		process_monster_cfg();
+		
+		// node support. -Giegue
+		// init the WorldGraph.
+		WorldGraph.InitGraph();
 
+		// make sure the .NOD file is newer than the .BSP file.
+		if ( !WorldGraph.CheckNODFile ( ( char * )STRING( gpGlobals->mapname ) ) )
+		{
+			// NOD file is not present, or is older than the BSP file.
+			WorldGraph.AllocNodes();
+		}
+		else
+		{
+			// Load the node graph for this level
+			if ( !WorldGraph.FLoadGraph ( (char *)STRING( gpGlobals->mapname ) ) )
+			{
+				// couldn't load, so alloc and prepare to build a graph.
+				ALERT ( at_console, "*Error opening .NOD file\n" );
+				WorldGraph.AllocNodes();
+			}
+			else
+			{
+				ALERT ( at_console, "\n*Graph Loaded!\n" );
+			}
+		}
+		
 		check_respawn_time = 0.0;
 
 		for (index = 0; index < MAX_MONSTER_ENTS; index++)
@@ -850,7 +985,21 @@ void mmDispatchThink( edict_t *pent )
 			RETURN_META(MRES_SUPERCEDE);
 		}
 	}
-
+	
+	// Manually call think on these other entities
+	if (FClassnameIs( pent, "testhull" ))
+	{
+		// Ensure you do think...
+		CMBaseEntity::Instance(pent)->Think();
+		RETURN_META(MRES_SUPERCEDE);
+	}
+	
+	if (FClassnameIs( pent, "node_viewer" ))
+	{
+		CMBaseEntity::Instance(pent)->Think();
+		RETURN_META(MRES_SUPERCEDE);
+	}
+	
 	RETURN_META(MRES_IGNORED);
 }
 // HACKHACK -- this is a hack to keep the node graph entity from "touching" things (like triggers)
@@ -899,6 +1048,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
 	(g_engfuncs.pfnAddServerCommand)("monster", MonsterCommand);
+	(g_engfuncs.pfnAddServerCommand)("node_viewer", SpawnViewerCommand);
 
 	for (index = 0; monster_types[index].name[0]; index++)
 	{
@@ -938,7 +1088,31 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	}
 
 	monster_ents_used = 0;
-
+	
+	// spawn nodes
+	for (index = 0; index < node_spawn_count; index++)
+	{
+		CMBaseEntity *pNode;
+		pNode = CreateNormalClassPtr((CNodeEnt *)NULL);
+		
+		if (pNode == NULL)
+		{
+			//META_CONS("[MONSTER] ERROR: Error Creating Node!" );
+			LOG_MESSAGE(PLID, "ERROR: Error Creating Node!");
+		}
+		else
+		{
+			pNode->pev->origin = node_spawnpoint[index].origin;
+		
+			if (node_spawnpoint[index].is_air_node)
+				pNode->pev->classname = MAKE_STRING("info_node_air");
+			else
+				pNode->pev->classname = MAKE_STRING("info_node");
+			
+			pNode->Spawn();
+		}
+	}
+	
 	RETURN_META(MRES_IGNORED);
 }
 

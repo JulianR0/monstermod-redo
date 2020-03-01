@@ -18,7 +18,7 @@ extern cvar_t *dllapi_log;
 
 extern monster_type_t monster_types[];
 extern int monster_spawn_count;
-
+extern int node_spawn_count;
 
 bool get_input(FILE *fp, char *input)
 {
@@ -72,9 +72,11 @@ void scan_monster_cfg(FILE *fp)
 	// Let's make a full rework of this. -Giegue
 	char input[1024];
 	float x, y, z;
+	bool badent, monster, node;
 	
 	while (get_input(fp, input))
 	{
+		badent = monster = node = FALSE;
 		if (input[0] == '{')
 		{
 			// Proper start, initialize entity creation
@@ -86,88 +88,167 @@ void scan_monster_cfg(FILE *fp)
 				// It's the end of the entity structure?
 				if (input[0] == '}')
 				{
-					// Done. Let's process the keyvalues.
-					for (int i = 0; i < kvd_index; i++)
+					// Check if the classname of whatever we want to spawn is valid.
+					if (strcmp(data[kvd_index-1].key, "classname") == 0)
 					{
-						float x, y, z;
-						// Any unknown keyvalue is ignored.
-						// Any duplicate keyvalue is overwritten.
-						
-						if (strcmp(data[i].key, "origin") == 0)
+						int mIndex;
+						for (mIndex = 0; monster_types[mIndex].name[0]; mIndex++)
 						{
-							if (sscanf(data[i].value, "%f %f %f", &x, &y, &z) != 3)
+							if (strcmp(data[kvd_index-1].value, monster_types[mIndex].name) == 0)
 							{
-								LOG_MESSAGE(PLID, "ERROR: invalid origin: %s", input); // print conflictive line
+								// Now that I think about it this looks slow and bad code >.>
 								
-								// reset origin to g_vecZero
-								LOG_MESSAGE(PLID, "ERROR: entity will spawn at 0 0 0");
-								x = y = z = 0;
-							}
-							monster_spawnpoint[monster_spawn_count].origin[0] = x;
-							monster_spawnpoint[monster_spawn_count].origin[1] = y;
-							monster_spawnpoint[monster_spawn_count].origin[2] = z;
-						}
-						else if (strcmp(data[i].key, "delay") == 0)
-						{
-							// ToDo: Remove this keyvalue.
-							// Monsters spawned directly should not respawn.
-							if (sscanf(data[i].value, "%f", &x) != 1)
-							{
-								LOG_MESSAGE(PLID, "ERROR: invalid delay: %s", input); // print conflictive line
-								
-								// default to 30 seconds
-								LOG_MESSAGE(PLID, "ERROR: entity respawn frequency will be set to 30 seconds");
-								x = 30;
-							}
-							monster_spawnpoint[monster_spawn_count].delay = x;
-						}
-						else if (strcmp(data[i].key, "angles") == 0)
-						{
-							if (sscanf(data[i].value, "%f %f %f", &x, &y, &z) != 3)
-							{
-								LOG_MESSAGE(PLID, "ERROR: invalid angles: %s", input); // print conflictive line
-								
-								// reset angles to g_vecZero
-								LOG_MESSAGE(PLID, "ERROR: entity angles will be set to 0 0 0");
-								x = y = z = 0;
-							}
-							monster_spawnpoint[monster_spawn_count].angles[0] = x;
-							monster_spawnpoint[monster_spawn_count].angles[1] = y;
-							monster_spawnpoint[monster_spawn_count].angles[2] = z;
-						}
-						else if (strcmp(data[i].key, "classname") == 0)
-						{
-							int mIndex;
-							for (mIndex = 0; monster_types[mIndex].name[0]; mIndex++)
-							{
-								if (strcmp(data[i].value, monster_types[mIndex].name) == 0)
+								// A match is found. What is this?
+								if (strncmp(monster_types[mIndex].name, "monster", 7) == 0)
 								{
-									monster_spawnpoint[monster_spawn_count].monster = mIndex;
-									monster_types[mIndex].need_to_precache = TRUE;
-									break;
+									// It's a monster, add it to the list
+									if (monster_spawn_count == MAX_MONSTERS)
+									{
+										// Ouch! Not enough room.
+										LOG_MESSAGE(PLID, "ERROR: can't add monster, reached MAX_MONSTERS!"); // It will get spammy, sadly.
+										badent = TRUE;
+									}
+									else
+									{
+										monster_spawnpoint[monster_spawn_count].monster = mIndex;
+										monster_types[mIndex].need_to_precache = TRUE;
+										monster = TRUE;
+									}
+								}
+								else if (strcmp(monster_types[mIndex].name, "info_node") == 0)
+								{
+									// Normal node
+									if (node_spawn_count == MAX_NODES)
+									{
+										// The map can't be THAT big can it?
+										LOG_MESSAGE(PLID, "ERROR: can't add node, reached MAX_NODES!"); // zee spam bOi
+										badent = TRUE;
+									}
+									else
+										node = TRUE;
+								}
+								else if (strcmp(monster_types[mIndex].name, "info_node_air") == 0)
+								{
+									// Aerial node
+									if (node_spawn_count == MAX_NODES)
+									{
+										// Ctrl+C --> Ctrl+V
+										LOG_MESSAGE(PLID, "ERROR: can't add node, reached MAX_NODES!"); // poppo was here.
+										badent = TRUE;
+									}
+									else
+									{
+										node_spawnpoint[node_spawn_count].is_air_node = TRUE;
+										node = TRUE;
+									}
+								}
+								break;
+							}
+						}
+						if (monster_types[mIndex].name[0] == 0)
+						{
+							LOG_MESSAGE(PLID, "ERROR: unknown classname: %s", input); // print conflictive line
+							LOG_MESSAGE(PLID, "ERROR: nothing will spawn here!");
+							badent = TRUE;
+						}
+					}
+					else
+					{
+						// What are you doing?!
+						LOG_MESSAGE(PLID, "ERROR: BAD ENTITY STRUCTURE! Last line was %s", input); // print conflictive line
+						LOG_MESSAGE(PLID, "ERROR: nothing will spawn here!");
+						badent = TRUE;
+					}
+					
+					if (!badent)
+					{
+						// Done. Let's process the keyvalues.
+						for (int i = 0; i < (kvd_index-1); i++)
+						{
+							// Any unknown keyvalue is ignored.
+							// Any duplicate keyvalue is overwritten.
+							
+							if (strcmp(data[i].key, "origin") == 0)
+							{
+								if (sscanf(data[i].value, "%f %f %f", &x, &y, &z) != 3)
+								{
+									LOG_MESSAGE(PLID, "ERROR: invalid origin: %s", input); // print conflictive line
+									
+									// reset origin to g_vecZero
+									LOG_MESSAGE(PLID, "ERROR: entity will spawn at 0 0 0");
+									x = y = z = 0;
+								}
+								if (monster)
+								{
+									monster_spawnpoint[monster_spawn_count].origin[0] = x;
+									monster_spawnpoint[monster_spawn_count].origin[1] = y;
+									monster_spawnpoint[monster_spawn_count].origin[2] = z;
+								}
+								else if (node)
+								{
+									node_spawnpoint[node_spawn_count].origin[0] = x;
+									node_spawnpoint[node_spawn_count].origin[1] = y;
+									node_spawnpoint[node_spawn_count].origin[2] = z;
 								}
 							}
-							if (monster_types[mIndex].name[0] == 0)
+							else if (strcmp(data[i].key, "delay") == 0)
 							{
-								LOG_MESSAGE(PLID, "ERROR: unknown classname: %s", input); // print conflictive line
-								LOG_MESSAGE(PLID, "ERROR: nothing will spawn here!");
+								// ToDo: Remove this keyvalue.
+								// Monsters spawned directly should not respawn.
+								if (monster)
+								{
+									if (sscanf(data[i].value, "%f", &x) != 1)
+									{
+										LOG_MESSAGE(PLID, "ERROR: invalid delay: %s", input); // print conflictive line
+										
+										// default to 30 seconds
+										LOG_MESSAGE(PLID, "ERROR: entity respawn frequency will be set to 30 seconds");
+										x = 30;
+									}
+									monster_spawnpoint[monster_spawn_count].delay = x;
+								}
 							}
+							else if (strcmp(data[i].key, "angles") == 0)
+							{
+								if (monster)
+								{
+									if (sscanf(data[i].value, "%f %f %f", &x, &y, &z) != 3)
+									{
+										LOG_MESSAGE(PLID, "ERROR: invalid angles: %s", input); // print conflictive line
+										
+										// reset angles to g_vecZero
+										LOG_MESSAGE(PLID, "ERROR: entity angles will be set to 0 0 0");
+										x = y = z = 0;
+									}
+									monster_spawnpoint[monster_spawn_count].angles[0] = x;
+									monster_spawnpoint[monster_spawn_count].angles[1] = y;
+									monster_spawnpoint[monster_spawn_count].angles[2] = z;
+								}
+							}
+						}
+						
+						if (monster)
+						{
+							// Init monster
+							monster_spawnpoint[monster_spawn_count].respawn_time = gpGlobals->time + 0.1; // spawn (nearly) right away
+							monster_spawnpoint[monster_spawn_count].need_to_respawn = TRUE;
+							monster_spawn_count++;
+						}
+						else if (node)
+						{
+							// Increase node count
+							node_spawn_count++;
+						}
+						
+						// Log on? Print all the entities that were added
+						if (dllapi_log->value)
+						{
+							// Classname only, or we will flood the server!
+							// No, I'm not making this idiotproof. Classname should be the last KVD entry on an entity!
+							LOG_CONSOLE(PLID, "[DEBUG] Added entity: %s", data[kvd_index-1].value);
 						}
 					}
 					
-					// Init monster
-					monster_spawnpoint[monster_spawn_count].respawn_time = gpGlobals->time + 0.1; // spawn (nearly) right away
-					monster_spawnpoint[monster_spawn_count].need_to_respawn = TRUE;
-					
-					// Log on? Print all the entities that were added
-					if (dllapi_log->value)
-					{
-						// Classname only, or we will flood the server!
-						// No, I'm not making this idiotproof. Classname should be the last KVD entry on an entity!
-						LOG_CONSOLE(PLID, "[DEBUG] Added entity: %s", data[kvd_index-1].value);
-					}
-					
-					monster_spawn_count++;
 					free( data );
 					break;
 				}

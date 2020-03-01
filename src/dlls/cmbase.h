@@ -609,3 +609,42 @@ template <class T> T * CreateClassPtr( T *a )
 	return a;
 }
 
+//
+// Converts a entvars_t * to a class pointer
+// It will allocate the class and entity
+// Use this for non-monsters entities
+//
+// WARNING: This does not check for free edicts!
+//
+template <class T> T * CreateNormalClassPtr( T *a )
+{
+	entvars_t *pev = (entvars_t *)a;
+
+	if (pev != NULL)
+		return NULL;  // don't allocate if pointer already provided
+
+	// allocate entity...
+	edict_t *temp_edict;
+	int edict_index;
+
+	// allocate private data 
+	a = new T;
+
+	if ((temp_edict = a->CreateEntity("info_target")) == NULL)
+	{
+		(*g_engfuncs.pfnServerPrint)("[MONSTER] ERROR: NULL Ent in CreateNormalClassPtr!\n" );
+		delete a;
+		return NULL;
+	}
+
+	edict_index = (*g_engfuncs.pfnIndexOfEdict)(temp_edict);
+
+	// store the class pointer to the edict pev...
+	pev = VARS(temp_edict);
+	a->pev = pev;
+
+	// get the private data
+	a = (T *)pev->euser4;
+
+	return a;
+}
