@@ -57,7 +57,7 @@ Current milestones are separated by "Tiers", which are as follows:
 
 ### Tier 2
 
-- Add *-at least minimal-* death messages. *-Example: "<player> was killed by a <monster>".-*
+- Add *-at least minimal-* death messages. *-Example: "\<player\> was killed by a \<monster\>".-*
 - Implement HUD info about the monsters, along with the "displayname" keyvalue.
 - Implement custom monster classification, the "classify" keyvalue.
 
