@@ -1,6 +1,4 @@
-# COMPILE ONLY WITH GCC 4.8!
-
-CPP = g++
+CPP = g++-7
 BASEFLAGS = -Dstricmp=strcasecmp -Dstrcmpi=strcasecmp -m32
 OPTFLAGS = -O2
 CPPFLAGS = ${BASEFLAGS} ${OPTFLAGS} -w -I. -I../engine -I../common -I../pm_shared -I../metamod
@@ -19,7 +17,9 @@ OBJ = \
 	controller.o \
 	defaultai.o \
 	dllapi.o \
+	explode.o \
 	effects.o \
+	gargantua.o \
 	ggrenade.o \
 	h_ai.o \
 	h_export.o \

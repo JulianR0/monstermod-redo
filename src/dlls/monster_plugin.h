@@ -24,7 +24,7 @@ typedef struct
    CMBaseMonster *pMonster;
 } monster_t;
 
-#define MAX_MONSTER_ENTS 200
+#define MAX_MONSTER_ENTS 400 // increased from 200 so it can hold non-monster entities
 
 extern monster_t monsters[MAX_MONSTER_ENTS];
 

@@ -130,6 +130,7 @@ monster_type_t monster_types[]=
 	"monster_scientist", FALSE,
 	"monster_snark", FALSE,
 	"monster_zombie", FALSE,
+    "monster_gargantua", FALSE,
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
 	"", FALSE
@@ -402,6 +403,7 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 		case 11: monsters[monster_index].pMonster = CreateClassPtr((CMScientist *)NULL); break;
 		case 12: monsters[monster_index].pMonster = CreateClassPtr((CMSqueakGrenade *)NULL); break;
 		case 13: monsters[monster_index].pMonster = CreateClassPtr((CMZombie *)NULL); break;
+        case 14: monsters[monster_index].pMonster = CreateClassPtr((CMGargantua *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -986,20 +988,6 @@ void mmDispatchThink( edict_t *pent )
 		}
 	}
 	
-	// Manually call think on these other entities
-	if (FClassnameIs( pent, "testhull" ))
-	{
-		// Ensure you do think...
-		CMBaseEntity::Instance(pent)->Think();
-		RETURN_META(MRES_SUPERCEDE);
-	}
-	
-	if (FClassnameIs( pent, "node_viewer" ))
-	{
-		CMBaseEntity::Instance(pent)->Think();
-		RETURN_META(MRES_SUPERCEDE);
-	}
-	
 	RETURN_META(MRES_IGNORED);
 }
 // HACKHACK -- this is a hack to keep the node graph entity from "touching" things (like triggers)
@@ -1044,6 +1032,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMScientist scientist;
 	CMSqueakGrenade snark;
 	CMZombie zombie;
+    CMGargantua gargantua;
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1075,6 +1064,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 11: scientist.Precache(); break;
 				case 12: snark.Precache(); break;
 				case 13: zombie.Precache(); break;
+                case 14: gargantua.Precache(); break;
 			}
 		}
 	}
@@ -1093,7 +1083,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	for (index = 0; index < node_spawn_count; index++)
 	{
 		CMBaseEntity *pNode;
-		pNode = CreateNormalClassPtr((CNodeEnt *)NULL);
+		pNode = CreateClassPtr((CNodeEnt *)NULL);
 		
 		if (pNode == NULL)
 		{
