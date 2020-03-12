@@ -40,6 +40,7 @@ struct skilldata_t
 	float bullsquidDmgSpit;
 
 	float gargantuaHealth;
+	float gargantuaArmor;			// Non-explosives will deal this much damage
 	float gargantuaDmgSlash;
 	float gargantuaDmgFire;
 	float gargantuaDmgStomp;

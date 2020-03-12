@@ -38,6 +38,7 @@ skill_cfg_t skill_cfg[] = {
    {"sk_bullsquid_dmg_whip", &gSkillData.bullsquidDmgWhip},
    {"sk_bullsquid_dmg_spit", &gSkillData.bullsquidDmgSpit},
    {"sk_gargantua_health", &gSkillData.gargantuaHealth},
+   {"sk_gargantua_armor", &gSkillData.gargantuaArmor},
    {"sk_gargantua_dmg_slash", &gSkillData.gargantuaDmgSlash},
    {"sk_gargantua_dmg_fire", &gSkillData.gargantuaDmgFire},
    {"sk_gargantua_dmg_stomp", &gSkillData.gargantuaDmgStomp},
@@ -151,6 +152,7 @@ void monster_skill_init(void)
 
 	// Gargantua
 	gSkillData.gargantuaHealth = 800.0f;
+	gSkillData.gargantuaArmor = 0.85f;
 	gSkillData.gargantuaDmgSlash = 30.0f;
 	gSkillData.gargantuaDmgFire = 5.0f;
 	gSkillData.gargantuaDmgStomp = 100.0f;
