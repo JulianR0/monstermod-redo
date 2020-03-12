@@ -1082,7 +1082,7 @@ public:
 	static const char *pBreatheSounds[];
 
 private:
-	CMBaseEntity* GargantuaCheckTraceHullAttack(float flDist, int iDamage, int iDmgType);
+	edict_t *GargantuaCheckTraceHullAttack(float flDist, int iDamage, int iDmgType);
 
 	CMSprite	*m_pEyeGlow;		// Glow around the eyes
 	CMBeam		*m_pFlame[4];		// Flame beams

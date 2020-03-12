@@ -759,7 +759,7 @@ void CMGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 
 	bitsDamageType &= GARG_DAMAGE;
 
-	if ( bitsDamageType == 0)
+	if ( bitsDamageType != 0 )
 	{
 		if ( pev->dmgtime != gpGlobals->time || (RANDOM_LONG(0,100) < 20) )
 		{
@@ -768,7 +768,7 @@ void CMGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 //			if ( RANDOM_LONG(0,100) < 25 )
 //				EMIT_SOUND_DYN( ENT(pev), CHAN_BODY, pRicSounds[ RANDOM_LONG(0,ARRAYSIZE(pRicSounds)-1) ], 1.0, ATTN_NORM, 0, PITCH_NORM );
 		}
-		flDamage = 0;
+		flDamage *= (1.01f - gSkillData.gargantuaArmor); // Again, for mods (see below)
 	}
 
 	CMBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
@@ -779,16 +779,15 @@ void CMGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 
 int CMGargantua::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
-	ALERT( at_aiconsole, "CMGargantua::TakeDamage\n");
-
 	if ( IsAlive() )
 	{
 		if ( !(bitsDamageType & GARG_DAMAGE) )
-			flDamage *= 0.01;
-		if ( bitsDamageType & DMG_BLAST )
-			SetConditions( bits_COND_LIGHT_DAMAGE );
+			flDamage *= (1.01f - gSkillData.gargantuaArmor); // This is for mods that don't use explosives of any kind or do not work with the gargantua.
+		
+		// Always set
+		SetConditions( bits_COND_LIGHT_DAMAGE );
 	}
-
+	
 	return CMBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
@@ -896,16 +895,16 @@ void CMGargantua::HandleAnimEvent(MonsterEvent_t *pEvent)
 	case GARG_AE_SLASH_LEFT:
 		{
 			// HACKHACK!!!
-			CMBaseEntity *pHurt = GargantuaCheckTraceHullAttack( GARG_ATTACKDIST + 10.0, gSkillData.gargantuaDmgSlash, DMG_SLASH );
+			edict_t *pHurt = GargantuaCheckTraceHullAttack( GARG_ATTACKDIST + 10.0, gSkillData.gargantuaDmgSlash, DMG_SLASH );
 			if (pHurt)
 			{
-				if ( pHurt->pev->flags & (FL_MONSTER|FL_CLIENT) )
+				if ( pHurt->v.flags & (FL_MONSTER|FL_CLIENT) )
 				{
-					pHurt->pev->punchangle.x = -30; // pitch
-					pHurt->pev->punchangle.y = -30;	// yaw
-					pHurt->pev->punchangle.z = 30;	// roll
+					pHurt->v.punchangle.x = -30; // pitch
+					pHurt->v.punchangle.y = -30;	// yaw
+					pHurt->v.punchangle.z = 30;	// roll
 					//UTIL_MakeVectors(pev->angles);	// called by CheckTraceHullAttack
-					pHurt->pev->velocity = pHurt->pev->velocity - gpGlobals->v_right * 100;
+					pHurt->v.velocity = pHurt->v.velocity - gpGlobals->v_right * 100;
 				}
 				EMIT_SOUND_DYN ( edict(), CHAN_WEAPON, pAttackHitSounds[ RANDOM_LONG(0,ARRAYSIZE(pAttackHitSounds)-1) ], 1.0, ATTN_NORM, 0, 50 + RANDOM_LONG(0,15) );
 			}
@@ -950,7 +949,7 @@ void CMGargantua::HandleAnimEvent(MonsterEvent_t *pEvent)
 // a percentage of his height (otherwise he swings over the
 // players head)
 //=========================================================
-CMBaseEntity* CMGargantua::GargantuaCheckTraceHullAttack(float flDist, int iDamage, int iDmgType)
+edict_t *CMGargantua::GargantuaCheckTraceHullAttack(float flDist, int iDamage, int iDmgType)
 {
 	TraceResult tr;
 
@@ -963,14 +962,18 @@ CMBaseEntity* CMGargantua::GargantuaCheckTraceHullAttack(float flDist, int iDama
 	
 	if ( tr.pHit )
 	{
-		CMBaseEntity *pEntity = CMBaseEntity::Instance( tr.pHit );
-
 		if ( iDamage > 0 )
 		{
-			pEntity->TakeDamage( pev, pev, iDamage, iDmgType );
+			if ( UTIL_IsPlayer( tr.pHit ) )
+				UTIL_TakeDamage( tr.pHit, pev, pev, iDamage, iDmgType );
+			else if ( tr.pHit->v.euser4 != NULL )
+			{
+				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(tr.pHit));
+				pMonster->TakeDamage( pev, pev, iDamage, iDmgType );
+			}
 		}
 
-		return pEntity;
+		return tr.pHit;
 	}
 
 	return NULL;
