@@ -1533,7 +1533,7 @@ void CNodeEnt :: Spawn( void )
 	if ( WorldGraph.m_cNodes == 0 )
 	{
 		// this is the first node to spawn, spawn the test hull entity that builds and walks the node tree
-		CTestHull *pHull = CreateNormalClassPtr((CTestHull *)NULL);
+		CTestHull *pHull = CreateClassPtr((CTestHull *)NULL);
 		pHull->Spawn( pev );
 	}
 	
