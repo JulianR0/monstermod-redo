@@ -282,10 +282,12 @@ void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwne
 			pExplosion->SetThink( &CMBaseEntity::SUB_CallUseToggle );
 			pExplosion->pev->nextthink = gpGlobals->time + delay;
 		}
-		else
+		
+		pExplosion->Spawn();
+		
+		if ( delay <= 0.0f )
 		{
 			pExplosion->Use( NULL, NULL, USE_TOGGLE, 0 );
 		}
-		pExplosion->Spawn();
 	}
 }
