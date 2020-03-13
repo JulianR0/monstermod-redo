@@ -796,7 +796,7 @@ void CMGargantua::DeathEffect( void )
 {
 	int i;
 	UTIL_MakeVectors(pev->angles);
-	Vector deathPos = pev->origin + gpGlobals->v_forward * 100;
+	Vector deathPos = pev->origin + gpGlobals->v_up * 100;
 
 	// Create a spiral of streaks
 	CSpiral::Create( deathPos, (pev->absmax.z - pev->absmin.z) * 0.6, 125, 1.5 );
@@ -810,6 +810,8 @@ void CMGargantua::DeathEffect( void )
 	}
 
 	CMBaseEntity *pSmoker = CreateClassPtr((CSmoker *)NULL); // CMBaseEntity::Create( "env_smoker", pev->origin, g_vecZero, NULL );
+	UTIL_SetOrigin( pSmoker->pev, pev->origin );
+	pSmoker->Spawn();
 	pSmoker->pev->health = 1;	// 1 smoke balls
 	pSmoker->pev->scale = 46;	// 4.6X normal size
 	pSmoker->pev->dmg = 0;		// 0 radial distribution
@@ -1199,7 +1201,7 @@ CSpiral *CSpiral::Create( const Vector &origin, float height, float radius, floa
 {
 	if ( duration <= 0 )
 		return NULL;
-
+	
 	CSpiral *pSpiral = CreateClassPtr( (CSpiral *)NULL );
 	pSpiral->Spawn();
 	pSpiral->pev->dmgtime = pSpiral->pev->nextthink;

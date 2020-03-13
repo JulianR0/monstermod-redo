@@ -87,6 +87,7 @@ public:
 	void Spawn( );
 	void EXPORT Smoke ( void );
 	void KeyValue( KeyValueData *pkvd );
+	void DelayUse( void );
 	void Use( CMBaseEntity *pActivator, CMBaseEntity *pCaller, USE_TYPE useType, float value );
 
 	int m_iMagnitude;// how large is the fireball? how much damage?
@@ -133,6 +134,11 @@ void CMEnvExplosion::Spawn( void )
 
 	m_spriteScale = (int)flSpriteScale;
     pev->classname = MAKE_STRING( "_env_explosion" );
+}
+
+void CMEnvExplosion::DelayUse( void )
+{
+	Use( NULL, NULL, USE_TOGGLE, 0 );
 }
 
 void CMEnvExplosion::Use( CMBaseEntity *pActivator, CMBaseEntity *pCaller, USE_TYPE useType, float value )
@@ -274,18 +280,20 @@ void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwne
 		pExplosion->pev->owner = pOwner;
 		pExplosion->pev->spawnflags |= flags;
 		
+		UTIL_SetOrigin( pExplosion->pev, center );
+		pExplosion->pev->angles = angles;
+		
 		// This is a temporary entity, filter out the flag
 		pExplosion->pev->spawnflags &= ~SF_ENVEXPLOSION_REPEATABLE;
 		
+		pExplosion->Spawn();
 		if ( delay > 0.0f )
 		{
-			pExplosion->SetThink( &CMBaseEntity::SUB_CallUseToggle );
+			//pExplosion->SetThink( &CMBaseEntity::SUB_CallUseToggle ); // i don't trust you
+			pExplosion->SetThink( &CMEnvExplosion::DelayUse );
 			pExplosion->pev->nextthink = gpGlobals->time + delay;
 		}
-		
-		pExplosion->Spawn();
-		
-		if ( delay <= 0.0f )
+		else
 		{
 			pExplosion->Use( NULL, NULL, USE_TOGGLE, 0 );
 		}
