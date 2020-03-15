@@ -53,7 +53,7 @@ Current milestones are separated by "Tiers", which are as follows:
 - Rework config processing to use a "key --> value" format. **[DONE]**
 - Add info_node and info_node_air support for AI navigation. **[DONE]**
 - Add node_viewer to debug node graph generation. **[DONE]**
-- Implement *-almost-* all Half-Life monsters.
+- Implement Gargantua and all Turrets from Half-Life.
 
 ### Tier 2
 
@@ -64,7 +64,7 @@ Current milestones are separated by "Tiers", which are as follows:
 ### Tier 3
 
 - Implement *-almost-* all Opposing Force monsters.
-- Implement all default Sven Co-op monsters.
+- Implement *-almost-* all default Sven Co-op monsters.
 - Add configurations to change AI behaviour.
 
 ### Tier 4
