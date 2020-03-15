@@ -131,6 +131,9 @@ monster_type_t monster_types[]=
 	"monster_snark", FALSE,
 	"monster_zombie", FALSE,
     "monster_gargantua", FALSE,
+	"monster_turret", FALSE,
+	"monster_miniturret", FALSE,
+	"monster_sentry", FALSE,
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
 	"", FALSE
@@ -404,6 +407,9 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 		case 12: monsters[monster_index].pMonster = CreateClassPtr((CMSqueakGrenade *)NULL); break;
 		case 13: monsters[monster_index].pMonster = CreateClassPtr((CMZombie *)NULL); break;
         case 14: monsters[monster_index].pMonster = CreateClassPtr((CMGargantua *)NULL); break;
+		case 15: monsters[monster_index].pMonster = CreateClassPtr((CMTurret *)NULL); break;
+		case 16: monsters[monster_index].pMonster = CreateClassPtr((CMMiniTurret *)NULL); break;
+		case 17: monsters[monster_index].pMonster = CreateClassPtr((CMSentry *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -509,10 +515,14 @@ void MonsterCommand(void)
 		// check for a valid monster name...
 		for (index = 0; monster_types[index].name[0]; index++)
 		{
-			if (strcmp(parg1, monster_types[index].name) == 0)
+			// ensure it's an actual monster classname
+			if (strncmp(parg1, "monster", 7) == 0)
 			{
-				monster_type = index;
-				break;
+				if (strcmp(parg1, monster_types[index].name) == 0)
+				{
+					monster_type = index;
+					break;
+				}
 			}
 		}
 
@@ -778,13 +788,17 @@ void MonsterCommand(void)
 	msg[0] = 0;
 	for (index = 0; monster_types[index].name[0]; index++)
 	{
-		strcat(msg, monster_types[index].name);
-		strcat(msg, " ");
-		if (strlen(msg) > 60)
+		// limit list to monster entities only
+		if (strncmp(monster_types[index].name, "monster", 7) == 0)
 		{
-			//META_CONS("[MONSTER] %s", msg);
-			LOG_MESSAGE(PLID, "%s", msg);
-			msg[0] = 0;
+			strcat(msg, monster_types[index].name);
+			strcat(msg, " ");
+			if (strlen(msg) > 60)
+			{
+				//META_CONS("[MONSTER] %s", msg);
+				LOG_MESSAGE(PLID, "%s", msg);
+				msg[0] = 0;
+			}
 		}
 	}
 	if (msg[0])
@@ -1032,8 +1046,11 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMScientist scientist;
 	CMSqueakGrenade snark;
 	CMZombie zombie;
-    CMGargantua gargantua;
-
+	CMGargantua gargantua;
+	CMTurret turret;
+	CMMiniTurret miniturret;
+	CMSentry sentry;
+	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
 	(g_engfuncs.pfnAddServerCommand)("monster", MonsterCommand);
@@ -1065,6 +1082,9 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 12: snark.Precache(); break;
 				case 13: zombie.Precache(); break;
                 case 14: gargantua.Precache(); break;
+				case 15: turret.Precache(); break;
+				case 16: miniturret.Precache(); break;
+				case 17: sentry.Precache(); break;
 			}
 		}
 	}

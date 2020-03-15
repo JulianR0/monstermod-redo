@@ -66,16 +66,10 @@ struct skilldata_t
 	float ichthyosaurHealth;
 	float ichthyosaurDmgShake;
 
-	float leechHealth;
-	float leechDmgBite;
-
 	float controllerHealth;
 	float controllerDmgZap;
 	float controllerSpeedBall;
 	float controllerDmgBall;
-
-	float nihilanthHealth;
-	float nihilanthZap;
 
 	float scientistHealth;
 	float scientistHeal;
@@ -87,6 +81,10 @@ struct skilldata_t
 	float zombieHealth;
 	float zombieDmgOneSlash;
 	float zombieDmgBothSlash;
+	
+	float turretHealth;
+	float miniturretHealth;
+	float sentryHealth;
 
 // weapons shared by monsters
 	float monDmg9MM;
@@ -97,7 +95,7 @@ struct skilldata_t
 	float monDmgHornet;
 };
 
-extern	DLL_GLOBAL	skilldata_t	gSkillData;
+extern DLL_GLOBAL skilldata_t gSkillData;
 
 void monster_skill_init(void);
 

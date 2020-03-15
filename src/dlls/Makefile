@@ -40,6 +40,7 @@ OBJ = \
 	squeakgrenade.o \
 	subs.o \
 	talkmonster.o \
+	turret.o \
 	util.o \
 	weapons.o \
 	zombie.o

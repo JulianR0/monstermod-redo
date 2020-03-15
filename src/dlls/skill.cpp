@@ -57,14 +57,10 @@ skill_cfg_t skill_cfg[] = {
    {"sk_islave_dmg_zap", &gSkillData.slaveDmgZap},
    {"sk_ichthyosaur_health", &gSkillData.ichthyosaurHealth},
    {"sk_ichthyosaur_shake", &gSkillData.ichthyosaurDmgShake},
-   {"sk_leech_health", &gSkillData.leechHealth},
-   {"sk_leech_dmg_bite", &gSkillData.leechDmgBite},
    {"sk_controller_health", &gSkillData.controllerHealth},
    {"sk_controller_dmgzap", &gSkillData.controllerDmgZap},
    {"sk_controller_speedball", &gSkillData.controllerSpeedBall},
    {"sk_controller_dmgball", &gSkillData.controllerDmgBall},
-   {"sk_nihilanth_health", &gSkillData.nihilanthHealth},
-   {"sk_nihilanth_zap", &gSkillData.nihilanthZap},
    {"sk_scientist_health", &gSkillData.scientistHealth},
    {"sk_scientist_heal", &gSkillData.scientistHeal},
    {"sk_snark_health", &gSkillData.snarkHealth},
@@ -73,6 +69,9 @@ skill_cfg_t skill_cfg[] = {
    {"sk_zombie_health", &gSkillData.zombieHealth},
    {"sk_zombie_dmg_one_slash", &gSkillData.zombieDmgOneSlash},
    {"sk_zombie_dmg_both_slash", &gSkillData.zombieDmgBothSlash},
+   {"sk_turret_health", &gSkillData.turretHealth},
+   {"sk_miniturret_health", &gSkillData.miniturretHealth},
+   {"sk_sentry_health", &gSkillData.sentryHealth},
    {"sk_12mm_bullet", &gSkillData.monDmg9MM},
    {"sk_9mmAR_bullet", &gSkillData.monDmgMP5},
    {"sk_9mm_bullet", &gSkillData.monDmg12MM},
@@ -128,14 +127,14 @@ void monster_skill_init(void)
    char filename[256];
    FILE *fp = NULL;
 
-	// Alien Grunt (agrunt)
+	// Alien Grunt
 	gSkillData.agruntHealth = 90.0f;
 	gSkillData.agruntDmgPunch = 20.0f;
 
-	// Apache (apache)
+	// Apache
 	gSkillData.apacheHealth = 250.0f;
 
-	// Barney (barney)
+	// Barney
 	gSkillData.barneyHealth = 35.0f;
 
 	// Big momma
@@ -144,7 +143,7 @@ void monster_skill_init(void)
 	gSkillData.bigmommaDmgBlast = 120.0f;
 	gSkillData.bigmommaRadiusBlast = 250.0f;
 
-	// Bullsquid (bullsquid)
+	// Bullsquid
 	gSkillData.bullsquidHealth = 40.0f;
 	gSkillData.bullsquidDmgBite = 25.0f;
 	gSkillData.bullsquidDmgWhip = 35.0f;
@@ -157,24 +156,24 @@ void monster_skill_init(void)
 	gSkillData.gargantuaDmgFire = 5.0f;
 	gSkillData.gargantuaDmgStomp = 100.0f;
 
-	// Hassassin (hassassin)
+	// Hassassin (Female Assassin)
 	gSkillData.hassassinHealth = 50.0f;
 
-	// Headcrab (headcrab)
+	// Headcrab
 	gSkillData.headcrabHealth = 10.0f;
 	gSkillData.headcrabDmgBite = 10.0f;
 
-	// Hgrunt (hgrunt)
+	// Hgrunt (Human Grunt)
 	gSkillData.hgruntHealth = 50.0f;
 	gSkillData.hgruntDmgKick = 10.0f;
 	gSkillData.hgruntShotgunPellets = 5.0f;
 	gSkillData.hgruntGrenadeSpeed = 600.0f;
 
-	// Houndeye (houndeye)
+	// Houndeye
 	gSkillData.houndeyeHealth = 20.0f;
 	gSkillData.houndeyeDmgBlast = 15.0f;
 
-	// ISlave (islave)
+	// Alien Slave
 	gSkillData.slaveHealth = 30.0f;
 	gSkillData.slaveDmgClaw = 10.0f;
 	gSkillData.slaveDmgClawrake = 25.0f;
@@ -184,34 +183,35 @@ void monster_skill_init(void)
 	gSkillData.ichthyosaurHealth = 200.0f;
 	gSkillData.ichthyosaurDmgShake = 35.0f;
 
-	// Leech
-	gSkillData.leechHealth = 2.0f;
-	gSkillData.leechDmgBite = 2.0f;
-
 	// Controller
 	gSkillData.controllerHealth = 60.0f;
 	gSkillData.controllerDmgZap = 25.0f;
 	gSkillData.controllerSpeedBall = 800.0f;
 	gSkillData.controllerDmgBall = 4.0f;
 
-	// Nihilanth
-	gSkillData.nihilanthHealth = 800.0f;
-	gSkillData.nihilanthZap = 30.0f;
-
-	// Scientist (scientist)
+	// Scientist
 	gSkillData.scientistHealth = 20.0f;
 	gSkillData.scientistHeal = 25.0f;
 
-	// Snark (snark)
+	// Snark
 	gSkillData.snarkHealth = 2.0f;
 	gSkillData.snarkDmgBite = 10.0f;
 	gSkillData.snarkDmgPop = 5.0f;
 
-	// Zombie (zombie)
+	// Zombie
 	gSkillData.zombieHealth = 50.0f;
 	gSkillData.zombieDmgOneSlash = 20.0f;
 	gSkillData.zombieDmgBothSlash = 40.0f;
 
+	// Turret
+	gSkillData.turretHealth = 50.0f;
+	
+	// Mini-Turret
+	gSkillData.miniturretHealth = 40.0f;
+	
+	// Sentry
+	gSkillData.sentryHealth = 40.0f;
+	
 	// MONSTER WEAPONS
 	gSkillData.monDmg9MM = 5.0f;
 	gSkillData.monDmgMP5 = 4.0f;
