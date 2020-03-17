@@ -62,11 +62,6 @@ bool get_input(FILE *fp, char *input)
 	return FALSE;  // no input found
 }
 
-struct pKVD
-{
-	char key[33];
-	char value[33];
-};
 void scan_monster_cfg(FILE *fp)
 {
 	// Let's make a full rework of this. -Giegue
@@ -162,10 +157,16 @@ void scan_monster_cfg(FILE *fp)
 					
 					if (!badent)
 					{
+						// Make room for entity-specific keyvalues.
+						if (monster)
+						{
+							// The line is a little too long, no?
+							monster_spawnpoint[monster_spawn_count].keyvalue = (pKVD*)calloc(32, sizeof(*monster_spawnpoint[monster_spawn_count].keyvalue));
+						}
+						
 						// Done. Let's process the keyvalues.
 						for (int i = 0; i < (kvd_index-1); i++)
 						{
-							// Any unknown keyvalue is ignored.
 							// Any duplicate keyvalue is overwritten.
 							
 							if (strcmp(data[i].key, "origin") == 0)
@@ -223,6 +224,31 @@ void scan_monster_cfg(FILE *fp)
 									monster_spawnpoint[monster_spawn_count].angles[0] = x;
 									monster_spawnpoint[monster_spawn_count].angles[1] = y;
 									monster_spawnpoint[monster_spawn_count].angles[2] = z;
+								}
+							}
+							else if (strcmp(data[i].key, "spawnflags") == 0)
+							{
+								if (monster)
+								{
+									if (sscanf(data[i].value, "%i", &x) != 1)
+									{
+										LOG_MESSAGE(PLID, "ERROR: invalid spawnflags: %s", input); // print conflictive line
+										
+										// default to 30 seconds
+										LOG_MESSAGE(PLID, "ERROR: entity spawnflags will be set to none (0)");
+										x = 0;
+									}
+									monster_spawnpoint[monster_spawn_count].spawnflags = x;
+								}
+							}
+							else
+							{
+								// We do not know this keyvalue, but an specific entity might use it.
+								// Save it for later
+								if (monster)
+								{
+									strcpy(data[i].key, monster_spawnpoint[monster_spawn_count].keyvalue[i].key);
+									strcpy(data[i].value, monster_spawnpoint[monster_spawn_count].keyvalue[i].value);
 								}
 							}
 						}

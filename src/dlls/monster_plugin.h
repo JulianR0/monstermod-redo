@@ -5,6 +5,11 @@
 #ifndef MONSTER_PLUGIN_H
 #define MONSTER_PLUGIN_H
 
+typedef struct pKVD
+{
+	char key[33];
+	char value[33];
+};
 
 typedef struct
 {
@@ -33,6 +38,8 @@ typedef struct {
    Vector angles;
    float delay;
    unsigned char monster;
+   int spawnflags;
+   pKVD *keyvalue;
    float respawn_time;
    bool need_to_respawn;
 } monster_spawnpoint_t;

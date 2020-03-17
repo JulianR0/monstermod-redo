@@ -926,7 +926,14 @@ int mmDispatchSpawn( edict_t *pent )
 			if (monsters[index].pMonster != NULL)
 				delete monsters[index].pMonster;
 		}
-
+		
+		// free any allocated keyvalue memory
+		for (index = 0; index < monster_spawn_count; index++)
+		{
+			if (monster_spawnpoint[index].keyvalue)
+				free(monster_spawnpoint[index].keyvalue);
+		}
+		
 		// do level initialization stuff here...
 
 		for (index = 0; monster_types[index].name[0]; index++)
