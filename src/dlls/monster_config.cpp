@@ -76,7 +76,7 @@ void scan_monster_cfg(FILE *fp)
 		{
 			// Proper start, initialize entity creation
 			// Temporary variables to store entity data
-			pKVD *data = (pKVD*)malloc(32*sizeof(*data)); // Entities should not have more than 32 keyvalues
+			pKVD *data = (pKVD*)malloc(MAX_KEYVALUES*sizeof(*data)); // Entities should not have more than this many keyvalues
 			int kvd_index = 0;
 			while (get_input(fp, input))
 			{
@@ -161,7 +161,7 @@ void scan_monster_cfg(FILE *fp)
 						if (monster)
 						{
 							// The line is a little too long, no?
-							monster_spawnpoint[monster_spawn_count].keyvalue = (pKVD*)calloc(32, sizeof(*monster_spawnpoint[monster_spawn_count].keyvalue));
+							monster_spawnpoint[monster_spawn_count].keyvalue = (pKVD*)calloc(MAX_KEYVALUES, sizeof(*monster_spawnpoint[monster_spawn_count].keyvalue));
 						}
 						
 						// Done. Let's process the keyvalues.
@@ -230,11 +230,11 @@ void scan_monster_cfg(FILE *fp)
 							{
 								if (monster)
 								{
-									if (sscanf(data[i].value, "%i", &x) != 1)
+									if (sscanf(data[i].value, "%f", &x) != 1)
 									{
 										LOG_MESSAGE(PLID, "ERROR: invalid spawnflags: %s", input); // print conflictive line
 										
-										// default to 30 seconds
+										// default to no spawnflags
 										LOG_MESSAGE(PLID, "ERROR: entity spawnflags will be set to none (0)");
 										x = 0;
 									}
@@ -247,8 +247,8 @@ void scan_monster_cfg(FILE *fp)
 								// Save it for later
 								if (monster)
 								{
-									strcpy(data[i].key, monster_spawnpoint[monster_spawn_count].keyvalue[i].key);
-									strcpy(data[i].value, monster_spawnpoint[monster_spawn_count].keyvalue[i].value);
+									strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
+									strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].value, data[i].value);
 								}
 							}
 						}

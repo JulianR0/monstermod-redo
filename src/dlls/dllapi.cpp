@@ -344,11 +344,12 @@ void check_monster_dead(void)
 }
 
 
-bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_index)
+bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_index, int spawnflags, pKVD *keyvalue)
 {
 	int monster_index;
 	edict_t *monster_pent;
-
+	KeyValueData kvd;
+	
 	if ((monster_index = GetMonsterIndex()) == -1)
 	{
 		//META_CONS("[MONSTER] ERROR: No FREE Monster edicts!");
@@ -429,13 +430,30 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 	monster_pent->v.origin = origin;
 	monster_pent->v.angles = angles;
 	
-	// Since the entity is now linked to the class above,
-	// it's pev->classname should be, theorically, safe to edit.
-	// The pev->classname is set in the monster's Spawn() function.
-	//monster_pent->v.classname = MAKE_STRING("monster_zombie");
+	// Keyvalue data
+	if (keyvalue != NULL)
+	{
+		for (int index = 0; index < MAX_KEYVALUES; index++)
+		{
+			if (strlen(keyvalue[index].key) > 0)
+			{
+				kvd.szKeyName = keyvalue[index].key;
+				kvd.szValue = keyvalue[index].value;
+				monsters[monster_index].pMonster->KeyValue( &kvd );
+			}
+		}
+	}
+	
+	monster_pent->v.spawnflags = spawnflags;
+	
 	monsters[monster_index].pMonster->Spawn();
-
-	monster_pent->v.spawnflags = SF_MONSTER_FADECORPSE;
+	
+	// Reverse fadecorpse behaviour
+	if ( ( spawnflags & SF_MONSTER_FADECORPSE ) )
+		monster_pent->v.spawnflags &= ~SF_MONSTER_FADECORPSE;
+	else
+		monster_pent->v.spawnflags |= SF_MONSTER_FADECORPSE;
+	
 	monster_pent->v.fuser4 = monster_pent->v.health;	 // save the original health
 
 	return FALSE;
@@ -447,7 +465,9 @@ void check_respawn(void)
 	int monster_type;
 	Vector origin;
 	Vector angles;
-
+	int spawnflags;
+	pKVD *keyvalue;
+	
 	if (!monster_spawn->value)
 		return;  // monster_spawn is turned off, retry again later
 
@@ -463,8 +483,12 @@ void check_respawn(void)
 			origin = monster_spawnpoint[index].origin;
 
 			angles = monster_spawnpoint[index].angles;
-
-			if (spawn_monster(monster_type, origin, angles, index))
+			
+			spawnflags = monster_spawnpoint[index].spawnflags;
+			
+			keyvalue = monster_spawnpoint[index].keyvalue;
+			
+			if (spawn_monster(monster_type, origin, angles, index, spawnflags, keyvalue))
 			{
 				// spawn_monster failed, retry again after delay...
 				monster_spawnpoint[index].need_to_respawn = TRUE;
@@ -602,7 +626,12 @@ void MonsterCommand(void)
 				Vector view_angle = pPlayer->v.v_angle;
 				Vector v_src, v_dest;
 				Vector monster_angle;
-
+				
+				// If spawning a turret, add autostart spawnflag. Zero otherwise
+				int spawnflags = 0;
+				if (monster_type >= 15 && monster_type <= 17) // Turret, Mini-Turret and Sentry
+					spawnflags = SF_MONSTER_TURRET_AUTOACTIVATE;
+				
 				// try to determine the best place to spawn the monster...
 
 				view_angle.x = 0;  // zero the pitch (level horizontally)
@@ -630,7 +659,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1);
+						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
 
 						return;
 					}
@@ -658,7 +687,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1);
+						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
 
 					return;
 					}
@@ -686,7 +715,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1);
+						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
 
 						return;
 					}
@@ -713,7 +742,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1);
+						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
 
 						return;
 					}
@@ -740,7 +769,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1);
+						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
 
 						return;
 					}
@@ -767,7 +796,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1);
+						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
 
 						return;
 					}

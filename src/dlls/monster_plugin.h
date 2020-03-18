@@ -11,6 +11,8 @@ typedef struct pKVD
 	char value[33];
 };
 
+#define MAX_KEYVALUES 32
+
 typedef struct
 {
    char *name;
