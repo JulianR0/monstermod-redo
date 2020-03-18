@@ -53,7 +53,7 @@ Current milestones are separated by "Tiers", which are as follows:
 - Rework config processing to use a "key --> value" format. **[DONE]**
 - Add info_node and info_node_air support for AI navigation. **[DONE]**
 - Add node_viewer to debug node graph generation. **[DONE]**
-- Implement Gargantua and all Turrets from Half-Life.
+- Implement Gargantua and all Turrets from Half-Life. **[DONE]**
 
 ### Tier 2
 
