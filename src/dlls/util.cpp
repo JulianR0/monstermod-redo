@@ -757,7 +757,7 @@ int gmsgSayText = 0;
 
 void UTIL_ClientPrintAll( int msg_dest, const char *msg_name, const char *param1, const char *param2, const char *param3, const char *param4 )
 {
-	if (gmsgTextMsg)
+	if (gmsgTextMsg == 0)
 		gmsgTextMsg = REG_USER_MSG( "TextMsg", -1 );
 
 	MESSAGE_BEGIN( MSG_ALL, gmsgTextMsg );
@@ -778,7 +778,7 @@ void UTIL_ClientPrintAll( int msg_dest, const char *msg_name, const char *param1
 
 void ClientPrint( entvars_t *client, int msg_dest, const char *msg_name, const char *param1, const char *param2, const char *param3, const char *param4 )
 {
-	if (gmsgTextMsg)
+	if (gmsgTextMsg == 0)
 		gmsgTextMsg = REG_USER_MSG( "TextMsg", -1 );
 
 	MESSAGE_BEGIN( MSG_ONE, gmsgTextMsg, NULL, client );
@@ -1754,7 +1754,10 @@ int UTIL_TakeDamage( edict_t *pEdict, entvars_t *pevInflictor, entvars_t *pevAtt
 
 	// do the damage
 	pEdict->v.health -= flTake;
-
+	
+	// store entity that hurt this player
+	pEdict->v.dmg_inflictor = ENT(pevAttacker);
+	
 	if ( pEdict->v.health <= 0 )
 	{
 		pEdict->v.health = 1;  // can't suicide if already dead!
@@ -1800,7 +1803,7 @@ int UTIL_TakeDamage( edict_t *pEdict, entvars_t *pevInflictor, entvars_t *pevAtt
 			WRITE_COORD( pevInflictor->origin.z );
 		MESSAGE_END();
 	}
-
+	
 	return fTookDamage;
 }
 
