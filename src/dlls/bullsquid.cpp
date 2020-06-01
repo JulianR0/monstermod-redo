@@ -617,6 +617,8 @@ void CMBullsquid :: Spawn()
 	m_flNextSpitTime = gpGlobals->time;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_bullchicken" );
 }
 
 //=========================================================

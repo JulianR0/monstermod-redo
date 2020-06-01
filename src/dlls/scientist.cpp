@@ -616,6 +616,8 @@ void CMScientist :: Spawn( void )
 		pev->skin = 1;
 	
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_scientist" );
 }
 
 //=========================================================

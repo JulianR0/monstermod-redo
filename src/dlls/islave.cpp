@@ -429,10 +429,11 @@ void CMISlave :: Spawn()
 	for (int i = 0; i < ISLAVE_MAX_BEAMS; i++)
 		m_pBeam[i] = NULL;
 
-   m_iBravery = 0;
-   m_flNextAttack = 0.0f;
+	m_iBravery = 0;
+	m_flNextAttack = 0.0f;
 
 	MonsterInit();
+	pev->classname = MAKE_STRING( "monster_alien_slave" );
 }
 
 //=========================================================

@@ -69,6 +69,10 @@ int g_DamageBits[33];
 bool g_PlayerKilled[33];
 float g_flWaitTillMessage[33];
 
+// DeathMsg
+int g_DeathMsg;
+bool g_DeathActive;
+
 cvar_t	*g_psv_gravity = NULL;
 
 DLL_DECALLIST gDecals[] = {
@@ -132,7 +136,7 @@ monster_type_t monster_types[]=
 	"monster_bigmomma", FALSE,
 	"monster_bullsquid", FALSE,
 	"monster_alien_controller", FALSE,
-	"monster_hassassin", FALSE,
+	"monster_human_assassin", FALSE,
 	"monster_headcrab", FALSE,
 	"monster_human_grunt", FALSE,
 	"monster_houndeye", FALSE,
@@ -1484,7 +1488,7 @@ C_DLLEXPORT int GetEntityAPI2_Post( DLL_FUNCTIONS *pFunctionTable, int *interfac
 }
 
 
-// Messages in Counter-Strike are offset by 1.
+// Some messages seems to be offset by 1. Linux specific? CStrike specific?
 int IsCSServer( void )
 {
 	char mod[16];
@@ -1502,6 +1506,8 @@ int mmRegUserMsg_Post( const char *pName, int iSize )
 	
 	if ( strcmp( pName, "Damage" ) == 0 )
 		g_DamageMsg = META_RESULT_ORIG_RET( int ) - cs_server;
+	else if ( strcmp( pName, "DeathMsg" ) == 0 )
+		g_DeathMsg = META_RESULT_ORIG_RET( int );// - cs_server;
 	
 	RETURN_META_VALUE( MRES_IGNORED, 0 );
 }
@@ -1510,10 +1516,6 @@ void mmMessageBegin_Post( int msg_dest, int msg_type, const float *pOrigin, edic
 {
 	if ( msg_type == g_DamageMsg )
 	{
-		// Death messages are disabled
-		if (!monster_show_deaths->value)
-			RETURN_META( MRES_IGNORED );
-		
 		// Whatever hurting us must be a valid entity
 		if (ed->v.dmg_inflictor != NULL )
 		{
@@ -1521,6 +1523,11 @@ void mmMessageBegin_Post( int msg_dest, int msg_type, const float *pOrigin, edic
 			g_DamageVictim = ENTINDEX( ed );
 			g_DamageAttacker[ g_DamageVictim ] = ed->v.dmg_inflictor;
 		}
+	}
+	else if ( msg_type == g_DeathMsg )
+	{
+		// Prepare to update deathmsg
+		g_DeathActive = true;
 	}
 	
 	RETURN_META( MRES_IGNORED );
@@ -1534,11 +1541,257 @@ void mmWriteLong_Post( int iValue )
 	RETURN_META( MRES_IGNORED );
 }
 
+// This cannot be done on post!
+void mmWriteString( const char *szValue )
+{
+	if ( g_DeathActive )
+	{
+		// Prevent recursion
+		g_DeathActive = false;
+		
+		// Ensure whatever killed the player is a valid entity
+		if (g_DamageAttacker[ g_DamageVictim ] != NULL)
+		{
+			// Send a new WriteString with the killer's classname
+			WRITE_STRING( STRING( g_DamageAttacker[ g_DamageVictim ]->v.classname ) );
+			
+			// Supercede the old message
+			RETURN_META( MRES_SUPERCEDE );
+		}
+	}
+	
+	RETURN_META( MRES_IGNORED );
+}
+
 void mmMessageEnd_Post( void )
 {
 	g_DamageActive = false;
 	
 	RETURN_META( MRES_IGNORED );
+}
+
+enginefuncs_t meta_engfuncs =
+{
+	NULL,			// pfnPrecacheModel()
+	NULL,			// pfnPrecacheSound()
+	NULL,			// pfnSetModel()
+	NULL,			// pfnModelIndex()
+	NULL,			// pfnModelFrames()
+
+	NULL,			// pfnSetSize()
+	NULL,			// pfnChangeLevel()
+	NULL,			// pfnGetSpawnParms()
+	NULL,			// pfnSaveSpawnParms()
+
+	NULL,			// pfnVecToYaw()
+	NULL,			// pfnVecToAngles()
+	NULL,			// pfnMoveToOrigin()
+	NULL,			// pfnChangeYaw()
+	NULL,			// pfnChangePitch()
+
+	NULL,			// pfnFindEntityByString()
+	NULL,			// pfnGetEntityIllum()
+	NULL,			// pfnFindEntityInSphere()
+	NULL,			// pfnFindClientInPVS()
+	NULL,			// pfnEntitiesInPVS()
+
+	NULL,			// pfnMakeVectors()
+	NULL,			// pfnAngleVectors()
+
+	NULL,			// pfnCreateEntity()
+	NULL,			// pfnRemoveEntity()
+	NULL,			// pfnCreateNamedEntity()
+
+	NULL,			// pfnMakeStatic()
+	NULL,			// pfnEntIsOnFloor()
+	NULL,			// pfnDropToFloor()
+
+	NULL,			// pfnWalkMove()
+	NULL,			// pfnSetOrigin()
+
+	NULL,			// pfnEmitSound()
+	NULL,			// pfnEmitAmbientSound()
+
+	NULL,			// pfnTraceLine()
+	NULL,			// pfnTraceToss()
+	NULL,			// pfnTraceMonsterHull()
+	NULL,			// pfnTraceHull()
+	NULL,			// pfnTraceModel()
+	NULL,			// pfnTraceTexture()
+	NULL,			// pfnTraceSphere()
+	NULL,			// pfnGetAimVector()
+
+	NULL,			// pfnServerCommand()
+	NULL,			// pfnServerExecute()
+	NULL,			// pfnClientCommand()
+
+	NULL,			// pfnParticleEffect()
+	NULL,			// pfnLightStyle()
+	NULL,			// pfnDecalIndex()
+	NULL,			// pfnPointContents()
+
+	NULL,			// pfnMessageBegin()
+	NULL,			// pfnMessageEnd()
+
+	NULL,			// pfnWriteByte()
+	NULL,			// pfnWriteChar()
+	NULL,			// pfnWriteShort()
+	NULL,			// pfnWriteLong()
+	NULL,			// pfnWriteAngle()
+	NULL,			// pfnWriteCoord()
+	mmWriteString,			//! pfnWriteString()
+	NULL,			// pfnWriteEntity()
+
+	NULL,			// pfnCVarRegister()
+	NULL,			// pfnCVarGetFloat()
+	NULL,			// pfnCVarGetString()
+	NULL,			// pfnCVarSetFloat()
+	NULL,			// pfnCVarSetString()
+
+	NULL,			// pfnAlertMessage()
+	NULL,			// pfnEngineFprintf()
+
+	NULL,			// pfnPvAllocEntPrivateData()
+	NULL,			// pfnPvEntPrivateData()
+	NULL,			// pfnFreeEntPrivateData()
+
+	NULL,			// pfnSzFromIndex()
+	NULL,			// pfnAllocString()
+
+	NULL, 			// pfnGetVarsOfEnt()
+	NULL,			// pfnPEntityOfEntOffset()
+	NULL,			// pfnEntOffsetOfPEntity()
+	NULL,			// pfnIndexOfEdict()
+	NULL,			// pfnPEntityOfEntIndex()
+	NULL,			// pfnFindEntityByVars()
+	NULL,			// pfnGetModelPtr()
+
+	NULL,			// pfnRegUserMsg()
+
+	NULL,			// pfnAnimationAutomove()
+	NULL,			// pfnGetBonePosition()
+
+	NULL,			// pfnFunctionFromName()
+	NULL,			// pfnNameForFunction()
+
+	NULL,			// pfnClientPrintf()
+	NULL,			// pfnServerPrint()
+
+	NULL,			// pfnCmd_Args()
+	NULL,			// pfnCmd_Argv()
+	NULL,			// pfnCmd_Argc()
+
+	NULL,			// pfnGetAttachment()
+
+	NULL,			// pfnCRC32_Init()
+	NULL,			// pfnCRC32_ProcessBuffer()
+	NULL,			// pfnCRC32_ProcessByte()
+	NULL,			// pfnCRC32_Final()
+
+	NULL,			// pfnRandomLong()
+	NULL,			// pfnRandomFloat()
+
+	NULL,			// pfnSetView()
+	NULL,			// pfnTime()
+	NULL,			// pfnCrosshairAngle()
+
+	NULL,			// pfnLoadFileForMe()
+	NULL,			// pfnFreeFile()
+
+	NULL,			// pfnEndSection()
+	NULL,			// pfnCompareFileTime()
+	NULL,			// pfnGetGameDir()
+	NULL,			// pfnCvar_RegisterVariable()
+	NULL,			// pfnFadeClientVolume()
+	NULL,			// pfnSetClientMaxspeed()
+	NULL,			// pfnCreateFakeClient()
+	NULL,			// pfnRunPlayerMove()
+	NULL,			// pfnNumberOfEntities()
+
+	NULL,			// pfnGetInfoKeyBuffer()
+	NULL,			// pfnInfoKeyValue()
+	NULL,			// pfnSetKeyValue()
+	NULL,			// pfnSetClientKeyValue()
+
+	NULL,			// pfnIsMapValid()
+	NULL,			// pfnStaticDecal()
+	NULL,			// pfnPrecacheGeneric()
+	NULL, 			// pfnGetPlayerUserId()
+	NULL,			// pfnBuildSoundMsg()
+	NULL,			// pfnIsDedicatedServer()
+	NULL,			// pfnCVarGetPointer()
+	NULL,			// pfnGetPlayerWONId()
+
+	NULL,			// pfnInfo_RemoveKey()
+	NULL,			// pfnGetPhysicsKeyValue()
+	NULL,			// pfnSetPhysicsKeyValue()
+	NULL,			// pfnGetPhysicsInfoString()
+	NULL,			// pfnPrecacheEvent()
+	NULL,			// pfnPlaybackEvent()
+
+	NULL,			// pfnSetFatPVS()
+	NULL,			// pfnSetFatPAS()
+
+	NULL,			// pfnCheckVisibility()
+
+	NULL,			// pfnDeltaSetField()
+	NULL,			// pfnDeltaUnsetField()
+	NULL,			// pfnDeltaAddEncoder()
+	NULL,			// pfnGetCurrentPlayer()
+	NULL,			// pfnCanSkipPlayer()
+	NULL,			// pfnDeltaFindField()
+	NULL,			// pfnDeltaSetFieldByIndex()
+	NULL,			// pfnDeltaUnsetFieldByIndex()
+
+	NULL,			// pfnSetGroupMask()
+
+	NULL, 			// pfnCreateInstancedBaseline()
+	NULL,			// pfnCvar_DirectSet()
+
+	NULL,			// pfnForceUnmodified()
+
+	NULL,			// pfnGetPlayerStats()
+
+	NULL,			// pfnAddServerCommand()
+
+	NULL,			// pfnVoice_GetClientListening()
+	NULL,			// pfnVoice_SetClientListening()
+
+	NULL,			// pfnGetPlayerAuthId()
+
+	NULL,			// pfnSequenceGet()
+	NULL,			// pfnSequencePickSentence()
+	NULL,			// pfnGetFileSize()
+	NULL,			// pfnGetApproxWavePlayLen()
+	NULL,			// pfnIsCareerMatch()
+	NULL,			// pfnGetLocalizedStringLength()
+	NULL,			// pfnRegisterTutorMessageShown()
+	NULL,			// pfnGetTimesTutorMessageShown()
+	NULL,			// pfnProcessTutorMessageDecayBuffer()
+	NULL,			// pfnConstructTutorMessageDecayBuffer()
+	NULL,			// pfnResetTutorMessageDecayData()
+	NULL,			// pfnQueryClientCvarValue()
+	NULL,			// pfnQueryClientCvarValue2()
+	NULL,			// pfnEngCheckParm()
+};
+
+C_DLLEXPORT int GetEngineFunctions(enginefuncs_t *pengfuncsFromEngine, int *interfaceVersion) 
+{
+	if(!pengfuncsFromEngine)
+	{
+		LOG_ERROR(PLID, "GetEngineFunctions called with null pengfuncsFromEngine");
+		return(FALSE);
+	}
+	else if(*interfaceVersion != ENGINE_INTERFACE_VERSION)
+	{
+		LOG_ERROR(PLID, "GetEngineFunctions version mismatch; requested=%d ours=%d", *interfaceVersion, ENGINE_INTERFACE_VERSION);
+		// Tell metamod what version we had, so it can figure out who is 
+		// out of date.
+		*interfaceVersion = ENGINE_INTERFACE_VERSION;
+		return(FALSE);
+	}
+	memcpy(pengfuncsFromEngine, &meta_engfuncs, sizeof(enginefuncs_t));
+	return TRUE;
 }
 
 enginefuncs_t meta_engfuncs_post =

@@ -230,6 +230,8 @@ void CMHAssassin :: Spawn()
 	pev->rendermode		= kRenderTransTexture;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_human_assassin" );
 }
 
 //=========================================================

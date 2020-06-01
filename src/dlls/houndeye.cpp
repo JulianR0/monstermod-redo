@@ -277,6 +277,8 @@ void CMHoundeye :: Spawn()
 	m_fDontBlink		= FALSE;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_houndeye" );
 }
 
 //=========================================================

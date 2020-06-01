@@ -886,6 +886,8 @@ void CMHGrunt :: Spawn()
 	CMTalkMonster::g_talkWaitTime = 0;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_human_grunt" );
 }
 
 //=========================================================

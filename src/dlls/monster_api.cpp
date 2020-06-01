@@ -48,7 +48,7 @@ static META_FUNCTIONS gMetaFunctionTable =
 	GetEntityAPI2_Post,						// pfnGetEntityAPI2_Post		META; called after game DLL
 	NULL,									// pfnGetNewDLLFunctions		HL SDK2; called before game DLL
 	NULL,									// pfnGetNewDLLFunctions_Post	META; called after game DLL
-	NULL,									// pfnGetEngineFunctions		META; called before HL engine
+	GetEngineFunctions,						// pfnGetEngineFunctions		META; called before HL engine
 	GetEngineFunctions_Post,				// pfnGetEngineFunctions_Post	META; called after HL engine
 };
 
@@ -57,7 +57,7 @@ plugin_info_t Plugin_info = {
    META_INTERFACE_VERSION,							// interface version
    "MonsterMod",									// name
    "2-prerelease",									// version
-   "18/03/2020",									// date in DD/MM/YYYY format
+   "01/06/2020",									// date in DD/MM/YYYY format
    "botman, Rick90, Giegue",						// original authors + recreation by...
    "https://github.com/JulianR0/monstermod-redo",	// url
    "MONSTER",										// logtag

@@ -84,6 +84,8 @@ void CMApache :: Spawn( void )
 	m_flPrevSeen = 0.0f;
 
 	m_iSoundState = 0;
+	
+	pev->classname = MAKE_STRING( "monster_apache" );
 }
 
 

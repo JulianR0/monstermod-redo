@@ -541,6 +541,8 @@ void CMAGrunt :: Spawn()
 	m_flNextSpeakTime	= m_flNextWordTime = gpGlobals->time + 10 + RANDOM_LONG(0, 10);
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_alien_grunt" );
 }
 
 //=========================================================

@@ -357,6 +357,8 @@ void CMBarney :: Spawn()
 	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_barney" );
 }
 
 //=========================================================

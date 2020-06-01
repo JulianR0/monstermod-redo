@@ -256,6 +256,8 @@ void CMHeadCrab :: Spawn()
 	m_MonsterState		= MONSTERSTATE_NONE;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_headcrab" );
 }
 
 //=========================================================

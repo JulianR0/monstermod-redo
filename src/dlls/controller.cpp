@@ -310,6 +310,8 @@ void CMController :: Spawn()
 	m_MonsterState		= MONSTERSTATE_NONE;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_alien_controller" );
 }
 
 //=========================================================

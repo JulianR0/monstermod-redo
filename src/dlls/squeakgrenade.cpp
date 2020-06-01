@@ -84,6 +84,8 @@ void CMSqueakGrenade :: Spawn( void )
 	ResetSequenceInfo( );
 
 	m_hEnemy = NULL;
+	
+	pev->classname = MAKE_STRING( "monster_snark" );
 }
 
 void CMSqueakGrenade::Precache( void )

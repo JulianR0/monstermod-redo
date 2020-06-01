@@ -1761,7 +1761,7 @@ int UTIL_TakeDamage( edict_t *pEdict, entvars_t *pevInflictor, entvars_t *pevAtt
 	if ( pEdict->v.health <= 0 )
 	{
 		pEdict->v.health = 1;  // can't suicide if already dead!
-      gpGamedllFuncs->dllapi_table->pfnClientKill(pEdict);
+		gpGamedllFuncs->dllapi_table->pfnClientKill(pEdict);
 	}
 
 	// tell director about it

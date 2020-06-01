@@ -254,6 +254,8 @@ void CMZombie :: Spawn()
 	m_afCapability		= bits_CAP_DOORS_GROUP;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_zombie" );
 }
 
 //=========================================================

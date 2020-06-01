@@ -684,6 +684,8 @@ void CMGargantua :: Spawn()
 	EyeOff();
 	m_seeTime = gpGlobals->time + 5;
 	m_flameTime = gpGlobals->time + 2;
+	
+	pev->classname = MAKE_STRING( "monster_gargantua" );
 }
 
 
