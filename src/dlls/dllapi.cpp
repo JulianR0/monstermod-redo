@@ -58,6 +58,16 @@ extern gamedll_funcs_t *gpGamedllFuncs;
 
 extern cvar_t *dllapi_log;
 extern cvar_t *monster_spawn;
+extern cvar_t *monster_show_deaths;
+
+// Player TakeDamage and Killed
+int g_DamageMsg;
+bool g_DamageActive;
+int g_DamageVictim;
+edict_t *g_DamageAttacker[33];
+int g_DamageBits[33];
+bool g_PlayerKilled[33];
+float g_flWaitTillMessage[33];
 
 cvar_t	*g_psv_gravity = NULL;
 
@@ -341,6 +351,118 @@ void check_monster_dead(void)
 			}
 		}
 	}
+}
+
+
+void check_player_dead( edict_t *pPlayer )
+{
+	// Death messages are disabled
+	if (!monster_show_deaths->value)
+		return;
+	
+	int iPlayerIndex = ENTINDEX( pPlayer );
+	
+	// Player died?
+	if ( !UTIL_IsAlive( pPlayer ) )
+	{
+		edict_t *pAttacker = pPlayer->v.dmg_inflictor;
+		char szMessage[129]; // To allow exactly 128 characters
+		
+		// Attacker is NULL or message already shown, don't care
+		if ( pAttacker == NULL || g_PlayerKilled[ iPlayerIndex ] )
+			return;
+		
+		// Get player's name
+		char szPlayerName[33];
+		sprintf( szPlayerName, "%s", STRING( pPlayer->v.netname ) );
+		
+		// Killed by a monster?
+		if ( pAttacker->v.flags & FL_MONSTER )
+		{
+			// ToDo: Custom monster name
+			sprintf( szMessage, "* %s was killed by a monster.\n", szPlayerName );
+		}
+		else
+		{
+			// Any messages from here should only be shown if allowed.
+			// Level 0 = Disabled
+			// Level 1 = All messages
+			// Level 2 = Only monster deaths
+			if (monster_show_deaths->value == 1)
+			{
+				// Suicide?
+				if ( pAttacker == pPlayer )
+					sprintf( szMessage, "* %s commited suicide.\n", szPlayerName );
+				// An entity killed this player.
+				else if ( ENTINDEX( pAttacker ) > 0 )
+				{
+					// Gather damage type and format death message
+					if ( g_DamageBits[ iPlayerIndex ] == DMG_GENERIC )
+						sprintf( szMessage, "* %s died mysteriously.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_CRUSH )
+						sprintf( szMessage, "* %s was smashed.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_BULLET )
+						sprintf( szMessage, "* %s was shot.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLASH )
+						sprintf( szMessage, "* %s lost it's jelly.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_BURN )
+						sprintf( szMessage, "* %s burned to death.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_FREEZE )
+						sprintf( szMessage, "* %s froze to death.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_FALL )
+						sprintf( szMessage, "* %s broke it's bones.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_BLAST )
+						sprintf( szMessage, "* %s blew up.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_CLUB )
+						sprintf( szMessage, "* %s was crowbared.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SHOCK )
+						sprintf( szMessage, "* %s was electrocuted.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SONIC )
+						sprintf( szMessage, "* %s ears popped.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_ENERGYBEAM )
+						sprintf( szMessage, "* %s saw the pretty lights.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] == DMG_NEVERGIB )
+						sprintf( szMessage, "* %s had a painful death.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] == DMG_ALWAYSGIB )
+						sprintf( szMessage, "* %s was gibbed.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_DROWN )
+						sprintf( szMessage, "* %s became too drunk.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_PARALYZE )
+						sprintf( szMessage, "* %s was paralyzed.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_NERVEGAS )
+						sprintf( szMessage, "* %s lost it's brain.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_POISON )
+						sprintf( szMessage, "* %s had a slow death.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_RADIATION )
+						sprintf( szMessage, "* %s went nuclear.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_DROWNRECOVER )
+						sprintf( szMessage, "* %s used too much flex tape.\n", szPlayerName ); // is this type of death even possible?
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_ACID )
+						sprintf( szMessage, "* %s was melted.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLOWBURN )
+						sprintf( szMessage, "* %s became a cake.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLOWFREEZE )
+						sprintf( szMessage, "* %s died of hypothermia.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] & DMG_MORTAR )
+						sprintf( szMessage, "* %s blew his missile pet.\n", szPlayerName );
+					else if ( g_DamageBits[ iPlayerIndex ] == (1 << 30) ) // (1 << 30) = 1073741824. For custom death messages
+						sprintf( szMessage, "* %s %s.\n", szPlayerName, STRING( pAttacker->v.noise ) );
+					else // other mods could have more DMG_ variants that aren't registered here.
+						sprintf( szMessage, "* %s deadly died.\n", szPlayerName );
+				}
+				// the "world" killed this player
+				else
+					 sprintf( szMessage, "* %s fell or drowned or something.\n", szPlayerName );
+			}
+		}
+		
+		// Print the message
+		if ( strlen( szMessage ) > 0 )
+			UTIL_ClientPrintAll( HUD_PRINTTALK, szMessage );
+		g_PlayerKilled[ iPlayerIndex ] = true;
+	}
+	else
+		g_PlayerKilled[ iPlayerIndex ] = false;
 }
 
 
@@ -1174,6 +1296,13 @@ void mmStartFrame( void )
 	RETURN_META(MRES_IGNORED);
 }
 
+void mmClientKill( edict_t *pPlayer )
+{
+	// Just to let the system know the player commited suicide
+	pPlayer->v.dmg_inflictor = pPlayer;
+	RETURN_META(MRES_IGNORED);
+}
+
 static DLL_FUNCTIONS gFunctionTable = 
 {
 	mmGameDLLInit,	//! pfnGameInit()	Initialize the game (one-time call after loading of game .dll)
@@ -1196,7 +1325,7 @@ static DLL_FUNCTIONS gFunctionTable =
 
 	NULL,			// pfnClientConnect
 	NULL,			// pfnClientDisconnect
-	NULL,			// pfnClientKill
+	mmClientKill,			//! pfnClientKill
 	NULL,			// pfnClientPutInServer
 	NULL,			// pfnClientCommand
 	NULL,			// pfnClientUserInfoChanged
@@ -1269,7 +1398,7 @@ void mmPlayerPostThink_Post( edict_t *pEntity )
 {
 	check_monster_hurt(pEntity);
 	check_monster_dead();
-
+	check_player_dead(pEntity);
 
 	RETURN_META(MRES_IGNORED);
 }
@@ -1352,4 +1481,286 @@ C_DLLEXPORT int GetEntityAPI2_Post( DLL_FUNCTIONS *pFunctionTable, int *interfac
 	}
 	memcpy( pFunctionTable, &gFunctionTable_Post, sizeof( DLL_FUNCTIONS ) );
 	return(TRUE);
+}
+
+
+// Messages in Counter-Strike are offset by 1.
+int IsCSServer( void )
+{
+	char mod[16];
+	sprintf( mod, "%s", GET_GAME_INFO( PLID, GINFO_NAME ) );
+	
+	if ( strcmp( mod, "cstrike" ) == 0 || strcmp( mod, "czero" ) == 0 )
+		return 1;
+	
+	return 0;
+}
+
+int mmRegUserMsg_Post( const char *pName, int iSize )
+{
+	int cs_server = IsCSServer();
+	
+	if ( strcmp( pName, "Damage" ) == 0 )
+		g_DamageMsg = META_RESULT_ORIG_RET( int ) - cs_server;
+	
+	RETURN_META_VALUE( MRES_IGNORED, 0 );
+}
+
+void mmMessageBegin_Post( int msg_dest, int msg_type, const float *pOrigin, edict_t *ed )
+{
+	if ( msg_type == g_DamageMsg )
+	{
+		// Death messages are disabled
+		if (!monster_show_deaths->value)
+			RETURN_META( MRES_IGNORED );
+		
+		// Whatever hurting us must be a valid entity
+		if (ed->v.dmg_inflictor != NULL )
+		{
+			g_DamageActive = true;
+			g_DamageVictim = ENTINDEX( ed );
+			g_DamageAttacker[ g_DamageVictim ] = ed->v.dmg_inflictor;
+		}
+	}
+	
+	RETURN_META( MRES_IGNORED );
+}
+
+void mmWriteLong_Post( int iValue )
+{
+	if ( g_DamageActive )
+		g_DamageBits[ g_DamageVictim ] = iValue;
+	
+	RETURN_META( MRES_IGNORED );
+}
+
+void mmMessageEnd_Post( void )
+{
+	g_DamageActive = false;
+	
+	RETURN_META( MRES_IGNORED );
+}
+
+enginefuncs_t meta_engfuncs_post =
+{
+	NULL,			// pfnPrecacheModel()
+	NULL,			// pfnPrecacheSound()
+	NULL,			// pfnSetModel()
+	NULL,			// pfnModelIndex()
+	NULL,			// pfnModelFrames()
+
+	NULL,			// pfnSetSize()
+	NULL,			// pfnChangeLevel()
+	NULL,			// pfnGetSpawnParms()
+	NULL,			// pfnSaveSpawnParms()
+
+	NULL,			// pfnVecToYaw()
+	NULL,			// pfnVecToAngles()
+	NULL,			// pfnMoveToOrigin()
+	NULL,			// pfnChangeYaw()
+	NULL,			// pfnChangePitch()
+
+	NULL,			// pfnFindEntityByString()
+	NULL,			// pfnGetEntityIllum()
+	NULL,			// pfnFindEntityInSphere()
+	NULL,			// pfnFindClientInPVS()
+	NULL,			// pfnEntitiesInPVS()
+
+	NULL,			// pfnMakeVectors()
+	NULL,			// pfnAngleVectors()
+
+	NULL,			// pfnCreateEntity()
+	NULL,			// pfnRemoveEntity()
+	NULL,			// pfnCreateNamedEntity()
+
+	NULL,			// pfnMakeStatic()
+	NULL,			// pfnEntIsOnFloor()
+	NULL,			// pfnDropToFloor()
+
+	NULL,			// pfnWalkMove()
+	NULL,			// pfnSetOrigin()
+
+	NULL,			// pfnEmitSound()
+	NULL,			// pfnEmitAmbientSound()
+
+	NULL,			// pfnTraceLine()
+	NULL,			// pfnTraceToss()
+	NULL,			// pfnTraceMonsterHull()
+	NULL,			// pfnTraceHull()
+	NULL,			// pfnTraceModel()
+	NULL,			// pfnTraceTexture()
+	NULL,			// pfnTraceSphere()
+	NULL,			// pfnGetAimVector()
+
+	NULL,			// pfnServerCommand()
+	NULL,			// pfnServerExecute()
+	NULL,			// pfnClientCommand()
+
+	NULL,			// pfnParticleEffect()
+	NULL,			// pfnLightStyle()
+	NULL,			// pfnDecalIndex()
+	NULL,			// pfnPointContents()
+
+	mmMessageBegin_Post,	//! pfnMessageBegin()
+	mmMessageEnd_Post,			//! pfnMessageEnd()
+
+	NULL,			// pfnWriteByte()
+	NULL,			// pfnWriteChar()
+	NULL,			// pfnWriteShort()
+	mmWriteLong_Post,			//! pfnWriteLong()
+	NULL,			// pfnWriteAngle()
+	NULL,			// pfnWriteCoord()
+	NULL,			// pfnWriteString()
+	NULL,			// pfnWriteEntity()
+
+	NULL,			// pfnCVarRegister()
+	NULL,			// pfnCVarGetFloat()
+	NULL,			// pfnCVarGetString()
+	NULL,			// pfnCVarSetFloat()
+	NULL,			// pfnCVarSetString()
+
+	NULL,			// pfnAlertMessage()
+	NULL,			// pfnEngineFprintf()
+
+	NULL,			// pfnPvAllocEntPrivateData()
+	NULL,			// pfnPvEntPrivateData()
+	NULL,			// pfnFreeEntPrivateData()
+
+	NULL,			// pfnSzFromIndex()
+	NULL,			// pfnAllocString()
+
+	NULL, 			// pfnGetVarsOfEnt()
+	NULL,			// pfnPEntityOfEntOffset()
+	NULL,			// pfnEntOffsetOfPEntity()
+	NULL,			// pfnIndexOfEdict()
+	NULL,			// pfnPEntityOfEntIndex()
+	NULL,			// pfnFindEntityByVars()
+	NULL,			// pfnGetModelPtr()
+
+	mmRegUserMsg_Post,			//! pfnRegUserMsg()
+
+	NULL,			// pfnAnimationAutomove()
+	NULL,			// pfnGetBonePosition()
+
+	NULL,			// pfnFunctionFromName()
+	NULL,			// pfnNameForFunction()
+
+	NULL,			// pfnClientPrintf()
+	NULL,			// pfnServerPrint()
+
+	NULL,			// pfnCmd_Args()
+	NULL,			// pfnCmd_Argv()
+	NULL,			// pfnCmd_Argc()
+
+	NULL,			// pfnGetAttachment()
+
+	NULL,			// pfnCRC32_Init()
+	NULL,			// pfnCRC32_ProcessBuffer()
+	NULL,			// pfnCRC32_ProcessByte()
+	NULL,			// pfnCRC32_Final()
+
+	NULL,			// pfnRandomLong()
+	NULL,			// pfnRandomFloat()
+
+	NULL,			// pfnSetView()
+	NULL,			// pfnTime()
+	NULL,			// pfnCrosshairAngle()
+
+	NULL,			// pfnLoadFileForMe()
+	NULL,			// pfnFreeFile()
+
+	NULL,			// pfnEndSection()
+	NULL,			// pfnCompareFileTime()
+	NULL,			// pfnGetGameDir()
+	NULL,			// pfnCvar_RegisterVariable()
+	NULL,			// pfnFadeClientVolume()
+	NULL,			// pfnSetClientMaxspeed()
+	NULL,			// pfnCreateFakeClient()
+	NULL,			// pfnRunPlayerMove()
+	NULL,			// pfnNumberOfEntities()
+
+	NULL,			// pfnGetInfoKeyBuffer()
+	NULL,			// pfnInfoKeyValue()
+	NULL,			// pfnSetKeyValue()
+	NULL,			// pfnSetClientKeyValue()
+
+	NULL,			// pfnIsMapValid()
+	NULL,			// pfnStaticDecal()
+	NULL,			// pfnPrecacheGeneric()
+	NULL, 			// pfnGetPlayerUserId()
+	NULL,			// pfnBuildSoundMsg()
+	NULL,			// pfnIsDedicatedServer()
+	NULL,			// pfnCVarGetPointer()
+	NULL,			// pfnGetPlayerWONId()
+
+	NULL,			// pfnInfo_RemoveKey()
+	NULL,			// pfnGetPhysicsKeyValue()
+	NULL,			// pfnSetPhysicsKeyValue()
+	NULL,			// pfnGetPhysicsInfoString()
+	NULL,			// pfnPrecacheEvent()
+	NULL,			// pfnPlaybackEvent()
+
+	NULL,			// pfnSetFatPVS()
+	NULL,			// pfnSetFatPAS()
+
+	NULL,			// pfnCheckVisibility()
+
+	NULL,			// pfnDeltaSetField()
+	NULL,			// pfnDeltaUnsetField()
+	NULL,			// pfnDeltaAddEncoder()
+	NULL,			// pfnGetCurrentPlayer()
+	NULL,			// pfnCanSkipPlayer()
+	NULL,			// pfnDeltaFindField()
+	NULL,			// pfnDeltaSetFieldByIndex()
+	NULL,			// pfnDeltaUnsetFieldByIndex()
+
+	NULL,			// pfnSetGroupMask()
+
+	NULL, 			// pfnCreateInstancedBaseline()
+	NULL,			// pfnCvar_DirectSet()
+
+	NULL,			// pfnForceUnmodified()
+
+	NULL,			// pfnGetPlayerStats()
+
+	NULL,			// pfnAddServerCommand()
+
+	NULL,			// pfnVoice_GetClientListening()
+	NULL,			// pfnVoice_SetClientListening()
+
+	NULL,			// pfnGetPlayerAuthId()
+
+	NULL,			// pfnSequenceGet()
+	NULL,			// pfnSequencePickSentence()
+	NULL,			// pfnGetFileSize()
+	NULL,			// pfnGetApproxWavePlayLen()
+	NULL,			// pfnIsCareerMatch()
+	NULL,			// pfnGetLocalizedStringLength()
+	NULL,			// pfnRegisterTutorMessageShown()
+	NULL,			// pfnGetTimesTutorMessageShown()
+	NULL,			// pfnProcessTutorMessageDecayBuffer()
+	NULL,			// pfnConstructTutorMessageDecayBuffer()
+	NULL,			// pfnResetTutorMessageDecayData()
+	NULL,			// pfnQueryClientCvarValue()
+	NULL,			// pfnQueryClientCvarValue2()
+	NULL,			// pfnEngCheckParm()
+};
+
+C_DLLEXPORT int GetEngineFunctions_Post(enginefuncs_t *pengfuncsFromEngine, int *interfaceVersion) 
+{
+	if(!pengfuncsFromEngine)
+	{
+		LOG_ERROR(PLID, "GetEngineFunctions_Post called with null pengfuncsFromEngine");
+		return(FALSE);
+	}
+	else if(*interfaceVersion != ENGINE_INTERFACE_VERSION)
+	{
+		LOG_ERROR(PLID, "GetEngineFunctions_Post version mismatch; requested=%d ours=%d", *interfaceVersion, ENGINE_INTERFACE_VERSION);
+		// Tell metamod what version we had, so it can figure out who is 
+		// out of date.
+		*interfaceVersion = ENGINE_INTERFACE_VERSION;
+		return(FALSE);
+	}
+	memcpy(pengfuncsFromEngine, &meta_engfuncs_post, sizeof(enginefuncs_t));
+	return TRUE;
 }
