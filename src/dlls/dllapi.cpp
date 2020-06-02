@@ -73,6 +73,9 @@ float g_flWaitTillMessage[33];
 int g_DeathMsg;
 bool g_DeathActive;
 
+// TE_TEXTMESSAGE
+float g_NextMessage[33];
+
 cvar_t	*g_psv_gravity = NULL;
 
 DLL_DECALLIST gDecals[] = {
@@ -383,7 +386,7 @@ void check_player_dead( edict_t *pPlayer )
 		// Killed by a monster?
 		if ( pAttacker->v.flags & FL_MONSTER )
 		{
-			// ToDo: Custom monster name
+			// TODO: Custom monster name
 			sprintf( szMessage, "* %s was killed by a monster.\n", szPlayerName );
 		}
 		else
@@ -469,6 +472,74 @@ void check_player_dead( edict_t *pPlayer )
 		g_PlayerKilled[ iPlayerIndex ] = false;
 }
 
+void check_monster_info( edict_t *pPlayer )
+{
+	// Monster Info is disabled
+	//if (!monster_show_info->value)
+		//return;
+	
+	// Player must be alive
+	if ( UTIL_IsAlive( pPlayer ) )
+	{
+		// Don't overdo it!
+		if ( g_NextMessage[ ENTINDEX( pPlayer ) ] > gpGlobals->time )
+			return;
+		
+		// Get player position and view angle
+		Vector origin = pPlayer->v.origin;
+		Vector view_angle = pPlayer->v.v_angle;
+		Vector view_offset = pPlayer->v.view_ofs;
+		
+		// Prepare Trace
+		TraceResult tr;
+		Vector v_src, v_dest;
+		
+		UTIL_MakeVectors(view_angle);
+		
+		v_src = origin + view_offset; // Player aiment
+		v_dest = v_src + gpGlobals->v_forward * 4096; // Should cover enough distance
+		
+		UTIL_TraceLine(v_src, v_dest, dont_ignore_monsters, pPlayer, &tr);
+		
+		// Hit an entity?
+		if (tr.pHit != NULL)
+		{
+			// Must be a monster
+			if (tr.pHit->v.flags & FL_MONSTER)
+			{
+				// Get monster info
+				// TODO: Add monster custom name and count monster frags
+				edict_t *pMonster = tr.pHit;
+				char szInfo[512];
+				sprintf(szInfo, "Enemy:  %s\nHealth:  %.0f\nFrags:    %.0f\n", STRING( pMonster->v.classname ), pMonster->v.health, pMonster->v.frags );
+				
+				// Create a TE_TEXTMESSAGE and show the monster information
+				MESSAGE_BEGIN( MSG_ONE, SVC_TEMPENTITY, NULL, pPlayer );
+				WRITE_BYTE( TE_TEXTMESSAGE );
+				WRITE_BYTE( 3 ); // Channel
+				WRITE_SHORT( 327 ); // X
+				WRITE_SHORT( 4771 ); // Y
+				WRITE_BYTE( 0 ); // Effect
+				WRITE_BYTE( 171 ); // R1
+				WRITE_BYTE( 23 ); // G1
+				WRITE_BYTE( 7 ); // B1
+				WRITE_BYTE( 0 ); // A1
+				WRITE_BYTE( 207 ); // R2
+				WRITE_BYTE( 23 ); // G2
+				WRITE_BYTE( 7 ); // B2
+				WRITE_BYTE( 255 ); // A2
+				WRITE_SHORT( 0 ); // Fade-in Time
+				WRITE_SHORT( 15 ); // Fade-out Time
+				WRITE_SHORT( 448 ); // Hold time
+				WRITE_STRING( szInfo ); // Message
+				MESSAGE_END();
+				
+				// Delay till next scan
+				g_NextMessage[ ENTINDEX( pPlayer ) ] = gpGlobals->time + 0.875;
+			}
+		}
+	}
+}
 
 bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_index, int spawnflags, pKVD *keyvalue)
 {
@@ -1393,8 +1464,7 @@ void mmDispatchThink_Post( edict_t *pent )
 {
 	check_monster_hurt(pent);
 	check_monster_dead();
-
-
+	
 	RETURN_META(MRES_IGNORED);
 }
 
@@ -1403,7 +1473,8 @@ void mmPlayerPostThink_Post( edict_t *pEntity )
 	check_monster_hurt(pEntity);
 	check_monster_dead();
 	check_player_dead(pEntity);
-
+	check_monster_info(pEntity);
+	
 	RETURN_META(MRES_IGNORED);
 }
 
