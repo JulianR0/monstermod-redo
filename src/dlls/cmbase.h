@@ -540,7 +540,6 @@ public:
 
 class CMBaseMonster;
 
-
 extern int GetMonsterIndex(void);
 
 //

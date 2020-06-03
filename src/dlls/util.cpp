@@ -1762,6 +1762,10 @@ int UTIL_TakeDamage( edict_t *pEdict, entvars_t *pevInflictor, entvars_t *pevAtt
 	{
 		pEdict->v.health = 1;  // can't suicide if already dead!
 		gpGamedllFuncs->dllapi_table->pfnClientKill(pEdict);
+		
+		// Add 1 score to the monster that killed this player
+		if ( pevAttacker->flags & FL_MONSTER )
+			pevAttacker->frags += 1.0;
 	}
 
 	// tell director about it

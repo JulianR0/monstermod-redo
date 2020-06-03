@@ -279,6 +279,11 @@ void CMHoundeye :: Spawn()
 	MonsterInit();
 	
 	pev->classname = MAKE_STRING( "monster_houndeye" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Houndeye" );
+	}
 }
 
 //=========================================================

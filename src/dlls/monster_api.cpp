@@ -85,6 +85,8 @@ cvar_t init_monster_spawn = {"monster_spawn", "1", FCVAR_EXTDLL, 0, NULL};
 cvar_t *monster_spawn = NULL;
 cvar_t init_monster_show_deaths = {"monster_show_deaths", "1", FCVAR_EXTDLL, 0, NULL};
 cvar_t *monster_show_deaths = NULL;
+cvar_t init_monster_show_info = {"monster_show_info", "1", FCVAR_EXTDLL, 0, NULL};
+cvar_t *monster_show_info = NULL;
 
 
 // Metamod requesting info about this plugin:
@@ -140,6 +142,9 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS *pFunctionTable, m
 	
 	CVAR_REGISTER(&init_monster_show_deaths);
 	monster_show_deaths = CVAR_GET_POINTER("monster_show_deaths");
+	
+	CVAR_REGISTER(&init_monster_show_info);
+	monster_show_info = CVAR_GET_POINTER("monster_show_info");
 	
 	return(TRUE);
 }

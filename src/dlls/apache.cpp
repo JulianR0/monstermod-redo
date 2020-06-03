@@ -86,6 +86,11 @@ void CMApache :: Spawn( void )
 	m_iSoundState = 0;
 	
 	pev->classname = MAKE_STRING( "monster_apache" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Apache" );
+	}
 }
 
 

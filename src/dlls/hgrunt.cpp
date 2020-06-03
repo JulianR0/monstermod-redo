@@ -888,6 +888,11 @@ void CMHGrunt :: Spawn()
 	MonsterInit();
 	
 	pev->classname = MAKE_STRING( "monster_human_grunt" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Human Grunt" );
+	}
 }
 
 //=========================================================

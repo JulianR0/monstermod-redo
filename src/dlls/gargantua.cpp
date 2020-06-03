@@ -686,6 +686,11 @@ void CMGargantua :: Spawn()
 	m_flameTime = gpGlobals->time + 2;
 	
 	pev->classname = MAKE_STRING( "monster_gargantua" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Gargantua" );
+	}
 }
 
 

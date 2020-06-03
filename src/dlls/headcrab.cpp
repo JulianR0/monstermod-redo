@@ -258,6 +258,11 @@ void CMHeadCrab :: Spawn()
 	MonsterInit();
 	
 	pev->classname = MAKE_STRING( "monster_headcrab" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Head Crab" );
+	}
 }
 
 //=========================================================

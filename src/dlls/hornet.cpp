@@ -49,7 +49,7 @@ void CMHornet :: Spawn( void )
 	pev->movetype	= MOVETYPE_FLY;
 	pev->solid		= SOLID_BBOX;
 	pev->takedamage = DAMAGE_YES;
-	pev->flags		|= FL_MONSTER;
+	pev->flags		|= FL_MONSTER; // I have a bad feeling about this
 	pev->health		= 1;// weak!
 	
 	// hornets don't live as long in multiplayer
@@ -83,6 +83,8 @@ void CMHornet :: Spawn( void )
 	
 	pev->nextthink = gpGlobals->time + 0.1;
 	ResetSequenceInfo( );
+	
+	pev->classname = MAKE_STRING( "hornet" );
 }
 
 

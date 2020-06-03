@@ -101,7 +101,9 @@ public:
 	string_t			m_iszTriggerTarget;// name of target that should be fired. 
 
 	Vector				m_HackedGunPos;	// HACK until we can query end of gun
-
+	
+	string_t			m_szMonsterName; // Monster name to display on HUD
+	
 	void KeyValue( KeyValueData *pkvd );
 
 // monster use function

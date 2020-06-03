@@ -48,6 +48,7 @@ public:
 
 void CMInfoBM::Spawn( void )
 {
+	pev->classname = MAKE_STRING( "info_bigmomma" );
 }
 
 void CMInfoBM::KeyValue( KeyValueData* pkvd )
@@ -612,6 +613,11 @@ void CMBigMomma :: Spawn()
 	MonsterInit();
 	
 	pev->classname = MAKE_STRING( "monster_bigmomma" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Big Momma" );
+	}
 }
 
 //=========================================================

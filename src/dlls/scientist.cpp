@@ -618,6 +618,11 @@ void CMScientist :: Spawn( void )
 	MonsterInit();
 	
 	pev->classname = MAKE_STRING( "monster_scientist" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Scientist" );
+	}
 }
 
 //=========================================================

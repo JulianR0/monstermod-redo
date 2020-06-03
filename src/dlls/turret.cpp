@@ -144,6 +144,11 @@ void CMTurret::Spawn()
 	pev->nextthink = gpGlobals->time + 0.3; 
 	
 	pev->classname = MAKE_STRING( "monster_turret" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Turret" );
+	}
 }
 
 void CMTurret::Precache()
@@ -172,6 +177,11 @@ void CMMiniTurret::Spawn()
 	pev->nextthink = gpGlobals->time + 0.3;
 	
 	pev->classname = MAKE_STRING( "monster_miniturret" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Mini-Turret" );
+	}
 }
 
 
@@ -1014,6 +1024,11 @@ void CMSentry::Spawn()
 	pev->nextthink = gpGlobals->time + 0.3;
 	
 	pev->classname = MAKE_STRING( "monster_sentry" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Sentry Turret" );
+	}
 }
 
 void CMSentry::Shoot(Vector &vecSrc, Vector &vecDirToEnemy)

@@ -59,6 +59,7 @@ extern gamedll_funcs_t *gpGamedllFuncs;
 extern cvar_t *dllapi_log;
 extern cvar_t *monster_spawn;
 extern cvar_t *monster_show_deaths;
+extern cvar_t *monster_show_info;
 
 // Player TakeDamage and Killed
 int g_DamageMsg;
@@ -322,7 +323,7 @@ void check_monster_hurt(edict_t *pAttacker)
 }
 
 
-void check_monster_dead(void)
+void check_monster_dead(edict_t *pAttacker)
 {
 	for (int index = 0; index < monster_ents_used; index++)
 	{
@@ -341,8 +342,9 @@ void check_monster_dead(void)
 							pent->v.flags &= ~FL_KILLME;  // clear FL_KILLME bit
 
 							pent->v.deadflag = DEAD_NO;   // bring back to life
-
-							monsters[index].pMonster->Killed(VARS(pent), 0);
+							
+							monsters[index].pMonster->Killed(VARS(pAttacker), 0);
+							
 							monsters[index].killed = TRUE;
 						}
 					}
@@ -386,8 +388,17 @@ void check_player_dead( edict_t *pPlayer )
 		// Killed by a monster?
 		if ( pAttacker->v.flags & FL_MONSTER )
 		{
-			// TODO: Custom monster name
-			sprintf( szMessage, "* %s was killed by a monster.\n", szPlayerName );
+			// Check the first character for 'aeiou'.
+			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pAttacker));
+			char szCheck[2];
+			strncpy( szCheck, STRING( pMonster->m_szMonsterName ), 1 );
+			
+			// Make the first character lowercase
+			szCheck[0] = tolower( szCheck[ 0 ] );
+			if ( strncmp( szCheck, "a", 1 ) == 0 || strncmp( szCheck, "e", 1 ) == 0 || strncmp( szCheck, "i", 1 ) == 0 || strncmp( szCheck, "o", 1 ) == 0 || strncmp( szCheck, "u", 1 ) == 0 )
+				sprintf( szMessage, "* %s was killed by an %s.\n", szPlayerName, STRING( pMonster->m_szMonsterName ) );
+			else
+				sprintf( szMessage, "* %s was killed by a %s.\n", szPlayerName, STRING( pMonster->m_szMonsterName ) );
 		}
 		else
 		{
@@ -475,8 +486,8 @@ void check_player_dead( edict_t *pPlayer )
 void check_monster_info( edict_t *pPlayer )
 {
 	// Monster Info is disabled
-	//if (!monster_show_info->value)
-		//return;
+	if (!monster_show_info->value)
+		return;
 	
 	// Player must be alive
 	if ( UTIL_IsAlive( pPlayer ) )
@@ -508,10 +519,10 @@ void check_monster_info( edict_t *pPlayer )
 			if (tr.pHit->v.flags & FL_MONSTER)
 			{
 				// Get monster info
-				// TODO: Add monster custom name and count monster frags
-				edict_t *pMonster = tr.pHit;
+				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(tr.pHit));
+				
 				char szInfo[512];
-				sprintf(szInfo, "Enemy:  %s\nHealth:  %.0f\nFrags:    %.0f\n", STRING( pMonster->v.classname ), pMonster->v.health, pMonster->v.frags );
+				sprintf(szInfo, "Enemy:  %s\nHealth:  %.0f\nFrags:    %.0f\n", STRING( pMonster->m_szMonsterName ), pMonster->pev->health, pMonster->pev->frags );
 				
 				// Create a TE_TEXTMESSAGE and show the monster information
 				MESSAGE_BEGIN( MSG_ONE, SVC_TEMPENTITY, NULL, pPlayer );
@@ -1229,7 +1240,7 @@ void mmDispatchThink( edict_t *pent )
 		{
 			monsters[index].pMonster->Think();
 
-			check_monster_dead();
+			check_monster_dead(pent);
 
 			RETURN_META(MRES_SUPERCEDE);
 		}
@@ -1251,7 +1262,7 @@ void mmDispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 		{
 			monsters[index].pMonster->Touch(pentOther);
 
-			check_monster_dead();
+			check_monster_dead(pentOther);
 
 			RETURN_META(MRES_SUPERCEDE);
 		}
@@ -1463,7 +1474,7 @@ C_DLLEXPORT int GetEntityAPI2( DLL_FUNCTIONS *pFunctionTable, int *interfaceVers
 void mmDispatchThink_Post( edict_t *pent )
 {
 	check_monster_hurt(pent);
-	check_monster_dead();
+	check_monster_dead(pent);
 	
 	RETURN_META(MRES_IGNORED);
 }
@@ -1471,7 +1482,7 @@ void mmDispatchThink_Post( edict_t *pent )
 void mmPlayerPostThink_Post( edict_t *pEntity )
 {
 	check_monster_hurt(pEntity);
-	check_monster_dead();
+	check_monster_dead(pEntity);
 	check_player_dead(pEntity);
 	check_monster_info(pEntity);
 	

@@ -86,6 +86,11 @@ void CMSqueakGrenade :: Spawn( void )
 	m_hEnemy = NULL;
 	
 	pev->classname = MAKE_STRING( "monster_snark" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// hi :3
+		m_szMonsterName = MAKE_STRING( "Snark" );
+	}
 }
 
 void CMSqueakGrenade::Precache( void )
