@@ -2514,6 +2514,11 @@ void CMBaseMonster :: KeyValue( KeyValueData *pkvd )
 		m_szMonsterName = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "classify"))
+	{
+		m_iClassifyOverride = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
 	else
 	{
 		CMBaseToggle::KeyValue( pkvd );

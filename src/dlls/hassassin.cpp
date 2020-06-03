@@ -88,6 +88,11 @@ int CMHAssassin :: ISoundMask ( void)
 //=========================================================
 int	CMHAssassin :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_HUMAN_MILITARY;
 }
 

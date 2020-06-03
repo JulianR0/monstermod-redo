@@ -118,7 +118,15 @@ void CMApache::Precache( void )
    apache_rocket.Precache();
 }
 
-
+int CMApache :: Classify ( void )
+{
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
+	return CLASS_HUMAN_MILITARY;
+}
 
 void CMApache::NullThink( void )
 {

@@ -125,11 +125,14 @@ const char *CMAGrunt::pAlertSounds[] =
 //=========================================================
 int CMAGrunt::IRelationship ( CMBaseEntity *pTarget )
 {
+	// ditto hgrunt.cpp
+	/*
 	if ( strcmp(STRING(pTarget->pev->model), "models/hgrunt.mdl") == 0 )
 	{
 		return R_NM;
 	}
-
+	*/
+	
 	return CMBaseMonster :: IRelationship( pTarget );
 }
 
@@ -313,6 +316,11 @@ void CMAGrunt :: PainSound ( void )
 //=========================================================
 int	CMAGrunt :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_ALIEN_MILITARY;
 }
 
