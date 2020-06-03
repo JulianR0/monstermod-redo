@@ -589,7 +589,11 @@ void CMBaseMonster :: Killed( entvars_t *pevAttacker, int iGib )
 {
 	unsigned int	cCount = 0;
 	BOOL			fDone = FALSE;
-
+	
+	// If a player killed this monster, add score
+	if ( UTIL_IsPlayer( ENT( pevAttacker ) ) )
+		pevAttacker->frags += 1.0;
+	
 	if ( HasMemory( bits_MEMORY_KILLED ) )
 	{
 		if ( ShouldGibMonster( iGib ) )
@@ -822,7 +826,7 @@ int CMBaseMonster :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker
 {
 	float	flTake;
 	Vector	vecDir;
-
+	
 	if (!pev->takedamage)
 		return 0;
 

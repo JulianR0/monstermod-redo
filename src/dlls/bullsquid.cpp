@@ -357,6 +357,11 @@ BOOL CMBullsquid :: FValidateHintType ( short sHint )
 //=========================================================
 int	CMBullsquid :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_ALIEN_MONSTER;
 }
 
@@ -617,6 +622,13 @@ void CMBullsquid :: Spawn()
 	m_flNextSpitTime = gpGlobals->time;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_bullchicken" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Bullsquid" );
+	}
 }
 
 //=========================================================

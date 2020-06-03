@@ -47,6 +47,12 @@ float CMSqueakGrenade::m_flNextBounceSoundTime = 0;
 
 int CMSqueakGrenade :: Classify ( void )
 {
+	// E
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return CLASS_ALIEN_MONSTER;
 }
 
@@ -84,6 +90,13 @@ void CMSqueakGrenade :: Spawn( void )
 	ResetSequenceInfo( );
 
 	m_hEnemy = NULL;
+	
+	pev->classname = MAKE_STRING( "monster_snark" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// hi :3
+		m_szMonsterName = MAKE_STRING( "Snark" );
+	}
 }
 
 void CMSqueakGrenade::Precache( void )

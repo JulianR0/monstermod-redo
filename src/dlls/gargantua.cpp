@@ -624,6 +624,11 @@ void CMGargantua :: PrescheduleThink( void )
 //=========================================================
 int	CMGargantua :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_ALIEN_MONSTER;
 }
 
@@ -684,6 +689,13 @@ void CMGargantua :: Spawn()
 	EyeOff();
 	m_seeTime = gpGlobals->time + 5;
 	m_flameTime = gpGlobals->time + 2;
+	
+	pev->classname = MAKE_STRING( "monster_gargantua" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Gargantua" );
+	}
 }
 
 

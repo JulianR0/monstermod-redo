@@ -84,6 +84,13 @@ void CMApache :: Spawn( void )
 	m_flPrevSeen = 0.0f;
 
 	m_iSoundState = 0;
+	
+	pev->classname = MAKE_STRING( "monster_apache" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Apache" );
+	}
 }
 
 
@@ -111,7 +118,15 @@ void CMApache::Precache( void )
    apache_rocket.Precache();
 }
 
-
+int CMApache :: Classify ( void )
+{
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
+	return CLASS_HUMAN_MILITARY;
+}
 
 void CMApache::NullThink( void )
 {

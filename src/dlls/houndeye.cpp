@@ -78,6 +78,11 @@ enum
 //=========================================================
 int	CMHoundeye :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_ALIEN_MONSTER;
 }
 
@@ -277,6 +282,13 @@ void CMHoundeye :: Spawn()
 	m_fDontBlink		= FALSE;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_houndeye" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Houndeye" );
+	}
 }
 
 //=========================================================

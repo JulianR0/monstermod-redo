@@ -49,7 +49,7 @@ void CMHornet :: Spawn( void )
 	pev->movetype	= MOVETYPE_FLY;
 	pev->solid		= SOLID_BBOX;
 	pev->takedamage = DAMAGE_YES;
-	pev->flags		|= FL_MONSTER;
+	pev->flags		|= FL_MONSTER; // I have a bad feeling about this
 	pev->health		= 1;// weak!
 	
 	// hornets don't live as long in multiplayer
@@ -83,6 +83,8 @@ void CMHornet :: Spawn( void )
 	
 	pev->nextthink = gpGlobals->time + 0.1;
 	ResetSequenceInfo( );
+	
+	pev->classname = MAKE_STRING( "hornet" );
 }
 
 
@@ -124,13 +126,23 @@ int CMHornet::IRelationship ( CMBaseEntity *pTarget )
 //=========================================================
 int CMHornet::Classify ( void )
 {
-
+	/*
 	if ( pev->owner && pev->owner->v.flags & FL_CLIENT)
 	{
 		return CLASS_PLAYER_BIOWEAPON;
 	}
 
 	return	CLASS_ALIEN_BIOWEAPON;
+	*/
+	
+	// Ensure classify is consistent with the owner, in the event
+	// it's classification was overriden.
+	if ( pev->owner == NULL )
+		return CLASS_ALIEN_BIOWEAPON;
+	
+	// Ain't this going to make the hornets code "slow"?
+	CMBaseMonster *pOwner = GetClassPtr((CMBaseMonster *)VARS(pev->owner));
+	return pOwner->Classify();
 }
 
 //=========================================================

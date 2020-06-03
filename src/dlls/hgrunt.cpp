@@ -174,12 +174,15 @@ void CMHGrunt :: SpeakSentence( void )
 //=========================================================
 int CMHGrunt::IRelationship ( CMBaseEntity *pTarget )
 {
-   if (( strcmp(STRING(pTarget->pev->model), "models/agrunt.mdl") == 0 ) ||
+	// on single player, forcing R_NM makes sense.
+	// on multiplayer, a custom classification will cause misbehaviour.
+	/*
+	if (( strcmp(STRING(pTarget->pev->model), "models/agrunt.mdl") == 0 ) ||
        ( strcmp(STRING(pTarget->pev->model), "models/garg.mdl") == 0 ))
 	{
 		return R_NM;
 	}
-
+	*/
 	return CMBaseMonster::IRelationship( pTarget );
 }
 
@@ -596,6 +599,11 @@ void CMHGrunt :: CheckAmmo ( void )
 //=========================================================
 int	CMHGrunt :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_HUMAN_MILITARY;
 }
 
@@ -886,6 +894,13 @@ void CMHGrunt :: Spawn()
 	CMTalkMonster::g_talkWaitTime = 0;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_human_grunt" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Human Grunt" );
+	}
 }
 
 //=========================================================

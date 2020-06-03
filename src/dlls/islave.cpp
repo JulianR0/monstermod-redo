@@ -67,6 +67,11 @@ const char *CMISlave::pDeathSounds[] =
 //=========================================================
 int	CMISlave :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_ALIEN_MILITARY;
 }
 
@@ -429,10 +434,16 @@ void CMISlave :: Spawn()
 	for (int i = 0; i < ISLAVE_MAX_BEAMS; i++)
 		m_pBeam[i] = NULL;
 
-   m_iBravery = 0;
-   m_flNextAttack = 0.0f;
+	m_iBravery = 0;
+	m_flNextAttack = 0.0f;
 
 	MonsterInit();
+	pev->classname = MAKE_STRING( "monster_alien_slave" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Alien Slave" );
+	}
 }
 
 //=========================================================

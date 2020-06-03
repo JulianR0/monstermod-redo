@@ -88,6 +88,11 @@ int CMHAssassin :: ISoundMask ( void)
 //=========================================================
 int	CMHAssassin :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_HUMAN_MILITARY;
 }
 
@@ -228,8 +233,15 @@ void CMHAssassin :: Spawn()
 	m_iTargetRanderamt	= 20;
 	pev->renderamt		= 20;
 	pev->rendermode		= kRenderTransTexture;
-
+	
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_human_assassin" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Female Assassin" );
+	}
 }
 
 //=========================================================

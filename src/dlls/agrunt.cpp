@@ -125,11 +125,14 @@ const char *CMAGrunt::pAlertSounds[] =
 //=========================================================
 int CMAGrunt::IRelationship ( CMBaseEntity *pTarget )
 {
+	// ditto hgrunt.cpp
+	/*
 	if ( strcmp(STRING(pTarget->pev->model), "models/hgrunt.mdl") == 0 )
 	{
 		return R_NM;
 	}
-
+	*/
+	
 	return CMBaseMonster :: IRelationship( pTarget );
 }
 
@@ -313,6 +316,11 @@ void CMAGrunt :: PainSound ( void )
 //=========================================================
 int	CMAGrunt :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_ALIEN_MILITARY;
 }
 
@@ -541,6 +549,13 @@ void CMAGrunt :: Spawn()
 	m_flNextSpeakTime	= m_flNextWordTime = gpGlobals->time + 10 + RANDOM_LONG(0, 10);
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_alien_grunt" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Alien Grunt" );
+	}
 }
 
 //=========================================================

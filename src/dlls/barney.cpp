@@ -186,6 +186,11 @@ int CMBarney :: ISoundMask ( void)
 //=========================================================
 int	CMBarney :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_PLAYER_ALLY;
 }
 
@@ -357,6 +362,13 @@ void CMBarney :: Spawn()
 	m_afCapability		= bits_CAP_HEAR | bits_CAP_TURN_HEAD | bits_CAP_DOORS_GROUP;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_barney" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Barney" );
+	}
 }
 
 //=========================================================

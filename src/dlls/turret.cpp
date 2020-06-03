@@ -142,6 +142,13 @@ void CMTurret::Spawn()
 	m_eyeBrightness = 0;
 
 	pev->nextthink = gpGlobals->time + 0.3; 
+	
+	pev->classname = MAKE_STRING( "monster_turret" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Turret" );
+	}
 }
 
 void CMTurret::Precache()
@@ -166,8 +173,15 @@ void CMMiniTurret::Spawn()
 	m_iMinPitch	= -15;
 	UTIL_SetSize(pev, Vector(-16, -16, -m_iRetractHeight), Vector(16, 16, m_iRetractHeight));
 
-	SetThink(&CMMiniTurret::Initialize);	
-	pev->nextthink = gpGlobals->time + 0.3; 
+	SetThink(&CMMiniTurret::Initialize);
+	pev->nextthink = gpGlobals->time + 0.3;
+	
+	pev->classname = MAKE_STRING( "monster_miniturret" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Mini-Turret" );
+	}
 }
 
 
@@ -978,7 +992,15 @@ int CMBaseTurret::MoveTurret(void)
 int	CMBaseTurret::Classify ( void )
 {
 	if (m_iOn || m_iAutoStart)
-		return	CLASS_MACHINE;
+	{
+		if ( m_iClassifyOverride == -1 ) // helper
+			return CLASS_NONE;
+		else if ( m_iClassifyOverride > 0 )
+			return m_iClassifyOverride; // override
+		
+		return CLASS_MACHINE;
+	}
+	
 	return CLASS_NONE;
 }
 
@@ -1006,8 +1028,15 @@ void CMSentry::Spawn()
 	UTIL_SetSize(pev, Vector(-16, -16, -m_iRetractHeight), Vector(16, 16, m_iRetractHeight));
 
 	SetTouch(&CMSentry::SentryTouch);
-	SetThink(&CMSentry::Initialize);	
-	pev->nextthink = gpGlobals->time + 0.3; 
+	SetThink(&CMSentry::Initialize);
+	pev->nextthink = gpGlobals->time + 0.3;
+	
+	pev->classname = MAKE_STRING( "monster_sentry" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Sentry Turret" );
+	}
 }
 
 void CMSentry::Shoot(Vector &vecSrc, Vector &vecDirToEnemy)

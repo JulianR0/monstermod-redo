@@ -48,6 +48,7 @@ public:
 
 void CMInfoBM::Spawn( void )
 {
+	pev->classname = MAKE_STRING( "info_bigmomma" );
 }
 
 void CMInfoBM::KeyValue( KeyValueData* pkvd )
@@ -298,6 +299,11 @@ void CMBigMomma :: KeyValue( KeyValueData *pkvd )
 //=========================================================
 int	CMBigMomma :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_ALIEN_MONSTER;
 }
 
@@ -610,6 +616,13 @@ void CMBigMomma :: Spawn()
 	m_MonsterState		= MONSTERSTATE_NONE;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_bigmomma" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Big Momma" );
+	}
 }
 
 //=========================================================

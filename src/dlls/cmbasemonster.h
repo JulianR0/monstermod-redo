@@ -101,7 +101,10 @@ public:
 	string_t			m_iszTriggerTarget;// name of target that should be fired. 
 
 	Vector				m_HackedGunPos;	// HACK until we can query end of gun
-
+	
+	string_t			m_szMonsterName; // Monster name to display on HUD
+	int					m_iClassifyOverride; // Overriden classification for this monster
+	
 	void KeyValue( KeyValueData *pkvd );
 
 // monster use function
@@ -792,7 +795,7 @@ class CMApache : public CMBaseMonster
 public:
 	void Spawn( void );
 	void Precache( void );
-	int  Classify( void ) { return CLASS_HUMAN_MILITARY; };
+	int  Classify( void );
 	int  BloodColor( void ) { return DONT_BLEED; }
 	void Killed( entvars_t *pevAttacker, int iGib );
 	void GibMonster( void );

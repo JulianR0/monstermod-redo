@@ -1485,8 +1485,6 @@ void CTestHull :: Spawn( entvars_t *pevMasterNode )
 //=========================================================
 void CTestHull::DropDelay ( void )
 {
-	// Do NOT uncomment or you'll get a "Tried to create a message with a bogus message type ( 0 )" crash!
-	// Left here only because it's on the original HLSDK, and for comedy purposes. -Giegue
 	//UTIL_CenterPrintAll( "Node Graph out of Date. Rebuilding..." );
 	
 	UTIL_SetOrigin ( VARS(pev), WorldGraph.m_pNodes[ 0 ].m_vecOrigin );

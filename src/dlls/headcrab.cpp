@@ -119,6 +119,11 @@ const char *CMHeadCrab::pBiteSounds[] =
 //=========================================================
 int	CMHeadCrab :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_ALIEN_PREY;
 }
 
@@ -256,6 +261,13 @@ void CMHeadCrab :: Spawn()
 	m_MonsterState		= MONSTERSTATE_NONE;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_headcrab" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Head Crab" );
+	}
 }
 
 //=========================================================

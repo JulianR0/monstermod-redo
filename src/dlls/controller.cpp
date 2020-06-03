@@ -81,6 +81,11 @@ const char *CMController::pDeathSounds[] =
 //=========================================================
 int	CMController :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_ALIEN_MILITARY;
 }
 
@@ -310,6 +315,13 @@ void CMController :: Spawn()
 	m_MonsterState		= MONSTERSTATE_NONE;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_alien_controller" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Alien Controller" );
+	}
 }
 
 //=========================================================
@@ -1113,6 +1125,8 @@ void CMControllerHeadBall :: Spawn( void )
 
 	m_hOwner = pev->owner;
 	pev->dmgtime = gpGlobals->time;
+	
+	pev->classname = MAKE_STRING( "controller_head_ball" );
 }
 
 
@@ -1297,8 +1311,9 @@ void CMControllerZapBall :: Spawn( void )
 	m_hOwner = pev->owner;
 	pev->dmgtime = gpGlobals->time; // keep track of when ball spawned
 	pev->nextthink = gpGlobals->time + 0.1;
+	
+	pev->classname = MAKE_STRING( "controller_energy_ball" );
 }
-
 
 void CMControllerZapBall :: Precache( void )
 {

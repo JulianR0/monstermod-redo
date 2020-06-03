@@ -82,6 +82,11 @@ const char *CMZombie::pPainSounds[] =
 //=========================================================
 int	CMZombie :: Classify ( void )
 {
+	if ( m_iClassifyOverride == -1 ) // helper
+		return CLASS_NONE;
+	else if ( m_iClassifyOverride > 0 )
+		return m_iClassifyOverride; // override
+	
 	return	CLASS_ALIEN_MONSTER;
 }
 
@@ -254,6 +259,13 @@ void CMZombie :: Spawn()
 	m_afCapability		= bits_CAP_DOORS_GROUP;
 
 	MonsterInit();
+	
+	pev->classname = MAKE_STRING( "monster_zombie" );
+	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
+	{
+		// default name
+		m_szMonsterName = MAKE_STRING( "Zombie" );
+	}
 }
 
 //=========================================================

@@ -2504,9 +2504,19 @@ void CMBaseMonster :: KeyValue( KeyValueData *pkvd )
 		m_iszTriggerTarget = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
-	else if (FStrEq(pkvd->szKeyName, "TriggerCondition") )
+	else if (FStrEq(pkvd->szKeyName, "TriggerCondition"))
 	{
 		m_iTriggerCondition = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "displayname"))
+	{
+		m_szMonsterName = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "classify"))
+	{
+		m_iClassifyOverride = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
 	else
