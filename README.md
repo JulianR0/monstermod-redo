@@ -33,14 +33,22 @@ The source code is completely free to use for everyone: In the event that the de
 
 Under no circumstances we shall allow this project to fade away and become lost amidst the gears of time.
 
+## Installation
+
+If you are trying to use the compiled binary, you must know that it has been compiled with a mayor GCC version and it will be highly unlikely that it will run on a vanilla HLDS server. If the plugin fails to load due to libstdc++ not having CXXABI_1.X.X or similar, read on. HLDS uses it's own libstdc++ library. Any plugins compiled with GCC versions 5.x and greater will not work with the outdated library.
+
+To remedy this issue you have two options:
+
+You can recompile the source code under g++ 4.8 and use the newly generated binary. Make sure to edit the Makefile so it points to that version of g++. Compilation is done by simply running `make` on the `src/dlls` folder
+
+Alternatively, you can "remove" the outdated library to force HLDS to use the libstdc++ provided by the linux distro, which is generally more up to date. You might need to install GCC/G++ on the operating system if it doesn't work.
+
 ## Milestones
 
 Attempting to recreate everything in one go is a daunting task.
 Let it be known that the original 2002 source code will NOT compile on today's compilers, and does NOT contain all the necessary files for compilation. The preliminary was to rewrite and provide as many files or lines of code to ensure it can compile again, and be usable on an actual HLDS installation.
 
 Currently, I aim working this for linux only. While the original 2002 Visual C++ DSP file exists in the repository, it has not been updated to newer formats. Who knows if it can even open on newer Visual Studio versions, let alone, to compile?
-
-Even so, in linux, I had to resort to compile under GCC 4.8 for the plugin to work. While I could use a newer compiler (GCC 9 at the time of this writing), whenever or not the plugin will run is dependant on the HLDS installation and the system libraries is it hosted with. If you compile with newer GCC compilers, be warned that it may refuse to load, as it will complain about libstdc++ not having CXXABI_1.X.X or similar.
 
 Current milestones are separated by "Tiers", which are as follows:
 
