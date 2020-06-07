@@ -1237,4 +1237,78 @@ public:
 
 };
 
+//
+// opposing force monsters
+//
+
+//=========================================================
+// Gonome's guts projectile
+//=========================================================
+class CGonomeGuts : public CMBaseEntity
+{
+public:
+	void Spawn( void );
+	
+	static edict_t *Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
+	void GutsTouch( edict_t *pOther );
+	void EXPORT Animate( void );
+
+	int  m_maxFrame;
+};
+
+//=========================================================
+// CGonome
+//=========================================================
+class CMGonome : public CMBaseMonster
+{
+public:
+
+	void Spawn(void);
+	void Precache(void);
+
+	int  Classify(void);
+	void SetYawSpeed();
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+	int IgnoreConditions();
+	void IdleSound( void );
+	void PainSound( void );
+	void DeathSound( void );
+	void AlertSound( void );
+	void StartTask(Task_t *pTask);
+
+	BOOL CheckMeleeAttack2(float flDot, float flDist);
+	BOOL CheckRangeAttack1(float flDot, float flDist);
+	void SetActivity( Activity NewActivity );
+
+	Schedule_t *GetSchedule();
+	Schedule_t *GetScheduleOfType( int Type );
+	void RunTask(Task_t* pTask);
+
+	int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
+	void Killed(entvars_t *pevAttacker, int iGib);
+
+	void UnlockPlayer();
+	CGonomeGuts* GetGonomeGuts(entvars_t *pevOwner, const Vector& pos);
+	void ClearGuts();
+
+	CUSTOM_SCHEDULES;
+
+	static const char* pPainSounds[];
+	static const char* pIdleSounds[];
+	static const char* pDeathSounds[];
+	static const char *pAttackHitSounds[];
+	static const char *pAttackMissSounds[];
+
+protected:
+	float m_flNextFlinch;
+	float m_flNextThrowTime;// last time the gonome used the guts attack.
+	CGonomeGuts* m_pGonomeGuts;
+	
+	BOOL m_fPlayerLocked;
+	EHANDLE m_lockedPlayer;
+	
+	bool m_meleeAttack2;
+	bool m_playedAttackSound;
+};
+
 #endif // BASEMONSTER_H

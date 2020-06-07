@@ -134,7 +134,7 @@ monster_type_t monster_types[]=
 	// can be spawned. Monsters should go first.
 	// DO NOT ALTER THE ORDER OF ELEMENTS!
 	
-	"monster_alien_grunt", FALSE, // Monsters
+	"monster_alien_grunt", FALSE, // Original Half-Life Monsters
 	"monster_apache", FALSE,
 	"monster_barney", FALSE,
 	"monster_bigmomma", FALSE,
@@ -148,10 +148,11 @@ monster_type_t monster_types[]=
 	"monster_scientist", FALSE,
 	"monster_snark", FALSE,
 	"monster_zombie", FALSE,
-    "monster_gargantua", FALSE,
+	"monster_gargantua", FALSE,
 	"monster_turret", FALSE,
 	"monster_miniturret", FALSE,
 	"monster_sentry", FALSE,
+	"monster_gonome", FALSE, // Opposing Force Monsters
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
 	"", FALSE
@@ -615,10 +616,11 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 		case 11: monsters[monster_index].pMonster = CreateClassPtr((CMScientist *)NULL); break;
 		case 12: monsters[monster_index].pMonster = CreateClassPtr((CMSqueakGrenade *)NULL); break;
 		case 13: monsters[monster_index].pMonster = CreateClassPtr((CMZombie *)NULL); break;
-        case 14: monsters[monster_index].pMonster = CreateClassPtr((CMGargantua *)NULL); break;
+		case 14: monsters[monster_index].pMonster = CreateClassPtr((CMGargantua *)NULL); break;
 		case 15: monsters[monster_index].pMonster = CreateClassPtr((CMTurret *)NULL); break;
 		case 16: monsters[monster_index].pMonster = CreateClassPtr((CMMiniTurret *)NULL); break;
 		case 17: monsters[monster_index].pMonster = CreateClassPtr((CMSentry *)NULL); break;
+		case 18: monsters[monster_index].pMonster = CreateClassPtr((CMGonome *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -1294,6 +1296,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMTurret turret;
 	CMMiniTurret miniturret;
 	CMSentry sentry;
+	CMGonome gonome;
 	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1329,6 +1332,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 15: turret.Precache(); break;
 				case 16: miniturret.Precache(); break;
 				case 17: sentry.Precache(); break;
+				case 18: gonome.Precache(); break;
 			}
 		}
 	}

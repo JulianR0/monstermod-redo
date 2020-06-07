@@ -72,6 +72,10 @@ skill_cfg_t skill_cfg[] = {
    {"sk_turret_health", &gSkillData.turretHealth},
    {"sk_miniturret_health", &gSkillData.miniturretHealth},
    {"sk_sentry_health", &gSkillData.sentryHealth},
+   {"sk_gonome_health", &gSkillData.gonomeHealth},
+   {"sk_gonome_dmg_guts", &gSkillData.gonomeDmgGuts},
+   {"sk_gonome_dmg_one_slash", &gSkillData.gonomeDmgOneSlash},
+   {"sk_gonome_dmg_one_bite", &gSkillData.gonomeDmgOneBite},
    {"sk_12mm_bullet", &gSkillData.monDmg9MM},
    {"sk_9mmAR_bullet", &gSkillData.monDmgMP5},
    {"sk_9mm_bullet", &gSkillData.monDmg12MM},
@@ -211,6 +215,12 @@ void monster_skill_init(void)
 	
 	// Sentry
 	gSkillData.sentryHealth = 40.0f;
+	
+	// Gonome
+	gSkillData.gonomeHealth = 85.0f;
+	gSkillData.gonomeDmgGuts = 10.0f;
+	gSkillData.gonomeDmgOneSlash = 20.0f;
+	gSkillData.gonomeDmgOneBite = 14.0f;
 	
 	// MONSTER WEAPONS
 	gSkillData.monDmg9MM = 5.0f;

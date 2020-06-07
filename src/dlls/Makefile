@@ -20,6 +20,7 @@ OBJ = \
 	explode.o \
 	effects.o \
 	gargantua.o \
+	gonome.o \
 	ggrenade.o \
 	h_ai.o \
 	h_export.o \

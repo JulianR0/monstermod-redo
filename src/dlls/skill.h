@@ -86,6 +86,12 @@ struct skilldata_t
 	float miniturretHealth;
 	float sentryHealth;
 
+//OP4 monsters
+	float gonomeHealth;
+	float gonomeDmgGuts;
+	float gonomeDmgOneSlash;
+	float gonomeDmgOneBite;
+	
 // weapons shared by monsters
 	float monDmg9MM;
 	float monDmgMP5;
