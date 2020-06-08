@@ -80,6 +80,8 @@ typedef void (CMBaseEntity::*USEPTR)( edict_t *pActivator, edict_t *pCaller, USE
 #define CLASS_PLAYER_ALLY		11
 #define CLASS_PLAYER_BIOWEAPON	12 // hornets and snarks.launched by players
 #define CLASS_ALIEN_BIOWEAPON	13 // hornets and snarks.launched by the alien menace
+#define CLASS_RACEX_PITDRONE	14
+#define CLASS_RACEX_SHOCK		15
 #define	CLASS_BARNACLE			99 // special because no one pays attention to it, and it eats a wide cross-section of creatures.
 
 class CMBaseEntity;
