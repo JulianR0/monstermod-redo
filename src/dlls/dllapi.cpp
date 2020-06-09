@@ -153,6 +153,7 @@ monster_type_t monster_types[]=
 	"monster_miniturret", FALSE,
 	"monster_sentry", FALSE,
 	"monster_gonome", FALSE, // Opposing Force Monsters
+	"monster_male_assassin", FALSE,
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
 	"", FALSE
@@ -621,6 +622,7 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 		case 16: monsters[monster_index].pMonster = CreateClassPtr((CMMiniTurret *)NULL); break;
 		case 17: monsters[monster_index].pMonster = CreateClassPtr((CMSentry *)NULL); break;
 		case 18: monsters[monster_index].pMonster = CreateClassPtr((CMGonome *)NULL); break;
+		case 19: monsters[monster_index].pMonster = CreateClassPtr((CMMassn *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -1297,6 +1299,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMMiniTurret miniturret;
 	CMSentry sentry;
 	CMGonome gonome;
+	CMMassn massn;
 	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1333,6 +1336,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 16: miniturret.Precache(); break;
 				case 17: sentry.Precache(); break;
 				case 18: gonome.Precache(); break;
+				case 19: massn.Precache(); break;
 			}
 		}
 	}

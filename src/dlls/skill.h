@@ -92,12 +92,16 @@ struct skilldata_t
 	float gonomeDmgOneSlash;
 	float gonomeDmgOneBite;
 	
+	float massnHealth;
+	float massnDmgKick;
+	
 // weapons shared by monsters
 	float monDmg9MM;
 	float monDmgMP5;
 	float monDmg12MM;
 	float monDmgM203Grenade;
-
+	float monDmg762;
+	
 	float monDmgHornet;
 };
 

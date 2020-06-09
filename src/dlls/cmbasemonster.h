@@ -1311,4 +1311,24 @@ protected:
 	bool m_playedAttackSound;
 };
 
+//=========================================================
+// Male Assassin
+//=========================================================
+class CMMassn : public CMHGrunt
+{
+public:
+	int  Classify(void);
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+	void Sniperrifle(void);
+
+	BOOL FOkToSpeak(void);
+
+	void Spawn( void );
+	void Precache( void );
+
+	void DeathSound(void);
+	void PainSound(void);
+	void IdleSound(void);
+};
+
 #endif // BASEMONSTER_H

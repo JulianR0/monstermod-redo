@@ -30,6 +30,7 @@ OBJ = \
 	hornet.o \
 	houndeye.o \
 	islave.o \
+	massn.o \
 	monster_api.o \
 	monster_config.o \
 	monsters.o \

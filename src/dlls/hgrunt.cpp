@@ -663,7 +663,9 @@ void CMHGrunt :: Shoot ( void )
 
 	pev->effects |= EF_MUZZLEFLASH;
 	
-	m_cAmmoLoaded--;// take away a bullet!
+	// BUG - For some reason that still eludes me, grunts are completely unable to reload their weapons.
+	// As a temporary fix, give them infinite ammo. It will look bad I know... I gotta find a solution. -Giegue
+	//m_cAmmoLoaded--;// take away a bullet!
 
 	Vector angDir = UTIL_VecToAngles( vecShootDir );
 	SetBlending( 0, angDir.x );
@@ -690,7 +692,9 @@ void CMHGrunt :: Shotgun ( void )
 
 	pev->effects |= EF_MUZZLEFLASH;
 	
-	m_cAmmoLoaded--;// take away a bullet!
+	// BUG - For some reason that still eludes me, grunts are completely unable to reload their weapons.
+	// As a temporary fix, give them infinite ammo. It will look bad I know... I gotta find a solution. -Giegue
+	//m_cAmmoLoaded--;// take away a bullet!
 
 	Vector angDir = UTIL_VecToAngles( vecShootDir );
 	SetBlending( 0, angDir.x );
