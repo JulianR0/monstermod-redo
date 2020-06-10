@@ -1361,6 +1361,7 @@ void CMBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShootin
 			case BULLET_MONSTER_9MM:
 			case BULLET_MONSTER_12MM:
 			case BULLET_MONSTER_762:
+			case BULLET_MONSTER_357:
 			default:
 				MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, vecTracerSrc );
 					WRITE_BYTE( TE_TRACER );
@@ -1420,6 +1421,13 @@ void CMBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShootin
 					
 					break;
 				
+				case BULLET_MONSTER_357:
+					UTIL_TraceAttack(pPlayer, pevAttacker, gSkillData.monDmg357, vecDir, &tr, DMG_BULLET); 
+					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+					DecalGunshot( &tr, iBulletType );
+					
+					break;
+					
 				case BULLET_NONE: // FIX 
 					UTIL_TraceAttack(pPlayer, pevAttacker, 50, vecDir, &tr, DMG_CLUB);
 					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
@@ -1467,7 +1475,21 @@ void CMBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShootin
 						DecalGunshot( &tr, iBulletType );
 					}
 					break;
-			
+					
+				case BULLET_MONSTER_762:
+					pMonster->TraceAttack(pevAttacker, gSkillData.monDmg762, vecDir, &tr, DMG_BULLET);
+					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+					DecalGunshot( &tr, iBulletType );
+
+					break;
+				
+				case BULLET_MONSTER_357:
+					pMonster->TraceAttack(pevAttacker, gSkillData.monDmg357, vecDir, &tr, DMG_BULLET);
+					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+					DecalGunshot( &tr, iBulletType );
+
+					break;	
+					
 				case BULLET_NONE: // FIX 
 					pMonster->TraceAttack(pevAttacker, 50, vecDir, &tr, DMG_CLUB);
 					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);

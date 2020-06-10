@@ -78,11 +78,13 @@ skill_cfg_t skill_cfg[] = {
    {"sk_gonome_dmg_one_bite", &gSkillData.gonomeDmgOneBite},
    {"sk_massassin_health", &gSkillData.massnHealth},
    {"sk_massassin_kick", &gSkillData.massnDmgKick},
+   {"sk_otis_health", &gSkillData.otisHealth},
    {"sk_12mm_bullet", &gSkillData.monDmg9MM},
    {"sk_9mmAR_bullet", &gSkillData.monDmgMP5},
    {"sk_9mm_bullet", &gSkillData.monDmg12MM},
    {"sk_9mmAR_grenade", &gSkillData.monDmgM203Grenade},
    {"sk_762_bullet", &gSkillData.monDmg762},
+   {"sk_357_bullet", &gSkillData.monDmg357},
    {"sk_hornet_dmg", &gSkillData.monDmgHornet},
    {"", NULL}
 };
@@ -229,12 +231,16 @@ void monster_skill_init(void)
 	gSkillData.massnHealth = 50.0f;
 	gSkillData.massnDmgKick = 25.0f;
 	
+	// Otis
+	gSkillData.otisHealth = 35.0f;
+	
 	// MONSTER WEAPONS
 	gSkillData.monDmg9MM = 5.0f;
 	gSkillData.monDmgMP5 = 4.0f;
 	gSkillData.monDmg12MM = 10.0f;
 	gSkillData.monDmgM203Grenade = 100.0f;
 	gSkillData.monDmg762 = 100.0f;
+	gSkillData.monDmg357 = 40.0f;
 	
 	// HORNET
 	gSkillData.monDmgHornet = 5.0f;

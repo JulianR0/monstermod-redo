@@ -1331,4 +1331,31 @@ public:
 	void IdleSound(void);
 };
 
+//=========================================================
+// Otis
+//=========================================================
+class CMOtis : public CMBarney
+{
+public:
+	void KeyValue(KeyValueData *pkvd);
+
+	void Spawn(void);
+	void Precache(void);
+	void BarneyFirePistol(void);
+	void AlertSound(void);
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+
+	// Override these to set behavior
+	Schedule_t *GetSchedule(void);
+
+	void TalkInit(void);
+	void TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	void Killed(entvars_t *pevAttacker, int iGib);
+
+	int		head;
+	int		bodystate;
+};
+
 #endif // BASEMONSTER_H

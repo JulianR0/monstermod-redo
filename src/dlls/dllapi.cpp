@@ -154,6 +154,7 @@ monster_type_t monster_types[]=
 	"monster_sentry", FALSE,
 	"monster_gonome", FALSE, // Opposing Force Monsters
 	"monster_male_assassin", FALSE,
+	"monster_otis", FALSE,
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
 	"", FALSE
@@ -404,76 +405,69 @@ void check_player_dead( edict_t *pPlayer )
 		}
 		else
 		{
-			// Any messages from here should only be shown if allowed.
-			// Level 0 = Disabled
-			// Level 1 = All messages
-			// Level 2 = Only monster deaths
-			if (monster_show_deaths->value == 1)
+			// Suicide?
+			if ( pAttacker == pPlayer )
+				sprintf( szMessage, "* %s commited suicide.\n", szPlayerName );
+			// An entity killed this player.
+			else if ( ENTINDEX( pAttacker ) > 0 )
 			{
-				// Suicide?
-				if ( pAttacker == pPlayer )
-					sprintf( szMessage, "* %s commited suicide.\n", szPlayerName );
-				// An entity killed this player.
-				else if ( ENTINDEX( pAttacker ) > 0 )
-				{
-					// Gather damage type and format death message
-					if ( g_DamageBits[ iPlayerIndex ] == DMG_GENERIC )
-						sprintf( szMessage, "* %s died mysteriously.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_CRUSH )
-						sprintf( szMessage, "* %s was smashed.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_BULLET )
-						sprintf( szMessage, "* %s was shot.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLASH )
-						sprintf( szMessage, "* %s lost it's jelly.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_BURN )
-						sprintf( szMessage, "* %s burned to death.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_FREEZE )
-						sprintf( szMessage, "* %s froze to death.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_FALL )
-						sprintf( szMessage, "* %s broke it's bones.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_BLAST )
-						sprintf( szMessage, "* %s blew up.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_CLUB )
-						sprintf( szMessage, "* %s was crowbared.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SHOCK )
-						sprintf( szMessage, "* %s was electrocuted.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SONIC )
-						sprintf( szMessage, "* %s ears popped.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_ENERGYBEAM )
-						sprintf( szMessage, "* %s saw the pretty lights.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] == DMG_NEVERGIB )
-						sprintf( szMessage, "* %s had a painful death.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] == DMG_ALWAYSGIB )
-						sprintf( szMessage, "* %s was gibbed.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_DROWN )
-						sprintf( szMessage, "* %s became too drunk.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_PARALYZE )
-						sprintf( szMessage, "* %s was paralyzed.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_NERVEGAS )
-						sprintf( szMessage, "* %s lost it's brain.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_POISON )
-						sprintf( szMessage, "* %s had a slow death.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_RADIATION )
-						sprintf( szMessage, "* %s went nuclear.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_DROWNRECOVER )
-						sprintf( szMessage, "* %s used too much flex tape.\n", szPlayerName ); // is this type of death even possible?
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_ACID )
-						sprintf( szMessage, "* %s was melted.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLOWBURN )
-						sprintf( szMessage, "* %s became a cake.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLOWFREEZE )
-						sprintf( szMessage, "* %s died of hypothermia.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_MORTAR )
-						sprintf( szMessage, "* %s blew his missile pet.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] == (1 << 30) ) // (1 << 30) = 1073741824. For custom death messages
-						sprintf( szMessage, "* %s %s.\n", szPlayerName, STRING( pAttacker->v.noise ) );
-					else // other mods could have more DMG_ variants that aren't registered here.
-						sprintf( szMessage, "* %s deadly died.\n", szPlayerName );
-				}
-				// the "world" killed this player
-				else
-					 sprintf( szMessage, "* %s fell or drowned or something.\n", szPlayerName );
+				// Gather damage type and format death message
+				if ( g_DamageBits[ iPlayerIndex ] == DMG_GENERIC )
+					sprintf( szMessage, "* %s died mysteriously.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_CRUSH )
+					sprintf( szMessage, "* %s was smashed.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_BULLET )
+					sprintf( szMessage, "* %s was shot.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLASH )
+					sprintf( szMessage, "* %s lost its jelly.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_BURN )
+					sprintf( szMessage, "* %s burned to death.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_FREEZE )
+					sprintf( szMessage, "* %s froze to death.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_FALL )
+					sprintf( szMessage, "* %s broke its bones.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_BLAST )
+					sprintf( szMessage, "* %s blew up.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_CLUB )
+					sprintf( szMessage, "* %s was crowbared.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SHOCK )
+					sprintf( szMessage, "* %s was electrocuted.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SONIC )
+					sprintf( szMessage, "* %s ears popped.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_ENERGYBEAM )
+					sprintf( szMessage, "* %s saw the pretty lights.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] == DMG_NEVERGIB )
+					sprintf( szMessage, "* %s had a painful death.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] == DMG_ALWAYSGIB )
+					sprintf( szMessage, "* %s was gibbed.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_DROWN )
+					sprintf( szMessage, "* %s became too drunk.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_PARALYZE )
+					sprintf( szMessage, "* %s was paralyzed.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_NERVEGAS )
+					sprintf( szMessage, "* %s lost its brain.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_POISON )
+					sprintf( szMessage, "* %s had a slow death.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_RADIATION )
+					sprintf( szMessage, "* %s went nuclear.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_DROWNRECOVER )
+					sprintf( szMessage, "* %s used too much flex tape.\n", szPlayerName ); // is this type of death even possible?
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_ACID )
+					sprintf( szMessage, "* %s was melted.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLOWBURN )
+					sprintf( szMessage, "* %s became a cake.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLOWFREEZE )
+					sprintf( szMessage, "* %s died of hypothermia.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_MORTAR )
+					sprintf( szMessage, "* %s blew its missile pet.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] == (1 << 30) ) // (1 << 30) = 1073741824. For custom death messages
+					sprintf( szMessage, "* %s %s.\n", szPlayerName, STRING( pAttacker->v.noise ) );
+				else // other mods could have more DMG_ variants that aren't registered here.
+					sprintf( szMessage, "* %s deadly died.\n", szPlayerName );
 			}
+			// the "world" killed this player
+			else
+				sprintf( szMessage, "* %s fell or drowned or something.\n", szPlayerName );
 		}
 		
 		// Print the message
@@ -623,6 +617,7 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 		case 17: monsters[monster_index].pMonster = CreateClassPtr((CMSentry *)NULL); break;
 		case 18: monsters[monster_index].pMonster = CreateClassPtr((CMGonome *)NULL); break;
 		case 19: monsters[monster_index].pMonster = CreateClassPtr((CMMassn *)NULL); break;
+		case 20: monsters[monster_index].pMonster = CreateClassPtr((CMOtis *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -1300,6 +1295,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMSentry sentry;
 	CMGonome gonome;
 	CMMassn massn;
+	CMOtis otis;
 	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1331,12 +1327,13 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 11: scientist.Precache(); break;
 				case 12: snark.Precache(); break;
 				case 13: zombie.Precache(); break;
-                case 14: gargantua.Precache(); break;
+				case 14: gargantua.Precache(); break;
 				case 15: turret.Precache(); break;
 				case 16: miniturret.Precache(); break;
 				case 17: sentry.Precache(); break;
 				case 18: gonome.Precache(); break;
 				case 19: massn.Precache(); break;
+				case 20: otis.Precache(); break;
 			}
 		}
 	}
