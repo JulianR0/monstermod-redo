@@ -37,6 +37,7 @@ OBJ = \
 	monsterstate.o \
 	nodes.o \
 	otis.o \
+	pitdrone.o \
 	scientist.o \
 	skill.o \
 	sound.o \

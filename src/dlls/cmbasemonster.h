@@ -213,7 +213,7 @@ public:
 		void AdvanceRoute ( float distance );
 		virtual BOOL FTriangulate ( const Vector &vecStart , const Vector &vecEnd, float flDist, edict_t *pTargetEnt, Vector *pApex );
 		void MakeIdealYaw( Vector vecTarget );
-		virtual void SetYawSpeed ( void ) { return; };// allows different yaw_speeds for each activity
+		virtual void SetYawSpeed ( void ) { return; }; // allows different yaw_speeds for each activity
 		BOOL BuildRoute ( const Vector &vecGoal, int iMoveFlag, edict_t *pTarget );
 		virtual BOOL BuildNearestRoute ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist );
 		int RouteClassify( int iMoveFlag );
@@ -1257,7 +1257,7 @@ public:
 };
 
 //=========================================================
-// CGonome
+// Gonome
 //=========================================================
 class CMGonome : public CMBaseMonster
 {
@@ -1356,6 +1356,64 @@ public:
 
 	int		head;
 	int		bodystate;
+};
+
+//=========================================================
+// Pit Drone's spit projectile
+//=========================================================
+class CPitdroneSpike : public CMBaseEntity
+{
+public:
+	void Spawn(void);
+	void EXPORT SpikeTouch(edict_t *pOther);
+	void EXPORT StartTrail();
+	static edict_t *Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, Vector vecAngles);
+};
+
+//=========================================================
+// Pit Drone
+//=========================================================
+class CMPitdrone : public CMBaseMonster
+{
+public:
+	void Spawn(void);
+	void Precache(void);
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+	void SetYawSpeed(void);
+	int ISoundMask();
+	void KeyValue(KeyValueData *pkvd);
+
+	int Classify(void);
+
+	BOOL CheckMeleeAttack1(float flDot, float flDist);
+	BOOL CheckRangeAttack1(float flDot, float flDist);
+	void IdleSound(void);
+	void PainSound(void);
+	void AlertSound(void);
+	void DeathSound(void);
+	void BodyChange(float spikes);
+	int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
+	int IgnoreConditions(void);
+	Schedule_t* GetSchedule(void);
+	Schedule_t* GetScheduleOfType(int Type);
+	void StartTask(Task_t *pTask);
+	void RunTask(Task_t *pTask);
+	void RunAI(void);
+	void CheckAmmo();
+	void GibMonster();
+	CUSTOM_SCHEDULES;
+
+	float	m_flLastHurtTime;
+	float	m_flNextSpitTime;// last time the PitDrone used the spit attack.
+	float	m_flNextFlinch;
+	int m_iInitialAmmo;
+	bool shouldAttackWithLeftClaw;
+
+	static const char *pIdleSounds[];
+	static const char *pAlertSounds[];
+	static const char *pPainSounds[];
+	static const char *pDieSounds[];
+	static const char *pAttackMissSounds[];
 };
 
 #endif // BASEMONSTER_H

@@ -177,7 +177,15 @@ void CMGib :: SpawnHeadGib( entvars_t *pevVictim )
 	pGib->LimitVelocity();
 }
 
+// Overload
 void CMGib :: SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
+{
+	if ( human )
+		CMGib::SpawnRandomGibs( pevVictim, cGibs, "models/hgibs.mdl", human );
+	else
+		CMGib::SpawnRandomGibs( pevVictim, cGibs, "models/agibs.mdl", human );
+}
+void CMGib :: SpawnRandomGibs( entvars_t *pevVictim, int cGibs, const char *pGibModel, int human )
 {
 	int cSplat;
 
@@ -191,13 +199,13 @@ void CMGib :: SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human )
 		if ( human )
 		{
 			// human pieces
-			pGib->Spawn( "models/hgibs.mdl" );
+			pGib->Spawn( pGibModel );
 			pGib->pev->body = RANDOM_LONG(1,HUMAN_GIB_COUNT-1);// start at one to avoid throwing random amounts of skulls (0th gib)
 		}
 		else
 		{
 			// aliens
-			pGib->Spawn( "models/agibs.mdl" );
+			pGib->Spawn( pGibModel );
 			pGib->pev->body = RANDOM_LONG(0,ALIEN_GIB_COUNT-1);
 		}
 

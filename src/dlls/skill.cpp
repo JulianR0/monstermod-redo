@@ -79,6 +79,10 @@ skill_cfg_t skill_cfg[] = {
    {"sk_massassin_health", &gSkillData.massnHealth},
    {"sk_massassin_kick", &gSkillData.massnDmgKick},
    {"sk_otis_health", &gSkillData.otisHealth},
+   {"sk_pitdrone_health", &gSkillData.pitdroneHealth},
+   {"sk_pitdrone_dmg_spit", &gSkillData.pitdroneDmgSpit},
+   {"sk_pitdrone_dmg_whip", &gSkillData.pitdroneDmgWhip},
+   {"sk_pitdrone_dmg_bite", &gSkillData.pitdroneDmgBite},
    {"sk_12mm_bullet", &gSkillData.monDmg9MM},
    {"sk_9mmAR_bullet", &gSkillData.monDmgMP5},
    {"sk_9mm_bullet", &gSkillData.monDmg12MM},
@@ -233,6 +237,12 @@ void monster_skill_init(void)
 	
 	// Otis
 	gSkillData.otisHealth = 35.0f;
+	
+	// Pit Drone
+	gSkillData.pitdroneHealth = 40.0f;
+	gSkillData.pitdroneDmgSpit = 10.0f;
+	gSkillData.pitdroneDmgWhip = 35.0f;
+	gSkillData.pitdroneDmgBite = 25.0f;
 	
 	// MONSTER WEAPONS
 	gSkillData.monDmg9MM = 5.0f;

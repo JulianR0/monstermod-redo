@@ -97,6 +97,11 @@ struct skilldata_t
 	
 	float otisHealth;
 	
+	float pitdroneHealth;
+	float pitdroneDmgSpit;
+	float pitdroneDmgWhip;
+	float pitdroneDmgBite;
+	
 // weapons shared by monsters
 	float monDmg9MM;
 	float monDmgMP5;

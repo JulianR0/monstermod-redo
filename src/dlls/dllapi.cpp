@@ -155,6 +155,7 @@ monster_type_t monster_types[]=
 	"monster_gonome", FALSE, // Opposing Force Monsters
 	"monster_male_assassin", FALSE,
 	"monster_otis", FALSE,
+	"monster_pitdrone", FALSE,
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
 	"", FALSE
@@ -618,6 +619,7 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 		case 18: monsters[monster_index].pMonster = CreateClassPtr((CMGonome *)NULL); break;
 		case 19: monsters[monster_index].pMonster = CreateClassPtr((CMMassn *)NULL); break;
 		case 20: monsters[monster_index].pMonster = CreateClassPtr((CMOtis *)NULL); break;
+		case 21: monsters[monster_index].pMonster = CreateClassPtr((CMPitdrone *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -1296,6 +1298,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMGonome gonome;
 	CMMassn massn;
 	CMOtis otis;
+	CMPitdrone pitdrone;
 	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1314,7 +1317,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			switch (index)
 			{
 				case 0: agrunt.Precache(); break;
-				case 1:	apache.Precache(); break;
+				case 1: apache.Precache(); break;
 				case 2: barney.Precache(); break;
 				case 3: bigmomma.Precache(); break;
 				case 4: bullsquid.Precache(); break;
@@ -1334,6 +1337,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 18: gonome.Precache(); break;
 				case 19: massn.Precache(); break;
 				case 20: otis.Precache(); break;
+				case 21: pitdrone.Precache(); break;
 			}
 		}
 	}
