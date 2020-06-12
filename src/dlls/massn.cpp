@@ -239,10 +239,19 @@ void CMMassn::Spawn()
 
 	if (pev->weapons == 0)
 	{
-		// initialize to original values
-		pev->weapons = MASSN_9MMAR | MASSN_HANDGRENADE;
-		// pev->weapons = HGRUNT_SHOTGUN;
-		// pev->weapons = HGRUNT_9MMAR | HGRUNT_GRENADELAUNCHER;
+		// weapons not specified, randomize
+		switch ( RANDOM_LONG( 0, 2 ) )
+		{
+			case 0:
+				pev->weapons = MASSN_9MMAR | MASSN_HANDGRENADE;
+				break;
+			case 1:
+				pev->weapons = MASSN_9MMAR | MASSN_GRENADELAUNCHER;
+				break;
+			case 2:
+				pev->weapons = MASSN_SNIPERRIFLE;
+				break;
+		}
 	}
 
 	if (FBitSet(pev->weapons, MASSN_SNIPERRIFLE))
