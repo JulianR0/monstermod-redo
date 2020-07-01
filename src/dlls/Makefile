@@ -39,9 +39,13 @@ OBJ = \
 	otis.o \
 	pitdrone.o \
 	scientist.o \
+	shock.o \
+	shockroach.o \
 	skill.o \
 	sound.o \
+	sporegrenade.o \
 	squeakgrenade.o \
+	strooper.o \
 	subs.o \
 	talkmonster.o \
 	turret.o \

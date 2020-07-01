@@ -43,6 +43,18 @@ You can recompile the source code under g++ 4.8 and use the newly generated bina
 
 Alternatively, you can "remove" the outdated library to force HLDS to use the libstdc++ provided by the linux distro, which is generally more up to date. You might need to install GCC/G++ on the operating system if it doesn't work.
 
+## Known Bugs
+
+There are a few bugs that to this day I'm unable to find out why it happens:
+
+- Human Grunts are completely unable to reload their weapons. As a workaround, infinite ammo has been given to them.
+
+- Male Assassins share the same AI as HGrunts, so their ammo problem is still a thing, and the same workaround is used.
+
+- Shock Troopers have it worst. They also share HGrunts AI code, and despite them automatically increasing their "bullets", they just eventually stop firing. Worse, taking cover is absolutely broken, and remain completely frozen in place when it happens.
+
+Any hint that helps me fix these issues are greatly appreciated.
+
 ## Milestones
 
 Attempting to recreate everything in one go is a daunting task.

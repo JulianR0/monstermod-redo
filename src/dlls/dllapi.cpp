@@ -156,6 +156,8 @@ monster_type_t monster_types[]=
 	"monster_male_assassin", FALSE,
 	"monster_otis", FALSE,
 	"monster_pitdrone", FALSE,
+	"monster_shockroach", FALSE,
+	"monster_shocktrooper", FALSE,
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
 	"", FALSE
@@ -620,6 +622,8 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 		case 19: monsters[monster_index].pMonster = CreateClassPtr((CMMassn *)NULL); break;
 		case 20: monsters[monster_index].pMonster = CreateClassPtr((CMOtis *)NULL); break;
 		case 21: monsters[monster_index].pMonster = CreateClassPtr((CMPitdrone *)NULL); break;
+		case 22: monsters[monster_index].pMonster = CreateClassPtr((CMShockRoach *)NULL); break;
+		case 23: monsters[monster_index].pMonster = CreateClassPtr((CMStrooper *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -711,6 +715,7 @@ void check_respawn(void)
 
 DLL_GLOBAL short g_sModelIndexFireball;// holds the index for the fireball
 DLL_GLOBAL short g_sModelIndexSmoke;// holds the index for the smoke cloud
+DLL_GLOBAL short g_sModelIndexTinySpit;// holds the index for the spore grenade explosion
 DLL_GLOBAL short g_sModelIndexWExplosion;// holds the index for the underwater explosion
 DLL_GLOBAL short g_sModelIndexBubbles;// holds the index for the bubbles model
 DLL_GLOBAL short g_sModelIndexBloodDrop;// holds the sprite index for the initial blood
@@ -723,6 +728,7 @@ void world_precache(void)
 {
 	g_sModelIndexFireball = PRECACHE_MODEL ("sprites/zerogxplode.spr");// fireball
 	g_sModelIndexSmoke = PRECACHE_MODEL ("sprites/steam1.spr");// smoke
+	g_sModelIndexTinySpit = PRECACHE_MODEL ("sprites/tinyspit.spr");// spore
 	g_sModelIndexWExplosion = PRECACHE_MODEL ("sprites/WXplo1.spr");// underwater fireball
 	g_sModelIndexBubbles = PRECACHE_MODEL ("sprites/bubble.spr");//bubbles
 	g_sModelIndexBloodSpray = PRECACHE_MODEL ("sprites/bloodspray.spr"); // initial blood
@@ -1299,6 +1305,8 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMMassn massn;
 	CMOtis otis;
 	CMPitdrone pitdrone;
+	CMShockRoach shockroach;
+	CMStrooper strooper;
 	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1338,6 +1346,8 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 19: massn.Precache(); break;
 				case 20: otis.Precache(); break;
 				case 21: pitdrone.Precache(); break;
+				case 22: shockroach.Precache(); break;
+				case 23: strooper.Precache(); break;
 			}
 		}
 	}

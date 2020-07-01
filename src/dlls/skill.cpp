@@ -83,6 +83,12 @@ skill_cfg_t skill_cfg[] = {
    {"sk_pitdrone_dmg_spit", &gSkillData.pitdroneDmgSpit},
    {"sk_pitdrone_dmg_whip", &gSkillData.pitdroneDmgWhip},
    {"sk_pitdrone_dmg_bite", &gSkillData.pitdroneDmgBite},
+   {"sk_shockroach_health", &gSkillData.roachHealth},
+   {"sk_shockroach_lifespan", &gSkillData.roachLifespan},
+   {"sk_shocktrooper_health", &gSkillData.strooperHealth},
+   {"sk_shocktrooper_kick", &gSkillData.strooperDmgKick},
+   {"sk_shocktrooper_maxcharge", &gSkillData.strooperMaxCharge},
+   {"sk_shocktrooper_rchgspeed", &gSkillData.strooperRchgSpeed},
    {"sk_12mm_bullet", &gSkillData.monDmg9MM},
    {"sk_9mmAR_bullet", &gSkillData.monDmgMP5},
    {"sk_9mm_bullet", &gSkillData.monDmg12MM},
@@ -90,6 +96,8 @@ skill_cfg_t skill_cfg[] = {
    {"sk_762_bullet", &gSkillData.monDmg762},
    {"sk_357_bullet", &gSkillData.monDmg357},
    {"sk_hornet_dmg", &gSkillData.monDmgHornet},
+   {"sk_shock_dmg", &gSkillData.monDmgShockroach},
+   {"sk_spore_dmg", &gSkillData.monDmgSpore},
    {"", NULL}
 };
 
@@ -244,6 +252,16 @@ void monster_skill_init(void)
 	gSkillData.pitdroneDmgWhip = 35.0f;
 	gSkillData.pitdroneDmgBite = 25.0f;
 	
+	// Shock Roach
+	gSkillData.roachHealth = 10.0f;
+	gSkillData.roachLifespan = 10.0f;
+	
+	// Shock Trooper
+	gSkillData.strooperHealth = 50.0f;
+	gSkillData.strooperDmgKick = 10.0f;
+	gSkillData.strooperMaxCharge = 8.0f;
+	gSkillData.strooperRchgSpeed = 1.0f;
+	
 	// MONSTER WEAPONS
 	gSkillData.monDmg9MM = 5.0f;
 	gSkillData.monDmgMP5 = 4.0f;
@@ -254,8 +272,13 @@ void monster_skill_init(void)
 	
 	// HORNET
 	gSkillData.monDmgHornet = 5.0f;
-
-
+	
+	// SHOCK ROACH
+	gSkillData.monDmgShockroach = 15.0f;
+	
+	// SPORE GRENADE
+	gSkillData.monDmgSpore = 50.0f;
+	
    // find the directory name of the currently running MOD...
    (*g_engfuncs.pfnGetGameDir)(game_dir);
 

@@ -102,6 +102,14 @@ struct skilldata_t
 	float pitdroneDmgWhip;
 	float pitdroneDmgBite;
 	
+	float roachHealth;
+	float roachLifespan;
+	
+	float strooperHealth;
+	float strooperDmgKick;
+	float strooperMaxCharge;
+	float strooperRchgSpeed;
+	
 // weapons shared by monsters
 	float monDmg9MM;
 	float monDmgMP5;
@@ -111,6 +119,8 @@ struct skilldata_t
 	float monDmg357;
 	
 	float monDmgHornet;
+	float monDmgShockroach;
+	float monDmgSpore;
 };
 
 extern DLL_GLOBAL skilldata_t gSkillData;
