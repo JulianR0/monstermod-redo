@@ -1490,4 +1490,110 @@ public:
 	static const char *pGruntSentences[];
 };
 
+//=========================================================
+// Voltigore's energy ball projectile
+//=========================================================
+#define		VOLTIGORE_MAX_BEAMS		8
+class CMVoltigoreEnergyBall : public CMBaseEntity
+{
+public:
+	void Spawn(void);
+
+	static edict_t *Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity);
+	void EXPORT BallTouch(edict_t *pOther);
+	void EXPORT FlyThink(void);
+
+	void CreateBeams();
+	void ClearBeams();
+	void UpdateBeams();
+
+	CMBeam* m_pBeam[VOLTIGORE_MAX_BEAMS];
+	int m_iBeams;
+	float m_timeToDie;
+
+protected:
+
+	void CreateBeam(int nIndex, const Vector& vecPos, int width, int brightness);
+	void UpdateBeam(int nIndex, const Vector& vecPos, bool show);
+	void ClearBeam(int nIndex);
+};
+
+//=========================================================
+// Voltigore
+//=========================================================
+class CMVoltigore : public CMBaseMonster
+{
+public:
+	virtual void Spawn(void);
+	virtual void Precache(void);
+	void SetYawSpeed(void);
+	virtual int  Classify(void);
+	virtual void HandleAnimEvent(MonsterEvent_t *pEvent);
+	virtual void IdleSound(void);
+	virtual void PainSound(void);
+	virtual void DeathSound(void);
+	virtual void AlertSound(void);
+	void AttackSound(void);
+	virtual void StartTask(Task_t *pTask);
+	virtual BOOL CheckMeleeAttack1(float flDot, float flDist);
+	virtual BOOL CheckRangeAttack1(float flDot, float flDist);
+	virtual void RunAI(void);
+	virtual void GibMonster();
+	Schedule_t *GetSchedule(void);
+	Schedule_t *GetScheduleOfType(int Type);
+	virtual int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
+	virtual void Killed(entvars_t *pevAttacker, int iGib);
+
+	CUSTOM_SCHEDULES
+
+	float m_flNextZapTime; // last time the voltigore used the spit attack.
+	BOOL m_fShouldUpdateBeam;
+	CMBeam* m_pBeam[3];
+	CMSprite* m_pBeamGlow;
+	int m_glowBrightness;
+
+	static const char* pAlertSounds[];
+	static const char* pAttackMeleeSounds[];
+	static const char* pMeleeHitSounds[];
+	static const char* pMeleeMissSounds[];
+	static const char* pComSounds[];
+	static const char* pDeathSounds[];
+	static const char* pFootstepSounds[];
+	static const char* pIdleSounds[];
+	static const char* pPainSounds[];
+	static const char* pGruntSounds[];
+
+	void CreateBeams();
+	void DestroyBeams();
+	void UpdateBeams();
+
+	void CreateGlow();
+	void DestroyGlow();
+	void GlowUpdate();
+	void GlowOff(void);
+	void GlowOn(int level);
+protected:
+	void GibBeamDamage();
+	void PrecacheImpl(char* modelName);
+	int m_beamTexture;
+};
+
+//=========================================================
+// Baby Voltigore
+//=========================================================
+class CMBabyVoltigore : public CMVoltigore
+{
+public:
+	void	Spawn(void);
+	void	Precache(void);
+	void	HandleAnimEvent(MonsterEvent_t* pEvent);
+	BOOL	CheckMeleeAttack1(float flDot, float flDist);
+	BOOL	CheckRangeAttack1(float flDot, float flDist);
+	void	StartTask(Task_t *pTask);
+	void	Killed(entvars_t *pevAttacker, int iGib);
+	void	GibMonster();
+	Schedule_t* GetSchedule();
+	Schedule_t* GetScheduleOfType(int Type);
+};
+
 #endif // BASEMONSTER_H

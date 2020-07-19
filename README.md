@@ -39,7 +39,7 @@ If you are trying to use the compiled binary, you must know that it has been com
 
 To remedy this issue you have two options:
 
-You can recompile the source code under g++ 4.8 and use the newly generated binary. Make sure to edit the Makefile so it points to that version of g++. Compilation is done by simply running `make` on the `src/dlls` folder
+You can recompile the source code under g++ 4.8 and use the newly generated binary. Make sure to edit the Makefile so it points to that version of g++. Compilation is done by simply running `make` on the `src/dlls` folder.
 
 Alternatively, you can "remove" the outdated library to force HLDS to use the libstdc++ provided by the linux distro, which is generally more up to date. You might need to install GCC/G++ on the operating system if it doesn't work.
 
@@ -83,7 +83,7 @@ Current milestones are separated by "Tiers", which are as follows:
 
 ### Tier 3
 
-- Implement *-almost-* all Opposing Force monsters.
+- Implement *-almost-* all Opposing Force monsters. **[DONE]**
 - Implement *-almost-* all default Sven Co-op monsters.
 - Add configurations to change AI behaviour.
 

@@ -158,6 +158,8 @@ monster_type_t monster_types[]=
 	"monster_pitdrone", FALSE,
 	"monster_shockroach", FALSE,
 	"monster_shocktrooper", FALSE,
+	"monster_voltigore", FALSE,
+	"monster_baby_voltigore", FALSE,
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
 	"", FALSE
@@ -545,7 +547,7 @@ void check_monster_info( edict_t *pPlayer )
 				MESSAGE_END();
 				
 				// Delay till next scan
-				g_NextMessage[ ENTINDEX( pPlayer ) ] = gpGlobals->time + 0.875;
+				g_NextMessage[ ENTINDEX( pPlayer ) ] = gpGlobals->time + 0.8;
 			}
 		}
 	}
@@ -624,6 +626,8 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 		case 21: monsters[monster_index].pMonster = CreateClassPtr((CMPitdrone *)NULL); break;
 		case 22: monsters[monster_index].pMonster = CreateClassPtr((CMShockRoach *)NULL); break;
 		case 23: monsters[monster_index].pMonster = CreateClassPtr((CMStrooper *)NULL); break;
+		case 24: monsters[monster_index].pMonster = CreateClassPtr((CMVoltigore *)NULL); break;
+		case 25: monsters[monster_index].pMonster = CreateClassPtr((CMBabyVoltigore *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -1307,6 +1311,8 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMPitdrone pitdrone;
 	CMShockRoach shockroach;
 	CMStrooper strooper;
+	CMVoltigore voltigore;
+	CMBabyVoltigore babyvoltigore;
 	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1348,6 +1354,8 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 21: pitdrone.Precache(); break;
 				case 22: shockroach.Precache(); break;
 				case 23: strooper.Precache(); break;
+				case 24: voltigore.Precache(); break;
+				case 25: babyvoltigore.Precache(); break;
 			}
 		}
 	}

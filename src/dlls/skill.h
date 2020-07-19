@@ -110,6 +110,13 @@ struct skilldata_t
 	float strooperMaxCharge;
 	float strooperRchgSpeed;
 	
+	float voltigoreHealth;
+	float voltigoreDmgBeam;
+	float voltigoreDmgPunch;
+	
+	float babyVoltigoreHealth;
+	float babyVoltigoreDmgPunch;
+	
 // weapons shared by monsters
 	float monDmg9MM;
 	float monDmgMP5;

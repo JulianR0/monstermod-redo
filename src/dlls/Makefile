@@ -50,6 +50,7 @@ OBJ = \
 	talkmonster.o \
 	turret.o \
 	util.o \
+	voltigore.o \
 	weapons.o \
 	zombie.o
 

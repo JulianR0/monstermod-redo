@@ -89,6 +89,11 @@ skill_cfg_t skill_cfg[] = {
    {"sk_shocktrooper_kick", &gSkillData.strooperDmgKick},
    {"sk_shocktrooper_maxcharge", &gSkillData.strooperMaxCharge},
    {"sk_shocktrooper_rchgspeed", &gSkillData.strooperRchgSpeed},
+   {"sk_voltigore_health", &gSkillData.voltigoreHealth},
+   {"sk_voltigore_dmg_beam", &gSkillData.voltigoreDmgBeam},
+   {"sk_voltigore_dmg_punch", &gSkillData.voltigoreDmgPunch},
+   {"sk_babyvoltigore_health", &gSkillData.babyVoltigoreHealth},
+   {"sk_babyvoltigore_dmg_punch", &gSkillData.babyVoltigoreDmgPunch},
    {"sk_12mm_bullet", &gSkillData.monDmg9MM},
    {"sk_9mmAR_bullet", &gSkillData.monDmgMP5},
    {"sk_9mm_bullet", &gSkillData.monDmg12MM},
@@ -261,6 +266,15 @@ void monster_skill_init(void)
 	gSkillData.strooperDmgKick = 10.0f;
 	gSkillData.strooperMaxCharge = 8.0f;
 	gSkillData.strooperRchgSpeed = 1.0f;
+	
+	// Voltigore
+	gSkillData.voltigoreHealth = 320.0f;
+	gSkillData.voltigoreDmgBeam = 50.0f;
+	gSkillData.voltigoreDmgPunch = 40.0f;
+	
+	// Baby Voltigore
+	gSkillData.babyVoltigoreHealth = 60.0f;
+	gSkillData.babyVoltigoreDmgPunch = 15.0f;
 	
 	// MONSTER WEAPONS
 	gSkillData.monDmg9MM = 5.0f;
