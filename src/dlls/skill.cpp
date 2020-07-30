@@ -94,6 +94,10 @@ skill_cfg_t skill_cfg[] = {
    {"sk_voltigore_dmg_punch", &gSkillData.voltigoreDmgPunch},
    {"sk_babyvoltigore_health", &gSkillData.babyVoltigoreHealth},
    {"sk_babyvoltigore_dmg_punch", &gSkillData.babyVoltigoreDmgPunch},
+   {"sk_babygarg_health", &gSkillData.babygargHealth},
+   {"sk_babygarg_dmg_slash", &gSkillData.babygargDmgSlash},
+   {"sk_babygarg_dmg_fire", &gSkillData.babygargDmgFire},
+   {"sk_babygarg_dmg_stomp", &gSkillData.babygargDmgStomp},
    {"sk_12mm_bullet", &gSkillData.monDmg9MM},
    {"sk_9mmAR_bullet", &gSkillData.monDmgMP5},
    {"sk_9mm_bullet", &gSkillData.monDmg12MM},
@@ -149,86 +153,86 @@ void scan_monster_skill(FILE *fp)
 
 void monster_skill_init(void)
 {
-   char game_dir[256];
-   char filename[256];
-   FILE *fp = NULL;
-
+	char game_dir[256];
+	char filename[256];
+	FILE *fp = NULL;
+	
 	// Alien Grunt
 	gSkillData.agruntHealth = 90.0f;
 	gSkillData.agruntDmgPunch = 20.0f;
-
+	
 	// Apache
 	gSkillData.apacheHealth = 250.0f;
-
+	
 	// Barney
 	gSkillData.barneyHealth = 35.0f;
-
+	
 	// Big momma
 	gSkillData.bigmommaHealthFactor = 1.5f;
 	gSkillData.bigmommaDmgSlash = 60.0f;
 	gSkillData.bigmommaDmgBlast = 120.0f;
 	gSkillData.bigmommaRadiusBlast = 250.0f;
-
+	
 	// Bullsquid
 	gSkillData.bullsquidHealth = 40.0f;
 	gSkillData.bullsquidDmgBite = 25.0f;
 	gSkillData.bullsquidDmgWhip = 35.0f;
 	gSkillData.bullsquidDmgSpit = 10.0f;
-
+	
 	// Gargantua
 	gSkillData.gargantuaHealth = 800.0f;
 	gSkillData.gargantuaArmor = 0.85f;
 	gSkillData.gargantuaDmgSlash = 30.0f;
 	gSkillData.gargantuaDmgFire = 5.0f;
 	gSkillData.gargantuaDmgStomp = 100.0f;
-
+	
 	// Hassassin (Female Assassin)
 	gSkillData.hassassinHealth = 50.0f;
-
+	
 	// Headcrab
 	gSkillData.headcrabHealth = 10.0f;
 	gSkillData.headcrabDmgBite = 10.0f;
-
+	
 	// Hgrunt (Human Grunt)
 	gSkillData.hgruntHealth = 50.0f;
 	gSkillData.hgruntDmgKick = 10.0f;
 	gSkillData.hgruntShotgunPellets = 5.0f;
 	gSkillData.hgruntGrenadeSpeed = 600.0f;
-
+	
 	// Houndeye
 	gSkillData.houndeyeHealth = 20.0f;
 	gSkillData.houndeyeDmgBlast = 15.0f;
-
+	
 	// Alien Slave
 	gSkillData.slaveHealth = 30.0f;
 	gSkillData.slaveDmgClaw = 10.0f;
 	gSkillData.slaveDmgClawrake = 25.0f;
 	gSkillData.slaveDmgZap = 10.0f;
-
+	
 	// Icthyosaur
 	gSkillData.ichthyosaurHealth = 200.0f;
 	gSkillData.ichthyosaurDmgShake = 35.0f;
-
+	
 	// Controller
 	gSkillData.controllerHealth = 60.0f;
 	gSkillData.controllerDmgZap = 25.0f;
 	gSkillData.controllerSpeedBall = 800.0f;
 	gSkillData.controllerDmgBall = 4.0f;
-
+	
 	// Scientist
 	gSkillData.scientistHealth = 20.0f;
 	gSkillData.scientistHeal = 25.0f;
-
+	
 	// Snark
 	gSkillData.snarkHealth = 2.0f;
 	gSkillData.snarkDmgBite = 10.0f;
 	gSkillData.snarkDmgPop = 5.0f;
-
+	
 	// Zombie
 	gSkillData.zombieHealth = 50.0f;
 	gSkillData.zombieDmgOneSlash = 20.0f;
 	gSkillData.zombieDmgBothSlash = 40.0f;
-
+	
 	// Turret
 	gSkillData.turretHealth = 50.0f;
 	
@@ -275,6 +279,12 @@ void monster_skill_init(void)
 	// Baby Voltigore
 	gSkillData.babyVoltigoreHealth = 60.0f;
 	gSkillData.babyVoltigoreDmgPunch = 15.0f;
+	
+	// Baby Gargantua
+	gSkillData.babygargHealth = 640.0f;
+	gSkillData.babygargDmgSlash = 24.0f;
+	gSkillData.babygargDmgFire = 4.0f;
+	gSkillData.babygargDmgStomp = 80.0f;
 	
 	// MONSTER WEAPONS
 	gSkillData.monDmg9MM = 5.0f;

@@ -1087,6 +1087,7 @@ public:
 private:
 	edict_t *GargantuaCheckTraceHullAttack(float flDist, int iDamage, int iDmgType);
 
+protected:
 	CMSprite	*m_pEyeGlow;		// Glow around the eyes
 	CMBeam		*m_pFlame[4];		// Flame beams
 
@@ -1594,6 +1595,48 @@ public:
 	void	GibMonster();
 	Schedule_t* GetSchedule();
 	Schedule_t* GetScheduleOfType(int Type);
+};
+
+//
+// sven co-op monsters
+//
+
+//=========================================================
+// Baby Gargantua
+//=========================================================
+class CMBabyGargantua : public CMGargantua
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	void HandleAnimEvent( MonsterEvent_t *pEvent );
+	
+	BOOL CheckMeleeAttack1( float flDot, float flDist );		// Swipe
+	BOOL CheckMeleeAttack2( float flDot, float flDist );		// Flames
+	BOOL CheckRangeAttack1( float flDot, float flDist );		// Stomp attack
+	
+	void StartTask( Task_t *pTask );
+	void RunTask( Task_t *pTask );
+	
+	void StompAttack( void );
+	void FlameCreate( void );
+	void FlameUpdate( void );
+	void FlameDestroy( void );
+	
+	static const char *pBeamAttackSounds[];
+	static const char *pFootSounds[];
+	static const char *pIdleSounds[];
+	static const char *pAlertSounds[];
+	static const char *pPainSounds[];
+	static const char *pAttackSounds[];
+	static const char *pStompSounds[];
+	static const char *pBreatheSounds[];
+	static const char *pDieSounds[];
+	
+private:
+	edict_t *BabyGargCheckTraceHullAttack(float flDist, int iDamage, int iDmgType);
 };
 
 #endif // BASEMONSTER_H

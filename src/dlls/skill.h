@@ -22,7 +22,7 @@
 struct skilldata_t
 {
 // Monster Health & Damage
-	float	agruntHealth;
+	float agruntHealth;
 	float agruntDmgPunch;
 
 	float apacheHealth;
@@ -116,6 +116,13 @@ struct skilldata_t
 	
 	float babyVoltigoreHealth;
 	float babyVoltigoreDmgPunch;
+	
+	
+//SC monsters
+	float babygargHealth;
+	float babygargDmgSlash;
+	float babygargDmgFire;
+	float babygargDmgStomp;
 	
 // weapons shared by monsters
 	float monDmg9MM;
