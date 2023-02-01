@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "monster_mm_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\dlls" /I "..\common" /I "..\engine" /I "..\pm_shared" /I "..\..\metamod" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "monster_mm_EXPORTS" /D strcasecmp=stricmp /D strncasecmp=_strnicmp /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "..\dlls" /I "..\common" /I "..\engine" /I "..\pm_shared" /I "..\metamod" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "monster_mm_EXPORTS" /D strcasecmp=stricmp /D strncasecmp=_strnicmp /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -55,22 +55,6 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386 /def:".\monster_mm.def"
-# Begin Custom Build - Copying to DLL folder
-TargetPath=.\Release\monster_mm.dll
-TargetName=monster_mm
-InputPath=.\Release\monster_mm.dll
-SOURCE="$(InputPath)"
-
-"$(TargetName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy $(TargetPath) D:\Half-Life\valve\dlls 
-	copy $(TargetPath) D:\Half-Life\tfc\dlls 
-	copy $(TargetPath) D:\Half-Life\cstrike\dlls 
-	copy $(TargetPath) D:\Half-Life\dmc\dlls 
-	copy $(TargetPath) D:\Half-Life\dod\dlls 
-	copy $(TargetPath) D:\Half-Life\firearms\dlls 
-	copy $(TargetPath) D:\Half-Life\frontline\dlls 
-	
-# End Custom Build
 
 !ELSEIF  "$(CFG)" == "monster_mm - Win32 Debug"
 
@@ -86,7 +70,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "monster_mm_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\dlls" /I "..\common" /I "..\engine" /I "..\pm_shared" /I "..\..\metamod" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "monster_mm_EXPORTS" /D strcasecmp=stricmp /D strncasecmp=_strnicmp /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\dlls" /I "..\common" /I "..\engine" /I "..\pm_shared" /I "..\metamod" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "monster_mm_EXPORTS" /D strcasecmp=stricmp /D strncasecmp=_strnicmp /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -98,23 +82,6 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /def:".\monster_mm.def" /pdbtype:sept
-# Begin Custom Build - Copying to DLL folder
-TargetPath=.\Debug\monster_mm.dll
-TargetName=monster_mm
-InputPath=.\Debug\monster_mm.dll
-SOURCE="$(InputPath)"
-
-"$(TargetName)" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	copy $(TargetPath) D:\Half-Life\valve\dlls 
-	copy $(TargetPath) D:\Half-Life\tfc\dlls 
-	copy $(TargetPath) D:\Half-Life\cstrike\dlls 
-	copy $(TargetPath) D:\Half-Life\dmc\dlls 
-	copy $(TargetPath) D:\Half-Life\dod\dlls 
-	copy $(TargetPath) D:\Half-Life\firearms\dlls 
-	copy $(TargetPath) D:\Half-Life\frontline\dlls 
-	copy $(TargetPath) D:\Half-Life\gearbox\dlls 
-	
-# End Custom Build
 
 !ENDIF 
 
@@ -183,11 +150,23 @@ SOURCE=.\effects.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\explode.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\flyingmonster.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\gargantua.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ggrenade.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\gonome.cpp
 # End Source File
 # Begin Source File
 
@@ -223,6 +202,10 @@ SOURCE=.\islave.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\massn.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\monster_api.cpp
 # End Source File
 # Begin Source File
@@ -243,7 +226,23 @@ SOURCE=.\nodes.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\otis.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\pitdrone.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\scientist.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\shock.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\shockroach.cpp
 # End Source File
 # Begin Source File
 
@@ -255,7 +254,15 @@ SOURCE=.\sound.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\sporegrenade.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\squeakgrenade.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\strooper.cpp
 # End Source File
 # Begin Source File
 
@@ -267,7 +274,15 @@ SOURCE=.\talkmonster.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\turret.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\util.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\voltigore.cpp
 # End Source File
 # Begin Source File
 
@@ -284,6 +299,10 @@ SOURCE=.\zombie.cpp
 # Begin Source File
 
 SOURCE=.\activity.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\activitymap.h
 # End Source File
 # Begin Source File
 
@@ -315,6 +334,10 @@ SOURCE=.\decals.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\defaultai.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\doors.h
 # End Source File
 # Begin Source File
@@ -339,7 +362,15 @@ SOURCE=.\func_break.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\hornet.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\monster_plugin.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\monsterevent.h
 # End Source File
 # Begin Source File
 
@@ -351,7 +382,15 @@ SOURCE=.\nodes.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\plane.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\schedule.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\shock.h
 # End Source File
 # Begin Source File
 

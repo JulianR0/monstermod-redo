@@ -5,11 +5,11 @@
 #ifndef MONSTER_PLUGIN_H
 #define MONSTER_PLUGIN_H
 
-typedef struct pKVD
+typedef struct
 {
 	char key[33];
 	char value[33];
-};
+} pKVD;
 
 #define MAX_KEYVALUES 32
 

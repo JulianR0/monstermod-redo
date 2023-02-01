@@ -1266,13 +1266,10 @@ void CSpiral::Think( void )
 
 void SpawnExplosion( Vector center, float randomRange, float time, int magnitude, edict_t *owner )
 {
+	/* no need for this
 	KeyValueData	kvd;
 	char			buf[128];
 
-	center.x += RANDOM_FLOAT( -randomRange, randomRange );
-	center.y += RANDOM_FLOAT( -randomRange, randomRange );
-
-    /*
 	CMBaseEntity *pExplosion = CreateClassPtr((CEnvExplosion *)NULL); // CMBaseEntity::Create( "env_explosion", center, g_vecZero, NULL );
 	sprintf( buf, "%3d", magnitude );
 	kvd.szKeyName = "iMagnitude";
@@ -1284,6 +1281,9 @@ void SpawnExplosion( Vector center, float randomRange, float time, int magnitude
 	pExplosion->SetThink( &CMBaseEntity::SUB_CallUseToggle );
 	pExplosion->pev->nextthink = gpGlobals->time + time;
     */
+
+	center.x += RANDOM_FLOAT( -randomRange, randomRange );
+	center.y += RANDOM_FLOAT( -randomRange, randomRange );
 
     // explode.h
     ExplosionCreate( center, g_vecZero, owner, magnitude, SF_ENVEXPLOSION_NODAMAGE, time );

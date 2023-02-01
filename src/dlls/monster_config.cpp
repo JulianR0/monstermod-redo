@@ -282,7 +282,7 @@ void scan_monster_cfg(FILE *fp)
 				// Bruteforce to remove quotes
 				char parse[66] = {0};
 				int skip = 0;
-				for (int i = 0; i < strlen(input); i++)
+				for (unsigned i = 0; i < strlen(input); i++)
 				{
 					if (input[i] == '"')
 					{
@@ -317,12 +317,11 @@ void scan_monster_cfg(FILE *fp)
 	}
 }
 
-void process_monster_cfg(void)
+bool process_monster_cfg(void)
 {
 	char game_dir[256];
 	char filename[256];
 	FILE *fp = NULL;
-	bool status = FALSE;  // no error
 
 	monster_spawn_count = 0;
 
@@ -351,8 +350,7 @@ void process_monster_cfg(void)
 		{
 			//META_CONS("[MONSTER] ERROR: Could not open \"%s\"!", filename);
 			LOG_MESSAGE(PLID, "ERROR: Could not open \"%s\" file!", filename);
-
-			return;
+			return TRUE; // error
 		}
 
 		scan_monster_cfg(fp);
@@ -360,7 +358,7 @@ void process_monster_cfg(void)
 		fclose(fp);
 	}
 
-	return;
+	return FALSE; // all ok
 }
 
 
