@@ -81,10 +81,11 @@ struct skilldata_t
 	float zombieHealth;
 	float zombieDmgOneSlash;
 	float zombieDmgBothSlash;
-	
+
 	float turretHealth;
 	float miniturretHealth;
 	float sentryHealth;
+
 
 //OP4 monsters
 	float gonomeHealth;
@@ -116,14 +117,17 @@ struct skilldata_t
 	
 	float babyVoltigoreHealth;
 	float babyVoltigoreDmgPunch;
-	
-	
+
+
 //SC monsters
 	float babygargHealth;
 	float babygargDmgSlash;
 	float babygargDmgFire;
 	float babygargDmgStomp;
 	
+	float hwgruntHealth;
+
+
 // weapons shared by monsters
 	float monDmg9MM;
 	float monDmgMP5;

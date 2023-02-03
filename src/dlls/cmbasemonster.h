@@ -1639,4 +1639,25 @@ private:
 	edict_t *BabyGargCheckTraceHullAttack(float flDist, int iDamage, int iDmgType);
 };
 
+//=========================================================
+// Heavy Weapons Grunt
+//=========================================================
+class CMHWGrunt : public CMHGrunt
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int Classify(void);
+
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+	void SetActivity(Activity NewActivity);
+	
+	void Minigun(void);
+
+	float m_flMinigunSpinTime;
+};
+
 #endif // BASEMONSTER_H

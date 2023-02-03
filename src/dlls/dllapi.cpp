@@ -161,6 +161,7 @@ monster_type_t monster_types[]=
 	"monster_voltigore", FALSE,
 	"monster_baby_voltigore", FALSE,
 	"monster_babygarg", FALSE, // Sven Co-op Monsters
+	"monster_hwgrunt", FALSE,
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
 	"", FALSE
@@ -630,6 +631,7 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 		case 24: monsters[monster_index].pMonster = CreateClassPtr((CMVoltigore *)NULL); break;
 		case 25: monsters[monster_index].pMonster = CreateClassPtr((CMBabyVoltigore *)NULL); break;
 		case 26: monsters[monster_index].pMonster = CreateClassPtr((CMBabyGargantua *)NULL); break;
+		case 27: monsters[monster_index].pMonster = CreateClassPtr((CMHWGrunt *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -1316,6 +1318,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMVoltigore voltigore;
 	CMBabyVoltigore babyvoltigore;
 	CMBabyGargantua babygargantua;
+	CMHWGrunt hwgrunt;
 	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1360,6 +1363,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 24: voltigore.Precache(); break;
 				case 25: babyvoltigore.Precache(); break;
 				case 26: babygargantua.Precache(); break;
+				case 27: hwgrunt.Precache(); break;
 			}
 		}
 	}

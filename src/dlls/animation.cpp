@@ -297,9 +297,14 @@ int GetAnimationEvent( void *pmodel, entvars_t *pev, MonsterEvent_t *pMonsterEve
 
 	for (; index < pseqdesc->numevents; index++)
 	{
+		// Some Sven Co-op monsters rely on client-side events.
+		// Let those be sent to the server AI, even if it's wrong. -Giegue
+		
+		/*
 		// Don't send client-side events to the server AI
 		if ( pevent[index].event >= EVENT_CLIENT )
 			continue;
+		*/
 
 		if ( (pevent[index].frame >= flStart && pevent[index].frame < flEnd) || 
 			((pseqdesc->flags & STUDIO_LOOPING) && flEnd >= pseqdesc->numframes - 1 && pevent[index].frame < flEnd - pseqdesc->numframes + 1) )
