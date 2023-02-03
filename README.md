@@ -21,19 +21,22 @@ A small light is seen at the distance...
 
 ## What is this?
 
-MonsterMod is a MetaMod plugin. It's purpose was to allow support for monsters to spawn in multiplayer games where they are not. The project updates became incredibly obscure, getting up-to-date versions and the new additions was very difficult. And the only one who had even futher progress kept the plugin private.
+MonsterMod is a MetaMod plugin. Its purpose was to allow multiplayer games to add monsters, where it wasn't possible to do so by normal means. The updates of the project became incredibly obscure: Getting the "up-to-date" versions containing the new additions (opposing force monsters, for example) were very difficult. And the only one who managed to bring the plugin even futher kept the progress of the plugin private.
 
-Nearly 18 years after botman's original plugin was released, the future of the project became nothing but a forgotten, ancient relic of the past.
+After 20 years (and a half) since botman's original plugin was released, the future of the project became nothing but a forgotten, ancient relic of the past.
 
 Not anymore...
 
-This project aims towards the recreation of the new features of the "obscured and updated" Monster Mod plugin. Taking botman's original 2002 plugin and working up from the ground, and to rebuild it with the new features and monsters that only few were able to see.
+The first goal of this project aims towards the recreation of the new features of the "obscured and updated" Monster Mod plugin. Taking botman's original 2002 plugin and working from the ground up, the mission is to rebuild it with the new features and monsters that only few were able to see.
 
-The source code is completely free to use for everyone: In the event that the development of this new project falls and becomes stagnant again, the plugin will live on, as the project's second goal is it's preservation. The original botman's page where you can download the 2002 plugin will not stay up forever.
+The source code is completely free for everyone to use: In the event that the development of this project falls and becomes stagnant again, the plugin will live on, as the project's second goal is its preservation. The original botman's page where you can download the 2002 plugin will not stay up forever.
 
-Under no circumstances we shall allow this project to fade away and become lost amidst the gears of time.
+Under no circumstances shall we allow this project to fade away and become lost amidst the gears of time.
 
 ## Installation
+
+*NOTE: Outdated. Ideally, users should be able to use the plugin "out-of-the-box" without the need to do the complicated mess explained below.*
+*TODO: Add build instructions, just using 'make' on G++ 4.8 is really vague.*
 
 If you are trying to use the compiled binary, you must know that it has been compiled with a mayor GCC version and it will be highly unlikely that it will run on a vanilla HLDS server. If the plugin fails to load due to libstdc++ not having CXXABI_1.X.X or similar, read on. HLDS uses it's own libstdc++ library. Any plugins compiled with GCC versions 5.x and greater will not work with the outdated library.
 
@@ -51,7 +54,7 @@ Keeping track of the number of precached content will allow you to maximize the 
 
 ## Using MonsterMod on Counter-Strike
 
-Counter-Strike is the worst offender when it comes to precached content, it precaches non trivial sounds of all weapons. That means sounds such as "clip-ins", "clip-outs" are added to the list. Since those sounds are handled client-side by the models themselves, theres is no need to be kept precached on the server. Only the weapons fire sounds are needed.
+Counter-Strike precaches non trivial sounds of all weapons. This means that sounds such as "clip-ins", "clip-outs" are added to the list, taking quite a bit of space in the precache count. Let it be a reminder that our good old Half-Life can only store a maximum of 512 precached resources. Since these sounds are handled client-side by the models themselves, theres is no need to be kept precached on the server. Only the weapons fire sounds are needed.
 
 MonsterMod does not have an integrated "Unprecacher" to remove those sounds, but you can remove them manually with AMX Mod X, using Fakemeta. Register forward **FM_PrecacheSound** and return **FMRES_SUPERCEDE** on the following sounds:
 
@@ -148,22 +151,22 @@ Doing this will free **85** sounds from the precache list that you can now use f
 
 ## Known Bugs
 
-There are a few bugs that to this day I'm unable to find out why it happens:
+I'm aware that the plugin is far from perfect, and there are a few things that need fixing/will be fixing as the project evolves:
 
-- Human Grunts are completely unable to reload their weapons. As a workaround, infinite ammo has been given to them.
+- Human Grunts are unable to reload their weapons. As a workaround, infinite ammo has been given to them.
 
 - Male Assassins share the same AI as HGrunts, so their ammo problem is still a thing, and the same workaround is used.
 
-- Shock Troopers have it worst. They also share HGrunts AI code, and despite them automatically increasing their "bullets", they just eventually stop firing. Worse, taking cover is absolutely broken, and remain completely frozen in place when it happens.
+- Shock Troopers seems to be broken despite sharing HGrunts AI code. Despite having infinite ammo, they eventually stop firing. Worse, taking cover is absolutely broken, and they remain completely frozen in place when it happens.
 
-Any hint that helps me fix these issues are greatly appreciated.
+- If a Heavy Weapons Grunt is to lose their target while his minigun is still spinning, the next time it targets an enemy it will instantly fire instead of spinning up the minigun again.
 
 ## Milestones
 
 Attempting to recreate everything in one go is a daunting task.
 Let it be known that the original 2002 source code will NOT compile on today's compilers, and does NOT contain all the necessary files for compilation. The preliminary was to rewrite and provide as many files or lines of code to ensure it can compile again, and be usable on an actual HLDS installation.
 
-Currently, I aim working this for linux only. While the original 2002 Visual C++ DSP file exists in the repository, it has not been updated to newer formats. Who knows if it can even open on newer Visual Studio versions, let alone, to compile?
+The original Visual C++ 6.0 DSP file exists in the repository but neither the file nor the code has been updated to newer formats. Don't expect it to compile on modern Visual Studio versions.
 
 Current milestones are separated by "Tiers", which are as follows:
 
@@ -186,19 +189,22 @@ Current milestones are separated by "Tiers", which are as follows:
 
 ### Tier 3
 
+- Update source code so it can compile AND run **ON WINDOWS**. **[DONE]**
 - Implement *-almost-* all Opposing Force monsters. **[DONE]**
 - Implement *-almost-* all default Sven Co-op monsters.
-- Add configurations to change AI behaviour.
+- Custom model support.
 
 ### Tier 4
 
-- Custom model support, along with scaling.
+- Model scaling.
 - Custom sound support.
-- Implement extra entities to enhance map gameplay.
+- Add configurations to change AI behaviour.
+- Fix all pending bugs.
 
 ### Tier 5
 
-- Update source code so it can compile AND run **ON WINDOWS**.
+- Optimize code and enhance the AI.
+- Create "tool" entities for easier map customization.
 
 
 What will the future hold after all Tiers has been completed?
