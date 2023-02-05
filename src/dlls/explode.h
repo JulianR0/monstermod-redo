@@ -28,5 +28,6 @@ extern DLL_GLOBAL short g_sModelIndexSmoke;
 extern DLL_GLOBAL short g_sModelIndexTinySpit;
 
 extern void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwner, int magnitude, int flags, float delay );
+extern void SmokeCreate( const Vector &origin, int amount, int size, int radius, float delay );
 
 #endif			//EXPLODE_H

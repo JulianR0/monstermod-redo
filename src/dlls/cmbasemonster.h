@@ -1660,4 +1660,39 @@ public:
 	float m_flMinigunSpinTime;
 };
 
+//=========================================================
+// Robo Grunt
+//=========================================================
+class CMRGrunt : public CMHGrunt
+{
+public:
+	int  Classify(void);
+
+	BOOL FOkToSpeak(void);
+
+	void Spawn( void );
+	void Precache( void );
+
+	void DeathSound(void);
+	void PainSound(void);
+	void IdleSound(void);
+	
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	
+	void RunAI(void);
+	
+	void Killed(entvars_t *pevAttacker, int iGib);
+	void GibMonster();
+	
+	void EXPORT SparkTouch(edict_t *pOther);
+	void EXPORT StartGib(void);
+
+	float m_flNextSpark;
+	float m_flNextDischarge;
+	float m_flActiveDischarge;
+
+	int m_iBodyGibs;
+};
+
 #endif // BASEMONSTER_H

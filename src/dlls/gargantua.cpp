@@ -62,13 +62,6 @@ const float GARG_ATTACKDIST = 80.0;
 int gStompSprite = 0, gGargGibModel = 0;
 void SpawnExplosion( Vector center, float randomRange, float time, int magnitude, edict_t *owner );
 
-class CSmoker : public CMBaseEntity
-{
-public:
-	void Spawn( void );
-	void Think( void );
-};
-
 // Spiral Effect
 class CSpiral : public CMBaseEntity
 {
@@ -781,7 +774,7 @@ void CMGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 //			if ( RANDOM_LONG(0,100) < 25 )
 //				EMIT_SOUND_DYN( ENT(pev), CHAN_BODY, pRicSounds[ RANDOM_LONG(0,ARRAYSIZE(pRicSounds)-1) ], 1.0, ATTN_NORM, 0, PITCH_NORM );
 		}
-		flDamage *= (1.01f - gSkillData.gargantuaArmor); // Again, for mods (see below)
+//		flDamage *= (1.00f - gSkillData.gargantuaArmor); // in here...?
 	}
 
 	CMBaseMonster::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
@@ -789,13 +782,12 @@ void CMGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 }
 
 
-
 int CMGargantua::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
 	if ( IsAlive() )
 	{
 		if ( !(bitsDamageType & GARG_DAMAGE) )
-			flDamage *= (1.01f - gSkillData.gargantuaArmor); // This is for mods that don't use explosives of any kind or do not work with the gargantua.
+			flDamage *= (1.00f - gSkillData.gargantuaArmor); // This is for mods that don't use explosives of any kind or do not work with the gargantua.
 		
 		// Always set
 		SetConditions( bits_COND_LIGHT_DAMAGE );
@@ -821,14 +813,12 @@ void CMGargantua::DeathEffect( void )
 		SpawnExplosion( position, 70, (i * 0.3), 60 + (i*20), pev->owner );
 		position.z += 15;
 	}
-
-	CMBaseEntity *pSmoker = CreateClassPtr((CSmoker *)NULL); // CMBaseEntity::Create( "env_smoker", pev->origin, g_vecZero, NULL );
-	UTIL_SetOrigin( pSmoker->pev, pev->origin );
-	pSmoker->Spawn();
-	pSmoker->pev->health = 1;	// 1 smoke balls
-	pSmoker->pev->scale = 46;	// 4.6X normal size
-	pSmoker->pev->dmg = 0;		// 0 radial distribution
-	pSmoker->pev->nextthink = gpGlobals->time + 2.5;	// Start in 2.5 seconds
+	
+	// 1 smoke balls
+	// 4.6X normal size
+	// 0 radial distribution
+	// start in 2.5 seconds
+	SmokeCreate( pev->origin, 1, 46, 0, 2.5 );
 }
 
 
@@ -1166,38 +1156,6 @@ void CMGargantua::RunTask( Task_t *pTask )
 		break;
 	}
 }
-
-void CSmoker::Spawn( void )
-{
-	pev->movetype = MOVETYPE_NONE;
-	pev->nextthink = gpGlobals->time;
-	pev->solid = SOLID_NOT;
-	UTIL_SetSize(pev, g_vecZero, g_vecZero );
-	pev->effects |= EF_NODRAW;
-	pev->angles = g_vecZero;
-}
-
-
-void CSmoker::Think( void )
-{
-	// lots of smoke
-	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
-		WRITE_BYTE( TE_SMOKE );
-		WRITE_COORD( pev->origin.x + RANDOM_FLOAT( -pev->dmg, pev->dmg ));
-		WRITE_COORD( pev->origin.y + RANDOM_FLOAT( -pev->dmg, pev->dmg ));
-		WRITE_COORD( pev->origin.z);
-		WRITE_SHORT( g_sModelIndexSmoke );
-		WRITE_BYTE( RANDOM_LONG(pev->scale, pev->scale * 1.1) );
-		WRITE_BYTE( RANDOM_LONG(8,14)  ); // framerate
-	MESSAGE_END();
-
-	pev->health--;
-	if ( pev->health > 0 )
-		pev->nextthink = gpGlobals->time + RANDOM_FLOAT(0.1, 0.2);
-	else
-		UTIL_Remove( this->edict() );
-}
-
 
 void CSpiral::Spawn( void )
 {

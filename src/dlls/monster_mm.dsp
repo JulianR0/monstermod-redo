@@ -198,6 +198,10 @@ SOURCE=.\houndeye.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\hwgrunt.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\islave.cpp
 # End Source File
 # Begin Source File
@@ -231,6 +235,10 @@ SOURCE=.\otis.cpp
 # Begin Source File
 
 SOURCE=.\pitdrone.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\rgrunt.cpp
 # End Source File
 # Begin Source File
 

@@ -99,6 +99,8 @@ skill_cfg_t skill_cfg[] = {
    {"sk_babygarg_dmg_fire", &gSkillData.babygargDmgFire},
    {"sk_babygarg_dmg_stomp", &gSkillData.babygargDmgStomp},
    {"sk_hwgrunt_health", &gSkillData.hwgruntHealth},
+   {"sk_rgrunt_health", &gSkillData.rgruntHealth},
+   {"sk_rgrunt_armor", &gSkillData.rgruntArmor},
    {"sk_12mm_bullet", &gSkillData.monDmg9MM},
    {"sk_9mmAR_bullet", &gSkillData.monDmgMP5},
    {"sk_9mm_bullet", &gSkillData.monDmg12MM},
@@ -289,6 +291,10 @@ void monster_skill_init(void)
 	
 	// Heavy Weapons Grunt
 	gSkillData.hwgruntHealth = 60.0f;
+	
+	// Robo Grunt
+	gSkillData.rgruntHealth = 50.0f;
+	gSkillData.rgruntArmor = 0.75f;
 
 	// MONSTER WEAPONS
 	gSkillData.monDmg9MM = 5.0f;

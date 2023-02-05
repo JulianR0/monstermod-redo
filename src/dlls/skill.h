@@ -127,6 +127,9 @@ struct skilldata_t
 	
 	float hwgruntHealth;
 
+	float rgruntHealth;
+	float rgruntArmor;
+
 
 // weapons shared by monsters
 	float monDmg9MM;
