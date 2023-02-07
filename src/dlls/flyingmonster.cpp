@@ -16,14 +16,13 @@
 #include "util.h"
 #include "cmbase.h"
 #include "cmbasemonster.h"
+#include "cmflyingmonster.h"
 #include "monsters.h"
-#include	"schedule.h"
+#include "schedule.h"
 
 #define FLYING_AE_FLAP		(8)
 #define FLYING_AE_FLAPSOUND	(9)
 
-
-extern DLL_GLOBAL edict_t		*g_pBodyQueueHead;
 
 int CMFlyingMonster :: CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, edict_t *pTarget, float *pflDist )
 {

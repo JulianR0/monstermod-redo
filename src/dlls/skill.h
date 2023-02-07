@@ -126,10 +126,13 @@ struct skilldata_t
 	float babygargDmgStomp;
 	
 	float hwgruntHealth;
-
+	
 	float rgruntHealth;
 	float rgruntArmor;
-
+	
+	float stukabatHealth;
+	float stukabatDmgBite;
+	float stukabatSpeed;
 
 // weapons shared by monsters
 	float monDmg9MM;

@@ -101,6 +101,9 @@ skill_cfg_t skill_cfg[] = {
    {"sk_hwgrunt_health", &gSkillData.hwgruntHealth},
    {"sk_rgrunt_health", &gSkillData.rgruntHealth},
    {"sk_rgrunt_armor", &gSkillData.rgruntArmor},
+   {"sk_stukabat_health", &gSkillData.stukabatHealth},
+   {"sk_stukabat_dmg_bite", &gSkillData.stukabatDmgBite},
+   {"sk_stukabat_speed", &gSkillData.stukabatSpeed},
    {"sk_12mm_bullet", &gSkillData.monDmg9MM},
    {"sk_9mmAR_bullet", &gSkillData.monDmgMP5},
    {"sk_9mm_bullet", &gSkillData.monDmg12MM},
@@ -295,6 +298,11 @@ void monster_skill_init(void)
 	// Robo Grunt
 	gSkillData.rgruntHealth = 50.0f;
 	gSkillData.rgruntArmor = 0.75f;
+	
+	// Stukabat
+	gSkillData.stukabatHealth = 80.0f;
+	gSkillData.stukabatDmgBite = 12.0f;
+	gSkillData.stukabatSpeed = 400.0f;
 
 	// MONSTER WEAPONS
 	gSkillData.monDmg9MM = 5.0f;

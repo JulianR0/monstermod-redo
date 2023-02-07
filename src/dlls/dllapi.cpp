@@ -163,6 +163,7 @@ monster_type_t monster_types[]=
 	"monster_babygarg", FALSE, // Sven Co-op Monsters
 	"monster_hwgrunt", FALSE,
 	"monster_robogrunt", FALSE,
+	"monster_stukabat", FALSE,
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
 	"", FALSE
@@ -634,6 +635,7 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 		case 26: monsters[monster_index].pMonster = CreateClassPtr((CMBabyGargantua *)NULL); break;
 		case 27: monsters[monster_index].pMonster = CreateClassPtr((CMHWGrunt *)NULL); break;
 		case 28: monsters[monster_index].pMonster = CreateClassPtr((CMRGrunt *)NULL); break;
+		case 29: monsters[monster_index].pMonster = CreateClassPtr((CMStukabat *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -1322,6 +1324,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMBabyGargantua babygargantua;
 	CMHWGrunt hwgrunt;
 	CMRGrunt rgrunt;
+	CMStukabat stukabat;
 	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1368,6 +1371,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 26: babygargantua.Precache(); break;
 				case 27: hwgrunt.Precache(); break;
 				case 28: rgrunt.Precache(); break;
+				case 29: stukabat.Precache(); break;
 			}
 		}
 	}
