@@ -36,6 +36,7 @@ Under no circumstances shall we allow this project to fade away and become lost 
 ## Installation
 
 *NOTE: Outdated. Ideally, users should be able to use the plugin "out-of-the-box" without the need to do the complicated mess explained below.*
+
 *TODO: Add build instructions, just using 'make' on G++ 4.8 is really vague.*
 
 If you are trying to use the compiled binary, you must know that it has been compiled with a mayor GCC version and it will be highly unlikely that it will run on a vanilla HLDS server. If the plugin fails to load due to libstdc++ not having CXXABI_1.X.X or similar, read on. HLDS uses it's own libstdc++ library. Any plugins compiled with GCC versions 5.x and greater will not work with the outdated library.
@@ -151,7 +152,7 @@ Doing this will free **85** sounds from the precache list that you can now use f
 
 ## Known Bugs
 
-I'm aware that the plugin is far from perfect, and there are a few things that need fixing/will be fixing as the project evolves:
+I'm aware that the plugin is far from perfect, and there are a few things that need polishing *-especially the AI-*. I'll try to fix/will be fixing as the project evolves:
 
 - Human Grunts are unable to reload their weapons. As a workaround, infinite ammo has been given to them.
 
@@ -191,18 +192,20 @@ Current milestones are separated by "Tiers", which are as follows:
 
 - Update source code so it can compile AND run **ON WINDOWS**. **[DONE]**
 - Implement *-almost-* all Opposing Force monsters. **[DONE]**
-- Implement *-almost-* all default Sven Co-op monsters.
+- Implement *-almost-* all default Sven Co-op monsters. **[DONE]**
+- Make MonsterMod aware of normal game entities. *-For those who want to use the plugin in vanilla HL.-*
 - Custom model support.
 
 ### Tier 4
 
-- Model scaling.
-- Custom sound support.
-- Add configurations to change AI behaviour.
+- Implement reading entities within the BSP itself.
+- Model scaling. *-If possible.-*
+- Custom sound support, along with sentences.
 - Fix all pending bugs.
 
 ### Tier 5
 
+- Add configurations to change AI behaviour.
 - Optimize code and enhance the AI.
 - Create "tool" entities for easier map customization.
 
