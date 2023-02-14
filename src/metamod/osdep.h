@@ -80,7 +80,9 @@
 // DLL.
 #undef DLLEXPORT
 #ifdef _WIN32
-	#define DLLEXPORT	__declspec(dllexport) __attribute__ ((externally_visible))
+	// __attribute__ ((externally_visible)) is not recognized by VC++6
+	// or, rather, is GCC-only. do we need it for windows builds? -Giegue
+	#define DLLEXPORT	__declspec(dllexport)
 	// WINAPI should be provided in the windows compiler headers.
 	// It's usually defined to something like "__stdcall".
 #elif defined(linux)
