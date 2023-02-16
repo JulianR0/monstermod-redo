@@ -134,6 +134,8 @@ public:
 		virtual void MonsterThink( void );
 		void EXPORT	CallMonsterThink( void ) { this->MonsterThink(); }
 		virtual int IRelationship ( CMBaseEntity *pTarget );
+		virtual int IRelationship ( int iTargetClass );
+		int IRelationshipByClass ( int iClass );
 		virtual void MonsterInit ( void );
 		virtual void MonsterInitDead( void );	// Call after animation/pose is set up
 		virtual void BecomeDead( void );
@@ -1655,7 +1657,16 @@ public:
 	void HandleAnimEvent(MonsterEvent_t *pEvent);
 	void SetActivity(Activity NewActivity);
 	
+	Schedule_t	*GetSchedule( void );
+	Schedule_t  *GetScheduleOfType ( int Type );
+	
+	BOOL CheckRangeAttack1( float flDot, float flDist );
+	BOOL CheckMeleeAttack1( float flDot, float flDist );
+	BOOL CheckRangeAttack2( float flDot, float flDist );
+
 	void Minigun(void);
+	
+	CUSTOM_SCHEDULES
 
 	float m_flMinigunSpinTime;
 };
@@ -1694,5 +1705,9 @@ public:
 
 	int m_iBodyGibs;
 };
+
+//=========================================================
+// Looking for Stukabat? It's located in cmflyingmonster.h
+//=========================================================
 
 #endif // BASEMONSTER_H

@@ -1060,8 +1060,8 @@ void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacke
 	{
 		if ( pEntity->v.takedamage != DAMAGE_NO )
 		{
-         if (UTIL_IsPlayer(pEntity))
-         {
+			if (UTIL_IsPlayer(pEntity))
+			{
 				// blast's don't tavel into or out of water
 				if (bInWater && pEntity->v.waterlevel == 0)
 					continue;
@@ -1100,11 +1100,11 @@ void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacke
 					else
 					{
 						UTIL_TakeDamage ( pEntity, pevInflictor, pevAttacker, flAdjustedDamage, bitsDamageType );
-               }
+					}
 				}
-         }
-         else if (pEntity->v.euser4 != NULL)
-         {
+			}
+			else if (pEntity->v.euser4 != NULL)
+			{
 				// UNDONE: this should check a damage mask, not an ignore
 				CMBaseEntity *pMonster = GetClassPtr((CMBaseEntity *)VARS(pEntity));
 
@@ -1151,7 +1151,60 @@ void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacke
 					else
 					{
 						pMonster->TakeDamage ( pevInflictor, pevAttacker, flAdjustedDamage, bitsDamageType );
-               }
+					}
+				}
+			}
+			else if (!UTIL_IsPlayer(pEntity))
+			{
+				// I'm doing really bad copypastes instead of making the code clean!
+				// Remind me to refactor this, this is not how this is supposed to be written!
+				// -Giegue
+				edict_t *pMonster = pEntity;
+
+				if ( iClassIgnore != CLASS_NONE && pMonster->v.iuser4 == iClassIgnore )
+				{// houndeyes don't hurt other houndeyes with their attack
+					continue;
+				}
+
+				// blast's don't tavel into or out of water
+				if (bInWater && pEntity->v.waterlevel == 0)
+					continue;
+				if (!bInWater && pEntity->v.waterlevel == 3)
+					continue;
+
+				vecSpot = UTIL_BodyTarget( pMonster, vecSrc );
+			
+				UTIL_TraceLine ( vecSrc, vecSpot, dont_ignore_monsters, ENT(pevInflictor), &tr );
+
+				if ( tr.flFraction == 1.0 || tr.pHit == pEntity )
+				{// the explosion can 'see' this entity, so hurt them!
+					if (tr.fStartSolid)
+					{
+						// if we're stuck inside them, fixup the position and distance
+						tr.vecEndPos = vecSrc;
+						tr.flFraction = 0.0;
+					}
+				
+					// decrease damage for an ent that's farther from the bomb.
+					flAdjustedDamage = ( vecSrc - tr.vecEndPos ).Length() * falloff;
+					flAdjustedDamage = flDamage - flAdjustedDamage;
+			
+					if ( flAdjustedDamage < 0 )
+					{
+						flAdjustedDamage = 0;
+					}
+			
+					// ALERT( at_console, "hit %s\n", STRING( pEntity->pev->classname ) );
+					if (tr.flFraction != 1.0)
+					{
+						ClearMultiDamage( );
+						UTIL_TraceAttack( pMonster, pevInflictor, flAdjustedDamage, (tr.vecEndPos - vecSrc).Normalize( ), &tr, bitsDamageType );
+						ApplyMultiDamage( pevInflictor, pevAttacker );
+					}
+					else
+					{
+						UTIL_TakeDamageExternal( pMonster, pevInflictor, pevAttacker, flAdjustedDamage, bitsDamageType );
+					}
 				}
 			}
 		}
@@ -1207,6 +1260,8 @@ edict_t* CMBaseMonster :: CheckTraceHullAttack( float flDist, int iDamage, int i
 				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 				pMonster->TakeDamage( pev, pev, iDamage, iDmgType );
 			}
+			else if (!UTIL_IsPlayer(pEntity))
+				UTIL_TakeDamageExternal( pEntity, pev, pev, iDamage, iDmgType );
 		}
 
 		return pEntity;
@@ -1386,8 +1441,8 @@ void CMBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShootin
 		// do damage, paint decals
 		if (tr.flFraction != 1.0)
 		{
-         if (UTIL_IsPlayer(tr.pHit))  // is this a player?
-         {
+			if (UTIL_IsPlayer(tr.pHit))  // is this a player?
+			{
 				edict_t *pPlayer = tr.pHit;
 
 				if ( iDamage )
@@ -1396,60 +1451,63 @@ void CMBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShootin
 					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
 					DecalGunshot( &tr, iBulletType );
 				} 
-				else switch(iBulletType)
+				else
 				{
-				default:
-				case BULLET_MONSTER_9MM:
-					UTIL_TraceAttack(pPlayer, pevAttacker, gSkillData.monDmg9MM, vecDir, &tr, DMG_BULLET);
-					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot( &tr, iBulletType );
-
-					break;
-
-				case BULLET_MONSTER_MP5:
-					UTIL_TraceAttack(pPlayer, pevAttacker, gSkillData.monDmgMP5, vecDir, &tr, DMG_BULLET);
-					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot( &tr, iBulletType );
-
-					break;
-
-				case BULLET_MONSTER_12MM:
-					UTIL_TraceAttack(pPlayer, pevAttacker, gSkillData.monDmg12MM, vecDir, &tr, DMG_BULLET); 
-					if ( !tracer )
+					switch(iBulletType)
 					{
+					default:
+					case BULLET_MONSTER_9MM:
+						UTIL_TraceAttack(pPlayer, pevAttacker, gSkillData.monDmg9MM, vecDir, &tr, DMG_BULLET);
 						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
 						DecalGunshot( &tr, iBulletType );
-					}
-					break;
-				
-				case BULLET_MONSTER_762:
-					UTIL_TraceAttack(pPlayer, pevAttacker, gSkillData.monDmg762, vecDir, &tr, DMG_BULLET); 
-					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot( &tr, iBulletType );
-					
-					break;
-				
-				case BULLET_MONSTER_357:
-					UTIL_TraceAttack(pPlayer, pevAttacker, gSkillData.monDmg357, vecDir, &tr, DMG_BULLET); 
-					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot( &tr, iBulletType );
-					
-					break;
-					
-				case BULLET_NONE: // FIX 
-					UTIL_TraceAttack(pPlayer, pevAttacker, 50, vecDir, &tr, DMG_CLUB);
-					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					// only decal glass
-					if ( !FNullEnt(tr.pHit) && VARS(tr.pHit)->rendermode != 0)
-					{
-						UTIL_DecalTrace( &tr, DECAL_GLASSBREAK1 + RANDOM_LONG(0,2) );
-					}
 
-					break;
+						break;
+
+					case BULLET_MONSTER_MP5:
+						UTIL_TraceAttack(pPlayer, pevAttacker, gSkillData.monDmgMP5, vecDir, &tr, DMG_BULLET);
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						DecalGunshot( &tr, iBulletType );
+
+						break;
+
+					case BULLET_MONSTER_12MM:
+						UTIL_TraceAttack(pPlayer, pevAttacker, gSkillData.monDmg12MM, vecDir, &tr, DMG_BULLET); 
+						if ( !tracer )
+						{
+							TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+							DecalGunshot( &tr, iBulletType );
+						}
+						break;
+					
+					case BULLET_MONSTER_762:
+						UTIL_TraceAttack(pPlayer, pevAttacker, gSkillData.monDmg762, vecDir, &tr, DMG_BULLET); 
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						DecalGunshot( &tr, iBulletType );
+						
+						break;
+					
+					case BULLET_MONSTER_357:
+						UTIL_TraceAttack(pPlayer, pevAttacker, gSkillData.monDmg357, vecDir, &tr, DMG_BULLET); 
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						DecalGunshot( &tr, iBulletType );
+						
+						break;
+						
+					case BULLET_NONE: // FIX 
+						UTIL_TraceAttack(pPlayer, pevAttacker, 50, vecDir, &tr, DMG_CLUB);
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						// only decal glass
+						if ( !FNullEnt(tr.pHit) && VARS(tr.pHit)->rendermode != 0)
+						{
+							UTIL_DecalTrace( &tr, DECAL_GLASSBREAK1 + RANDOM_LONG(0,2) );
+						}
+
+						break;
+					}
 				}
-         }
-         else if (tr.pHit->v.euser4 != NULL)
-         {
+			}
+			else if (tr.pHit->v.euser4 != NULL) // monstermod monster
+			{
 				CMBaseEntity *pMonster = GetClassPtr((CMBaseMonster *)VARS(tr.pHit));
 
 				if ( iDamage )
@@ -1458,56 +1516,124 @@ void CMBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShootin
 					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
 					DecalGunshot( &tr, iBulletType );
 				} 
-				else switch(iBulletType)
+				else
 				{
-				default:
-				case BULLET_MONSTER_9MM:
-					pMonster->TraceAttack(pevAttacker, gSkillData.monDmg9MM, vecDir, &tr, DMG_BULLET);
-					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot( &tr, iBulletType );
-
-					break;
-
-				case BULLET_MONSTER_MP5:
-					pMonster->TraceAttack(pevAttacker, gSkillData.monDmgMP5, vecDir, &tr, DMG_BULLET);
-					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot( &tr, iBulletType );
-
-					break;
-
-				case BULLET_MONSTER_12MM:		
-					pMonster->TraceAttack(pevAttacker, gSkillData.monDmg12MM, vecDir, &tr, DMG_BULLET); 
-					if ( !tracer )
+					switch(iBulletType)
 					{
+					default:
+					case BULLET_MONSTER_9MM:
+						pMonster->TraceAttack(pevAttacker, gSkillData.monDmg9MM, vecDir, &tr, DMG_BULLET);
 						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
 						DecalGunshot( &tr, iBulletType );
+
+						break;
+
+					case BULLET_MONSTER_MP5:
+						pMonster->TraceAttack(pevAttacker, gSkillData.monDmgMP5, vecDir, &tr, DMG_BULLET);
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						DecalGunshot( &tr, iBulletType );
+
+						break;
+
+					case BULLET_MONSTER_12MM:		
+						pMonster->TraceAttack(pevAttacker, gSkillData.monDmg12MM, vecDir, &tr, DMG_BULLET); 
+						if ( !tracer )
+						{
+							TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+							DecalGunshot( &tr, iBulletType );
+						}
+						break;
+						
+					case BULLET_MONSTER_762:
+						pMonster->TraceAttack(pevAttacker, gSkillData.monDmg762, vecDir, &tr, DMG_BULLET);
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						DecalGunshot( &tr, iBulletType );
+
+						break;
+					
+					case BULLET_MONSTER_357:
+						pMonster->TraceAttack(pevAttacker, gSkillData.monDmg357, vecDir, &tr, DMG_BULLET);
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						DecalGunshot( &tr, iBulletType );
+
+						break;	
+						
+					case BULLET_NONE: // FIX 
+						pMonster->TraceAttack(pevAttacker, 50, vecDir, &tr, DMG_CLUB);
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						// only decal glass
+						if ( !FNullEnt(tr.pHit) && VARS(tr.pHit)->rendermode != 0)
+						{
+							UTIL_DecalTrace( &tr, DECAL_GLASSBREAK1 + RANDOM_LONG(0,2) );
+						}
+
+						break;
 					}
-					break;
-					
-				case BULLET_MONSTER_762:
-					pMonster->TraceAttack(pevAttacker, gSkillData.monDmg762, vecDir, &tr, DMG_BULLET);
+				}
+			}
+			else if (!UTIL_IsPlayer(tr.pHit)) // normal game monster
+			{
+				edict_t *pMonster = tr.pHit;
+
+				if ( iDamage )
+				{
+					UTIL_TraceAttack(pMonster, pevAttacker, iDamage, vecDir, &tr, DMG_BULLET | ((iDamage > 16) ? DMG_ALWAYSGIB : DMG_NEVERGIB) );
 					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
 					DecalGunshot( &tr, iBulletType );
-
-					break;
-				
-				case BULLET_MONSTER_357:
-					pMonster->TraceAttack(pevAttacker, gSkillData.monDmg357, vecDir, &tr, DMG_BULLET);
-					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					DecalGunshot( &tr, iBulletType );
-
-					break;	
-					
-				case BULLET_NONE: // FIX 
-					pMonster->TraceAttack(pevAttacker, 50, vecDir, &tr, DMG_CLUB);
-					TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
-					// only decal glass
-					if ( !FNullEnt(tr.pHit) && VARS(tr.pHit)->rendermode != 0)
+				} 
+				else
+				{
+					switch(iBulletType)
 					{
-						UTIL_DecalTrace( &tr, DECAL_GLASSBREAK1 + RANDOM_LONG(0,2) );
-					}
+					default:
+					case BULLET_MONSTER_9MM:
+						UTIL_TraceAttack(pMonster, pevAttacker, gSkillData.monDmg9MM, vecDir, &tr, DMG_BULLET);
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						DecalGunshot( &tr, iBulletType );
 
-					break;
+						break;
+
+					case BULLET_MONSTER_MP5:
+						UTIL_TraceAttack(pMonster, pevAttacker, gSkillData.monDmgMP5, vecDir, &tr, DMG_BULLET);
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						DecalGunshot( &tr, iBulletType );
+
+						break;
+
+					case BULLET_MONSTER_12MM:		
+						UTIL_TraceAttack(pMonster, pevAttacker, gSkillData.monDmg12MM, vecDir, &tr, DMG_BULLET); 
+						if ( !tracer )
+						{
+							TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+							DecalGunshot( &tr, iBulletType );
+						}
+						break;
+						
+					case BULLET_MONSTER_762:
+						UTIL_TraceAttack(pMonster, pevAttacker, gSkillData.monDmg762, vecDir, &tr, DMG_BULLET);
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						DecalGunshot( &tr, iBulletType );
+
+						break;
+					
+					case BULLET_MONSTER_357:
+						UTIL_TraceAttack(pMonster, pevAttacker, gSkillData.monDmg357, vecDir, &tr, DMG_BULLET);
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						DecalGunshot( &tr, iBulletType );
+
+						break;	
+						
+					case BULLET_NONE: // FIX 
+						UTIL_TraceAttack(pMonster, pevAttacker, 50, vecDir, &tr, DMG_CLUB);
+						TEXTURETYPE_PlaySound(&tr, vecSrc, vecEnd, iBulletType);
+						// only decal glass
+						if ( !FNullEnt(tr.pHit) && VARS(tr.pHit)->rendermode != 0)
+						{
+							UTIL_DecalTrace( &tr, DECAL_GLASSBREAK1 + RANDOM_LONG(0,2) );
+						}
+
+						break;
+					}
 				}
 			}
 		}
