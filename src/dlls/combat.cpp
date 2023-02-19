@@ -1154,11 +1154,8 @@ void RadiusDamage( Vector vecSrc, entvars_t *pevInflictor, entvars_t *pevAttacke
 					}
 				}
 			}
-			else if (!UTIL_IsPlayer(pEntity))
+			else
 			{
-				// I'm doing really bad copypastes instead of making the code clean!
-				// Remind me to refactor this, this is not how this is supposed to be written!
-				// -Giegue
 				edict_t *pMonster = pEntity;
 
 				if ( iClassIgnore != CLASS_NONE && pMonster->v.iuser4 == iClassIgnore )
@@ -1260,7 +1257,7 @@ edict_t* CMBaseMonster :: CheckTraceHullAttack( float flDist, int iDamage, int i
 				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 				pMonster->TakeDamage( pev, pev, iDamage, iDmgType );
 			}
-			else if (!UTIL_IsPlayer(pEntity))
+			else
 				UTIL_TakeDamageExternal( pEntity, pev, pev, iDamage, iDmgType );
 		}
 
@@ -1571,7 +1568,7 @@ void CMBaseEntity::FireBullets(ULONG cShots, Vector vecSrc, Vector vecDirShootin
 					}
 				}
 			}
-			else if (!UTIL_IsPlayer(tr.pHit)) // normal game monster
+			else // normal game entity
 			{
 				edict_t *pMonster = tr.pHit;
 

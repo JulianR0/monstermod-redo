@@ -79,7 +79,7 @@ void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker )
 		CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(gMultiDamage.pEntity));
 		pMonster->TakeDamage(pevInflictor, pevAttacker, gMultiDamage.amount, gMultiDamage.type );
 	}
-	else if (!UTIL_IsPlayer(gMultiDamage.pEntity))
+	else
 		UTIL_TakeDamageExternal(gMultiDamage.pEntity, pevInflictor, pevAttacker, gMultiDamage.amount, gMultiDamage.type );
 }
 

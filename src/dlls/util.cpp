@@ -1540,10 +1540,10 @@ bool UTIL_IsPlayer(edict_t *pEdict)
 
 Vector UTIL_BodyTarget(edict_t *pEdict, Vector posSrc)
 {
-   if (pEdict->v.flags & FL_CLIENT)
-	   return pEdict->v.origin + (pEdict->v.view_ofs * RANDOM_FLOAT(0.5, 1.1));
-   else
-      return (pEdict->v.origin + ((pEdict->v.mins + pEdict->v.maxs) * 0.5));
+	if (pEdict->v.flags & FL_CLIENT)
+		return pEdict->v.origin + (pEdict->v.view_ofs * RANDOM_FLOAT(0.5, 1.1));
+	else
+		return (pEdict->v.origin + ((pEdict->v.mins + pEdict->v.maxs) * 0.5));
 }
 
 //=========================================================
@@ -1875,7 +1875,11 @@ void UTIL_TraceBleed( edict_t *pEdict, float flDamage, Vector vecDir, TraceResul
 
 		if ( Bloodtr.flFraction != 1.0 )
 		{
-		   UTIL_BloodDecalTrace( &Bloodtr, BLOOD_COLOR_RED );
+			int bloodColor = pEdict->v.iuser3;
+			if ( !bloodColor )
+				bloodColor = BLOOD_COLOR_RED;
+
+			UTIL_BloodDecalTrace( &Bloodtr, bloodColor );
 		}
 	}
 }
@@ -1886,9 +1890,13 @@ void UTIL_TraceAttack( edict_t *pEdict, entvars_t *pevAttacker, float flDamage, 
 
 	if ( pEdict->v.takedamage )
 	{
+		int bloodColor = pEdict->v.iuser3;
+		if ( !bloodColor )
+			bloodColor = BLOOD_COLOR_RED;
+
 		AddMultiDamage( pevAttacker, pEdict, flDamage, bitsDamageType );
 
-		SpawnBlood(ptr->vecEndPos, BLOOD_COLOR_RED, flDamage);// a little surface blood.
+		SpawnBlood(ptr->vecEndPos, bloodColor, flDamage);// a little surface blood.
 
 		UTIL_TraceBleed( pEdict, flDamage, vecDir, ptr, bitsDamageType );
 	}

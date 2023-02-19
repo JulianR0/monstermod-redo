@@ -274,6 +274,10 @@ SOURCE=.\strooper.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\stukabat.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\subs.cpp
 # End Source File
 # Begin Source File

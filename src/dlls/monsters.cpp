@@ -207,7 +207,7 @@ void CMBaseMonster :: Look ( int iDistance )
 						}
 					}
 				}
-				else if (!UTIL_IsPlayer(pSightEnt))
+				else
 				{
 					/* MonsterMod monster looking at a NON-MonsterMod monster */
 
@@ -2081,17 +2081,30 @@ edict_t *CMBaseMonster :: BestVisibleEnemy ( void )
 	while (edictList_index < m_edictList_count)
 	{
 		pEnt = m_edictList[edictList_index];
-
+		
 		if ( UTIL_IsPlayer(pEnt) )
 		{
 			// it's a player...
-			iDist = ( pEnt->v.origin - pev->origin ).Length();
-				
-			if ( iDist <= iNearest )
+			if ( UTIL_IsAlive(pEnt) )
 			{
-				iNearest = iDist;
-				iBestRelationship = R_NM; // player is always nemesis
-				pReturn = pEnt;
+				// repeat2
+				if ( IRelationshipByClass( CLASS_PLAYER ) > iBestRelationship )
+				{
+					iBestRelationship = IRelationshipByClass( CLASS_PLAYER );
+					iNearest = ( pEnt->v.origin - pev->origin ).Length();
+					pReturn = pEnt;
+				}
+				else if ( IRelationshipByClass( CLASS_PLAYER ) == iBestRelationship )
+				{
+					iDist = ( pEnt->v.origin - pev->origin ).Length();
+					
+					if ( iDist <= iNearest )
+					{
+						iNearest = iDist;
+						iBestRelationship = IRelationshipByClass( CLASS_PLAYER );
+						pReturn = pEnt;
+					}
+				}
 			}
 		}
 		else if (pEnt->v.euser4 != NULL)
@@ -2125,12 +2138,12 @@ edict_t *CMBaseMonster :: BestVisibleEnemy ( void )
 				}
 			}
 		}
-		else if (!UTIL_IsPlayer(pEnt))
+		else
 		{
-			// it's a game default monster...
+			// it's a normal game entity...
 			if ( UTIL_IsAlive(pEnt) )
 			{
-				//repeat2
+				//repeat3
 				if ( IRelationship( pEnt->v.iuser4 ) > iBestRelationship )
 				{
 					iBestRelationship = IRelationship( pEnt->v.iuser4 );
@@ -2959,8 +2972,13 @@ BOOL CMBaseMonster :: GetEnemy ( void )
 	if (HasConditions(bits_COND_SEE_CLIENT) && (m_hEnemy == NULL))
 	{
 		m_hEnemy = BestVisibleEnemy();
-		m_hTargetEnt = m_hEnemy;
-		m_vecEnemyLKP = m_hEnemy->v.origin;
+
+		// the player we've just seen might not always be our enemy
+		if ( m_hEnemy != NULL )
+		{
+			m_hTargetEnt = m_hEnemy;
+			m_vecEnemyLKP = m_hEnemy->v.origin;
+		}
 	}
 
 	// remember old enemies
