@@ -27,7 +27,6 @@ typedef struct
    int monster_index;
    edict_t *monster_pent;
    bool killed;
-   int respawn_index;
    CMBaseMonster *pMonster;
 } monster_t;
 
@@ -38,11 +37,9 @@ extern monster_t monsters[MAX_MONSTER_ENTS];
 typedef struct {
    Vector origin;
    Vector angles;
-   float delay;
    unsigned char monster;
    int spawnflags;
    pKVD *keyvalue;
-   float respawn_time;
    bool need_to_respawn;
 } monster_spawnpoint_t;
 

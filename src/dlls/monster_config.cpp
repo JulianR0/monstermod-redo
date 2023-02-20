@@ -94,13 +94,29 @@ void scan_monster_cfg(FILE *fp)
 								// Now that I think about it this looks slow and bad code >.>
 								
 								// A match is found. What is this?
-								if (strncmp(monster_types[mIndex].name, "monster", 7) == 0)
+								if (strncmp(monster_types[mIndex].name, "monster_", 8) == 0)
 								{
 									// It's a monster, add it to the list
 									if (monster_spawn_count == MAX_MONSTERS)
 									{
 										// Ouch! Not enough room.
 										LOG_MESSAGE(PLID, "ERROR: can't add monster, reached MAX_MONSTERS!"); // It will get spammy, sadly.
+										badent = TRUE;
+									}
+									else
+									{
+										monster_spawnpoint[monster_spawn_count].monster = mIndex;
+										monster_types[mIndex].need_to_precache = TRUE;
+										monster = TRUE;
+									}
+								}
+								else if (strcmp(monster_types[mIndex].name, "monstermaker") == 0)
+								{
+									// A monster spawner, add it to the list
+									if (monster_spawn_count == MAX_MONSTERS)
+									{
+										// error.exe
+										LOG_MESSAGE(PLID, "ERROR: can't add monstermaker, reached MAX_MONSTERS!");
 										badent = TRUE;
 									}
 									else
@@ -142,7 +158,7 @@ void scan_monster_cfg(FILE *fp)
 						}
 						if (monster_types[mIndex].name[0] == 0)
 						{
-							LOG_MESSAGE(PLID, "ERROR: unknown classname: %s", input); // print conflictive line
+							LOG_MESSAGE(PLID, "ERROR: unknown classname: %s", data[kvd_index-1].value); // print conflictive line
 							LOG_MESSAGE(PLID, "ERROR: nothing will spawn here!");
 							badent = TRUE;
 						}
@@ -150,8 +166,8 @@ void scan_monster_cfg(FILE *fp)
 					else
 					{
 						// What are you doing?!
-						LOG_MESSAGE(PLID, "ERROR: BAD ENTITY STRUCTURE! Last line was %s", input); // print conflictive line
-						LOG_MESSAGE(PLID, "ERROR: nothing will spawn here!");
+						LOG_MESSAGE(PLID, "ERROR: BAD ENTITY STRUCTURE! Last line was %s", data[kvd_index-1].key); // print conflictive line
+						LOG_MESSAGE(PLID, "ERROR: classname MUST be the last entry of the entity!" );
 						badent = TRUE;
 					}
 					
@@ -192,23 +208,6 @@ void scan_monster_cfg(FILE *fp)
 									node_spawnpoint[node_spawn_count].origin[2] = z;
 								}
 							}
-							else if (strcmp(data[i].key, "delay") == 0)
-							{
-								// ToDo: Remove this keyvalue.
-								// Monsters spawned directly should not respawn.
-								if (monster)
-								{
-									if (sscanf(data[i].value, "%f", &x) != 1)
-									{
-										LOG_MESSAGE(PLID, "ERROR: invalid delay: %s", input); // print conflictive line
-										
-										// default to 30 seconds
-										LOG_MESSAGE(PLID, "ERROR: entity respawn frequency will be set to 30 seconds");
-										x = 30;
-									}
-									monster_spawnpoint[monster_spawn_count].delay = x;
-								}
-							}
 							else if (strcmp(data[i].key, "angles") == 0)
 							{
 								if (monster)
@@ -241,6 +240,30 @@ void scan_monster_cfg(FILE *fp)
 									monster_spawnpoint[monster_spawn_count].spawnflags = x;
 								}
 							}
+							else if (strcmp(data[i].key, "monstertype") == 0)
+							{
+								if (monster)
+								{
+									// this keyvalue is only valid for monstermaker entity
+									if (strcmp(data[kvd_index-1].value, "monstermaker") == 0)
+									{
+										// process the entity precache here
+										int mIndex;
+										for (mIndex = 0; monster_types[mIndex].name[0]; mIndex++)
+										{
+											if (strcmp(data[i].value, monster_types[mIndex].name) == 0)
+											{
+												monster_types[mIndex].need_to_precache = TRUE;
+												break; // only one monster at a time
+											}
+										}
+
+										// pass the keyvalue to the entity
+										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
+										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].value, data[i].value);
+									}
+								}
+							}
 							else
 							{
 								// We do not know this keyvalue, but an specific entity might use it.
@@ -255,8 +278,7 @@ void scan_monster_cfg(FILE *fp)
 						
 						if (monster)
 						{
-							// Init monster
-							monster_spawnpoint[monster_spawn_count].respawn_time = gpGlobals->time + 0.1; // spawn (nearly) right away
+							// Spawn right away
 							monster_spawnpoint[monster_spawn_count].need_to_respawn = TRUE;
 							monster_spawn_count++;
 						}

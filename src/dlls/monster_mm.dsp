@@ -218,6 +218,10 @@ SOURCE=.\monster_config.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\monstermaker.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\monsters.cpp
 # End Source File
 # Begin Source File
@@ -327,6 +331,10 @@ SOURCE=.\cdll_dll.h
 # Begin Source File
 
 SOURCE=.\cmbase.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\cmbaseextra.h
 # End Source File
 # Begin Source File
 

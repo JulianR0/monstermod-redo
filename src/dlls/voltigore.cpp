@@ -33,9 +33,6 @@
 
 #define		VOLTIGORE_MAX_BEAMS		8
 
-#define		VOLTIGORE_CLASSNAME				"monster_alien_voltigore"
-#define		VOLTIGORE_BABY_CLASSNAME		"monster_alien_babyvoltigore"
-
 #define VOLTIGORE_ZAP_RED 180
 #define VOLTIGORE_ZAP_GREEN 16
 #define VOLTIGORE_ZAP_BLUE 255

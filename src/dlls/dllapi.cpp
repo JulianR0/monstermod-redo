@@ -42,6 +42,7 @@
 
 #include "cmbase.h"
 #include "cmbasemonster.h"
+#include "cmbaseextra.h"
 #include "monsters.h"
 #include "weapons.h"
 #include "hornet.h"
@@ -158,14 +159,15 @@ monster_type_t monster_types[]=
 	"monster_pitdrone", FALSE,
 	"monster_shockroach", FALSE,
 	"monster_shocktrooper", FALSE,
-	"monster_voltigore", FALSE,
-	"monster_baby_voltigore", FALSE,
+	"monster_alien_voltigore", FALSE,
+	"monster_alien_babyvoltigore", FALSE,
 	"monster_babygarg", FALSE, // Sven Co-op Monsters
 	"monster_hwgrunt", FALSE,
 	"monster_robogrunt", FALSE,
 	"monster_stukabat", FALSE,
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
+	"monstermaker", FALSE, // Extra entities
 	"", FALSE
 };
 
@@ -209,15 +211,6 @@ int GetMonsterIndex(void)
 
 void FreeMonsterIndex(int index)
 {
-	int idx = monsters[index].respawn_index;
-
-	if (idx != -1)
-	{
-		monster_spawnpoint[idx].need_to_respawn = TRUE;
-		monster_spawnpoint[idx].respawn_time = gpGlobals->time +
-		monster_spawnpoint[idx].delay;
-	}
-	
 	delete monsters[index].pMonster;
 	
 	monsters[index].monster_index = 0;
@@ -557,7 +550,7 @@ void check_monster_info( edict_t *pPlayer )
 	}
 }
 
-bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_index, int spawnflags, pKVD *keyvalue)
+edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawnflags, pKVD *keyvalue)
 {
 	int monster_index;
 	edict_t *monster_pent;
@@ -567,7 +560,7 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 	{
 		//META_CONS("[MONSTER] ERROR: No FREE Monster edicts!");
 		LOG_MESSAGE(PLID, "ERROR: No FREE Monster edicts!");
-		return TRUE;
+		return NULL;
 	}
 	
 	// was this monster NOT precached?
@@ -601,11 +594,12 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 			LOG_MESSAGE(PLID, "%s", msg);
 		}
 		
-		return TRUE;
+		return NULL;
 	}
 	
 	switch (monster_type)
 	{
+		// Monsters
 		case 0: monsters[monster_index].pMonster = CreateClassPtr((CMAGrunt *)NULL); break;
 		case 1: monsters[monster_index].pMonster = CreateClassPtr((CMApache *)NULL); break;
 		case 2: monsters[monster_index].pMonster = CreateClassPtr((CMBarney *)NULL); break;
@@ -636,16 +630,16 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 		case 27: monsters[monster_index].pMonster = CreateClassPtr((CMHWGrunt *)NULL); break;
 		case 28: monsters[monster_index].pMonster = CreateClassPtr((CMRGrunt *)NULL); break;
 		case 29: monsters[monster_index].pMonster = CreateClassPtr((CMStukabat *)NULL); break;
+		// Extra entities
+		case 32: monsters[monster_index].pMonster = CreateClassPtr((CMMonsterMaker *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
 	{
 		//META_CONS("[MONSTER] ERROR: Error Creating Monster!" );
 		LOG_MESSAGE(PLID, "ERROR: Error Creating Monster!");
-		return TRUE;
+		return NULL;
 	}
-
-	monsters[monster_index].respawn_index = respawn_index;
 
 	monster_pent = ENT(monsters[monster_index].pMonster->pev);
 	monsters[monster_index].monster_pent = monster_pent;
@@ -673,15 +667,19 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 	
 	monsters[monster_index].pMonster->Spawn();
 	
-	// Reverse fadecorpse behaviour
-	if ( ( spawnflags & SF_MONSTER_FADECORPSE ) )
-		monster_pent->v.spawnflags &= ~SF_MONSTER_FADECORPSE;
-	else
-		monster_pent->v.spawnflags |= SF_MONSTER_FADECORPSE;
-	
+	// Only modify starting spawnflags for monsters, not for entities!
+	if ( monster_index <= 29 )
+	{
+		// Reverse fadecorpse behaviour
+		if ( ( spawnflags & SF_MONSTER_FADECORPSE ) )
+			monster_pent->v.spawnflags &= ~SF_MONSTER_FADECORPSE;
+		else
+			monster_pent->v.spawnflags |= SF_MONSTER_FADECORPSE;
+	}
+
 	monster_pent->v.fuser4 = monster_pent->v.health;	 // save the original health
 
-	return FALSE;
+	return monster_pent;
 }
 
 
@@ -698,8 +696,7 @@ void check_respawn(void)
 
 	for (int index=0; index < monster_spawn_count; index++)
 	{
-		if (monster_spawnpoint[index].need_to_respawn &&
-			(monster_spawnpoint[index].respawn_time <= gpGlobals->time))
+		if (monster_spawnpoint[index].need_to_respawn)
 		{
 			monster_spawnpoint[index].need_to_respawn = FALSE;
 
@@ -713,12 +710,10 @@ void check_respawn(void)
 			
 			keyvalue = monster_spawnpoint[index].keyvalue;
 			
-			if (spawn_monster(monster_type, origin, angles, index, spawnflags, keyvalue))
+			if (spawn_monster(monster_type, origin, angles, spawnflags, keyvalue) == NULL)
 			{
-				// spawn_monster failed, retry again after delay...
-				monster_spawnpoint[index].need_to_respawn = TRUE;
-				monster_spawnpoint[index].respawn_time = gpGlobals->time +
-				monster_spawnpoint[index].delay;
+				// spawn_monster failed
+				ALERT( at_error, "Failed to spawn %s at origin %f %f %f\n", monster_types[monster_type].name, origin.x, origin.y, origin.z );
 			}
 		}
 	}
@@ -886,7 +881,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
+						spawn_monster(monster_type, v_src, monster_angle, spawnflags, NULL);
 
 						return;
 					}
@@ -914,9 +909,9 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
+						spawn_monster(monster_type, v_src, monster_angle, spawnflags, NULL);
 
-					return;
+						return;
 					}
 				}
 
@@ -942,7 +937,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
+						spawn_monster(monster_type, v_src, monster_angle, spawnflags, NULL);
 
 						return;
 					}
@@ -969,7 +964,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
+						spawn_monster(monster_type, v_src, monster_angle, spawnflags, NULL);
 
 						return;
 					}
@@ -996,7 +991,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
+						spawn_monster(monster_type, v_src, monster_angle, spawnflags, NULL);
 
 						return;
 					}
@@ -1023,7 +1018,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
+						spawn_monster(monster_type, v_src, monster_angle, spawnflags, NULL);
 
 						return;
 					}
@@ -1294,8 +1289,9 @@ void mmDispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
 	int index;
-
-	CMAGrunt agrunt;
+	
+	// Monsters
+	CMAGrunt agrunt; // 0
 	CMApache apache;
 	CMBarney barney;
 	CMBigMomma bigmomma;
@@ -1324,7 +1320,10 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMBabyGargantua babygargantua;
 	CMHWGrunt hwgrunt;
 	CMRGrunt rgrunt;
-	CMStukabat stukabat;
+	CMStukabat stukabat; // 29
+	
+	// Extra entities
+	CMMonsterMaker monstermaker; // 32
 	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1372,6 +1371,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 27: hwgrunt.Precache(); break;
 				case 28: rgrunt.Precache(); break;
 				case 29: stukabat.Precache(); break;
+				case 32: monstermaker.Precache(); break;
 			}
 		}
 	}

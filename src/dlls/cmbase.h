@@ -601,7 +601,6 @@ template <class T> T * CreateClassPtr( T *a )
 	// store the class pointer in the array here!!!
 	monsters[monster_index].monster_index = edict_index;
 	monsters[monster_index].monster_pent = temp_edict;
-	monsters[monster_index].respawn_index = -1;
 	monsters[monster_index].pMonster = (CMBaseMonster *)a;
 
 	// get the private data

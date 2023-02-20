@@ -580,7 +580,7 @@ void CMBaseMonster::CallGibMonster( void )
 	if (pev->health < -99)
 	{
 		pev->health = 0;
-      pev->fuser4 = pev->health;
+		pev->fuser4 = pev->health;
 	}
 	
 	if ( ShouldFadeOnDeath() && !fade )
@@ -618,14 +618,11 @@ void CMBaseMonster :: Killed( entvars_t *pevAttacker, int iGib )
 	SetConditions( bits_COND_LIGHT_DAMAGE );
 	
 	// tell owner ( if any ) that we're dead.This is mostly for MonsterMaker functionality.
-/*jlb monstermaker
 	CMBaseEntity *pOwner = CMBaseEntity::Instance(pev->owner);
 	if ( pOwner )
 	{
-//jlb it crashes here sometimes!!!
 		pOwner->DeathNotice( pev );  
 	}
-jlb*/
 
 	if	( ShouldGibMonster( iGib ) )
 	{
@@ -642,7 +639,7 @@ jlb*/
 	if (pev->health < -99)
 	{
 		pev->health = 0;
-      pev->fuser4 = pev->health;
+		pev->fuser4 = pev->health;
 	}
 	
 	//pev->enemy = ENT( pevAttacker );//why? (sjb)
@@ -894,8 +891,8 @@ int CMBaseMonster :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker
 	// do the damage
 	pev->health -= flTake;
 
-   if (pev->flags & FL_MONSTER)
-      pev->fuser4 = pev->health;
+	if (pev->flags & FL_MONSTER)
+		pev->fuser4 = pev->health;
 	
 	// HACKHACK Don't kill monsters in a script.  Let them break their scripts first
 	if ( m_MonsterState == MONSTERSTATE_SCRIPT )
@@ -1005,13 +1002,13 @@ int CMBaseMonster :: DeadTakeDamage( entvars_t *pevInflictor, entvars_t *pevAtta
 		if ( pev->health <= flDamage )
 		{
 			pev->health = -50;
-         pev->fuser4 = pev->health;
+			pev->fuser4 = pev->health;
 			Killed( pevAttacker, GIB_ALWAYS );
 			return 0;
 		}
 		// Accumulate corpse gibbing damage, so you can gib with multiple hits
 		pev->health -= flDamage * 0.1;
-      pev->fuser4 = pev->health;
+		pev->fuser4 = pev->health;
 	}
 	
 	return 1;
