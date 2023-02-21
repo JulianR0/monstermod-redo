@@ -181,6 +181,7 @@ node_spawnpoint_t node_spawnpoint[MAX_NODES];
 int node_spawn_count = 0;
 
 float check_respawn_time;
+float check_graph_time;
 
 bool process_monster_cfg(void);
 bool process_monster_precache_cfg(void);
@@ -1204,29 +1205,9 @@ int mmDispatchSpawn( edict_t *pent )
 		// node support. -Giegue
 		// init the WorldGraph.
 		WorldGraph.InitGraph();
+		check_graph_time = gpGlobals->time + 2.00; // give enough gap
 
-		// make sure the .NOD file is newer than the .BSP file.
-		if ( !WorldGraph.CheckNODFile ( ( char * )STRING( gpGlobals->mapname ) ) )
-		{
-			// NOD file is not present, or is older than the BSP file.
-			WorldGraph.AllocNodes();
-		}
-		else
-		{
-			// Load the node graph for this level
-			if ( !WorldGraph.FLoadGraph ( (char *)STRING( gpGlobals->mapname ) ) )
-			{
-				// couldn't load, so alloc and prepare to build a graph.
-				ALERT ( at_console, "*Error opening .NOD file\n" );
-				WorldGraph.AllocNodes();
-			}
-			else
-			{
-				ALERT ( at_console, "\n*Graph Loaded!\n" );
-			}
-		}
-		
-		check_respawn_time = 0.0;
+		check_respawn_time = gpGlobals->time + 4.00;
 
 		for (index = 0; index < MAX_MONSTER_ENTS; index++)
 		{
@@ -1386,35 +1367,78 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	monster_ents_used = 0;
 	
-	// spawn nodes
-	for (index = 0; index < node_spawn_count; index++)
-	{
-		CMBaseEntity *pNode;
-		pNode = CreateClassPtr((CNodeEnt *)NULL);
-		
-		if (pNode == NULL)
-		{
-			//META_CONS("[MONSTER] ERROR: Error Creating Node!" );
-			LOG_MESSAGE(PLID, "ERROR: Error Creating Node!");
-		}
-		else
-		{
-			pNode->pev->origin = node_spawnpoint[index].origin;
-		
-			if (node_spawnpoint[index].is_air_node)
-				pNode->pev->classname = MAKE_STRING("info_node_air");
-			else
-				pNode->pev->classname = MAKE_STRING("info_node");
-			
-			pNode->Spawn();
-		}
-	}
-	
 	RETURN_META(MRES_IGNORED);
 }
 
 void mmStartFrame( void )
 {
+	// Don't generate node graph right away
+	if (check_graph_time != -1 && check_graph_time <= gpGlobals->time)
+	{
+		BOOL generateNodes = FALSE;
+		
+		check_graph_time = -1; // only once
+		
+		// it could be possible that the mod can generate the node graph
+		// on it's own, so we wait a bit before attempting to create ours.
+		// if we can use the game's generated graph, stick to that one.
+		// if not, then do standard node allocation and spawns. -Giegue
+
+		// make sure the .NOD file is newer than the .BSP file.
+		if ( !WorldGraph.CheckNODFile ( ( char * )STRING( gpGlobals->mapname ) ) )
+		{
+			// NOD file is not present, or is older than the BSP file.
+			generateNodes = TRUE;
+			WorldGraph.AllocNodes();
+		}
+		else
+		{
+			// Load the node graph for this level
+			if ( !WorldGraph.FLoadGraph ( (char *)STRING( gpGlobals->mapname ) ) )
+			{
+				// couldn't load, so alloc and prepare to build a graph.
+				generateNodes = TRUE;
+				ALERT ( at_console, "*Error opening .NOD file\n" );
+				WorldGraph.AllocNodes();
+			}
+			else
+			{
+				// node graph is OK, we can spawn the monsters instantly
+				check_respawn_time = 0.0;
+				ALERT ( at_console, "\n[MONSTER] Graph Loaded!\n" );
+			}
+		}
+
+		if ( generateNodes )
+		{
+			// spawn nodes
+			int index;
+			for (index = 0; index < node_spawn_count; index++)
+			{
+				CMBaseEntity *pNode;
+				pNode = CreateClassPtr((CNodeEnt *)NULL);
+				
+				if (pNode == NULL)
+				{
+					//META_CONS("[MONSTER] ERROR: Error Creating Node!" );
+					LOG_MESSAGE(PLID, "ERROR: Error Creating Node!");
+				}
+				else
+				{
+					pNode->pev->origin = node_spawnpoint[index].origin;
+				
+					if (node_spawnpoint[index].is_air_node)
+						pNode->pev->classname = MAKE_STRING("info_node_air");
+					else
+						pNode->pev->classname = MAKE_STRING("info_node");
+					
+					pNode->Spawn();
+				}
+			}
+		}
+	}
+
+	// Wait for node graph before spawning the monsters
 	if (check_respawn_time <= gpGlobals->time)
 	{
 		check_respawn_time = gpGlobals->time + 1.0;
