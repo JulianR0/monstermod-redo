@@ -193,7 +193,7 @@ Current milestones are separated by "Tiers", which are as follows:
 - Update source code so it can compile AND run **ON WINDOWS**. **[DONE]**
 - Implement *-almost-* all Opposing Force monsters. **[DONE]**
 - Implement *-almost-* all default Sven Co-op monsters. **[DONE]**
-- Make MonsterMod aware of normal game entities. *-For those who want to use the plugin in vanilla HL.-*
+- Make MonsterMod aware of normal game entities. *-For those who want to use the plugin in vanilla HL.-* **[DONE]**
 - Custom model support.
 
 ### Tier 4
