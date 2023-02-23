@@ -1520,15 +1520,13 @@ Vector VecBModelOrigin( entvars_t* pevBModel )
 
 bool UTIL_IsAlive(entvars_t *pev)
 {
-   return ((pev->deadflag == DEAD_NO) && (pev->health > 0) &&
-           ((pev->flags & FL_NOTARGET) == 0) && (pev->takedamage != 0));
+   return ((pev->deadflag == DEAD_NO) && (pev->health > 0));
 }
 
 
 bool UTIL_IsAlive(edict_t *pEdict)
 {
-   return ((pEdict->v.deadflag == DEAD_NO) && (pEdict->v.health > 0) &&
-            ((pEdict->v.flags & FL_NOTARGET) == 0) && (pEdict->v.takedamage != 0));
+   return ((pEdict->v.deadflag == DEAD_NO) && (pEdict->v.health > 0));
 }
 
 
@@ -1677,8 +1675,8 @@ int UTIL_TakeDamage( edict_t *pEdict, entvars_t *pevInflictor, entvars_t *pevAtt
 	flBonus = ARMOR_BONUS;
 	flRatio = ARMOR_RATIO;
 
-	if (!pEdict->v.takedamage)
-		return 0;
+	if (!pEdict->v.takedamage || (pEdict->v.flags & FL_GODMODE))
+		return 0; // refuse the damage
 
 	if ( ( bitsDamageType & DMG_BLAST ) )
 	{

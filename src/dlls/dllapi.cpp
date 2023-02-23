@@ -69,7 +69,6 @@ int g_DamageVictim;
 edict_t *g_DamageAttacker[33];
 int g_DamageBits[33];
 bool g_PlayerKilled[33];
-float g_flWaitTillMessage[33];
 
 // DeathMsg
 int g_DeathMsg;
@@ -394,17 +393,36 @@ void check_player_dead( edict_t *pPlayer )
 		// Killed by a monster?
 		if ( pAttacker->v.flags & FL_MONSTER )
 		{
-			// Check the first character for 'aeiou'.
+			// Try to get the name of the monster
+			char szName[129], szCheck[2];
+
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pAttacker));
-			char szCheck[2];
-			strncpy( szCheck, STRING( pMonster->m_szMonsterName ), 1 );
+			if ( pMonster != NULL )
+			{
+				// One of our monsters
+				strcpy(szName, STRING( pMonster->m_szMonsterName ));
+			}
+			else
+			{
+				// SOMETHING that is a monster
+				if ( !FStringNull( pAttacker->v.netname ) )
+					strcpy(szName, STRING( pAttacker->v.netname ));
+				else
+				{
+					// No netname, use classname
+					strcpy(szName, STRING( pAttacker->v.classname ));
+				}
+			}
+
+			// Now, copy the first character to check for 'aeiou'.
+			strncpy( szCheck, szName, 1 );
 			
-			// Make the first character lowercase
+			// Make this character lowercase and inspect it. Select which message.
 			szCheck[0] = tolower( szCheck[ 0 ] );
 			if ( strncmp( szCheck, "a", 1 ) == 0 || strncmp( szCheck, "e", 1 ) == 0 || strncmp( szCheck, "i", 1 ) == 0 || strncmp( szCheck, "o", 1 ) == 0 || strncmp( szCheck, "u", 1 ) == 0 )
-				sprintf( szMessage, "* %s was killed by an %s.\n", szPlayerName, STRING( pMonster->m_szMonsterName ) );
+				sprintf( szMessage, "* %s was killed by an %s.\n", szPlayerName, szName );
 			else
-				sprintf( szMessage, "* %s was killed by a %s.\n", szPlayerName, STRING( pMonster->m_szMonsterName ) );
+				sprintf( szMessage, "* %s was killed by a %s.\n", szPlayerName, szName );
 		}
 		else
 		{
@@ -463,8 +481,6 @@ void check_player_dead( edict_t *pPlayer )
 					sprintf( szMessage, "* %s died of hypothermia.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_MORTAR )
 					sprintf( szMessage, "* %s blew its missile pet.\n", szPlayerName );
-				else if ( g_DamageBits[ iPlayerIndex ] == (1 << 30) ) // (1 << 30) = 1073741824. For custom death messages
-					sprintf( szMessage, "* %s %s.\n", szPlayerName, STRING( pAttacker->v.noise ) );
 				else // other mods could have more DMG_ variants that aren't registered here.
 					sprintf( szMessage, "* %s deadly died.\n", szPlayerName );
 			}
@@ -514,38 +530,80 @@ void check_monster_info( edict_t *pPlayer )
 		// Hit an entity?
 		if (tr.pHit != NULL)
 		{
-			// Must be a monster
-			if (tr.pHit->v.flags & FL_MONSTER)
+			// It should be alive
+			if ( UTIL_IsAlive( tr.pHit ) )
 			{
-				// Get monster info
-				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(tr.pHit));
-				
-				char szInfo[512];
-				sprintf(szInfo, "Enemy:  %s\nHealth:  %.0f\nFrags:    %.0f\n", STRING( pMonster->m_szMonsterName ), pMonster->pev->health, pMonster->pev->frags );
-				
-				// Create a TE_TEXTMESSAGE and show the monster information
-				MESSAGE_BEGIN( MSG_ONE, SVC_TEMPENTITY, NULL, pPlayer );
-				WRITE_BYTE( TE_TEXTMESSAGE );
-				WRITE_BYTE( 3 ); // Channel
-				WRITE_SHORT( 327 ); // X
-				WRITE_SHORT( 4771 ); // Y
-				WRITE_BYTE( 0 ); // Effect
-				WRITE_BYTE( 171 ); // R1
-				WRITE_BYTE( 23 ); // G1
-				WRITE_BYTE( 7 ); // B1
-				WRITE_BYTE( 0 ); // A1
-				WRITE_BYTE( 207 ); // R2
-				WRITE_BYTE( 23 ); // G2
-				WRITE_BYTE( 7 ); // B2
-				WRITE_BYTE( 255 ); // A2
-				WRITE_SHORT( 0 ); // Fade-in Time
-				WRITE_SHORT( 15 ); // Fade-out Time
-				WRITE_SHORT( 448 ); // Hold time
-				WRITE_STRING( szInfo ); // Message
-				MESSAGE_END();
-				
-				// Delay till next scan
-				g_NextMessage[ ENTINDEX( pPlayer ) ] = gpGlobals->time + 0.8;
+				// Must be a monster
+				if (tr.pHit->v.flags & FL_MONSTER)
+				{
+					char szName[129];
+					float monsterHealth, monsterFrags;
+					int classify;
+					BOOL isAlly = FALSE;
+					
+					// Get monster info
+					CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(tr.pHit));
+					if ( pMonster != NULL )
+					{
+						strcpy(szName, STRING( pMonster->m_szMonsterName ));
+						classify = pMonster->Classify();
+					}
+					else
+					{
+						// A monster that we do not recognize, use its netname
+						if ( !FStringNull( tr.pHit->v.netname ) )
+							strcpy(szName, STRING( tr.pHit->v.netname ));
+						else
+						{
+							// If all else fails, use classname as monster name
+							strcpy(szName, STRING( tr.pHit->v.classname ));
+						}
+						classify = tr.pHit->v.iuser4;
+					}
+					monsterHealth = tr.pHit->v.health;
+					monsterFrags = tr.pHit->v.frags;
+					
+					// Unless it is strictly ally to us, treat as enemy monster
+					if ( classify == CLASS_HUMAN_PASSIVE || classify == CLASS_PLAYER_ALLY )
+						isAlly = TRUE;
+					
+					// Prepare the message
+					char szInfo[257];
+					sprintf(szInfo, "%s:  %s\nHealth:  %.0f\nFrags:    %.0f\n", ( isAlly ? "Friend" : "Enemy" ), szName, monsterHealth, monsterFrags );
+					
+					// Create a TE_TEXTMESSAGE and show the monster information
+					MESSAGE_BEGIN( MSG_ONE, SVC_TEMPENTITY, NULL, pPlayer );
+					WRITE_BYTE( TE_TEXTMESSAGE );
+					WRITE_BYTE( 3 ); // Channel
+					WRITE_SHORT( 327 ); // X
+					WRITE_SHORT( 4771 ); // Y
+					WRITE_BYTE( 0 ); // Effect
+					if ( isAlly )
+					{
+						WRITE_BYTE( 9 ); // R1
+						WRITE_BYTE( 172 ); // G1
+						WRITE_BYTE( 96 ); // B1
+					}
+					else
+					{
+						WRITE_BYTE( 171 ); // R1
+						WRITE_BYTE( 23 ); // G1
+						WRITE_BYTE( 7 ); // B1
+					}
+					WRITE_BYTE( 0 ); // A1
+					WRITE_BYTE( 207 ); // R2
+					WRITE_BYTE( 23 ); // G2
+					WRITE_BYTE( 7 ); // B2
+					WRITE_BYTE( 255 ); // A2
+					WRITE_SHORT( 0 ); // Fade-in Time
+					WRITE_SHORT( 15 ); // Fade-out Time
+					WRITE_SHORT( 448 ); // Hold time
+					WRITE_STRING( szInfo ); // Message
+					MESSAGE_END();
+					
+					// Delay till next scan
+					g_NextMessage[ ENTINDEX( pPlayer ) ] = gpGlobals->time + 0.30;
+				}
 			}
 		}
 	}
@@ -1363,6 +1421,14 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		monsters[index].monster_pent = NULL;
 		monsters[index].killed = FALSE;  // not killed yet
 		monsters[index].pMonster = NULL;
+	}
+	
+	for (index = 0; index < 33; index++)
+	{
+		g_DamageAttacker[index] = NULL;
+		g_DamageBits[index] = 0;
+		g_PlayerKilled[index] = false;
+		g_NextMessage[index] = 0.0;
 	}
 
 	monster_ents_used = 0;
