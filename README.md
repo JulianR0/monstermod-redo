@@ -35,17 +35,19 @@ Under no circumstances shall we allow this project to fade away and become lost 
 
 ## Installation
 
-*NOTE: Outdated. Ideally, users should be able to use the plugin "out-of-the-box" without the need to do the complicated mess explained below.*
+The plugin -should- be able to be used out-of-the-box by simply downloading the binary and adding the appropiate entry in metamod's plugin list.
 
-*TODO: Add build instructions, just using 'make' on G++ 4.8 is really vague.*
+**Windows:**
+`win32 addons\monstermod\monster_mm.dll`
 
-If you are trying to use the compiled binary, you must know that it has been compiled with a mayor GCC version and it will be highly unlikely that it will run on a vanilla HLDS server. If the plugin fails to load due to libstdc++ not having CXXABI_1.X.X or similar, read on. HLDS uses it's own libstdc++ library. Any plugins compiled with GCC versions 5.x and greater will not work with the outdated library.
+**Linux:**
+`linux addons/monstermod/monster_mm_i386.so`
 
-To remedy this issue you have two options:
+Additional configuration files are included in the release files, each explaining it's usage and installation instructions.
 
-You can recompile the source code under g++ 4.8 and use the newly generated binary. Make sure to edit the Makefile so it points to that version of g++. Compilation is done by simply running `make` on the `src/dlls` folder.
+## Build Instructions
 
-Alternatively, you can "remove" the outdated library to force HLDS to use the libstdc++ provided by the linux distro, which is generally more up to date. You might need to install GCC/G++ on the operating system if it doesn't work.
+*TODO: Add build instructions.*
 
 ## MonsterMod and ReHLDS
 
@@ -55,7 +57,7 @@ Keeping track of the number of precached content will allow you to maximize the 
 
 ## Using MonsterMod on Counter-Strike
 
-Counter-Strike precaches non trivial sounds of all weapons. This means that sounds such as "clip-ins", "clip-outs" are added to the list, taking quite a bit of space in the precache count. Let it be a reminder that our good old Half-Life can only store a maximum of 512 precached resources. Since these sounds are handled client-side by the models themselves, theres is no need to be kept precached on the server. Only the weapons fire sounds are needed.
+Counter-Strike precaches the sounds of all weapons. This means that sounds such as "clip-ins", "clip-outs" are added to the list, taking quite a bit of space in the precache count. Let it be a reminder that our good old Half-Life can only store a maximum of 512 precached resources. Most of these sounds are handled client-side by the models themselves, there is no need for all of them to be kept precached on the server. Only the weapons fire sounds are needed.
 
 MonsterMod does not have an integrated "Unprecacher" to remove those sounds, but you can remove them manually with AMX Mod X, using Fakemeta. Register forward **FM_PrecacheSound** and return **FMRES_SUPERCEDE** on the following sounds:
 
@@ -193,8 +195,8 @@ Current milestones are separated by "Tiers", which are as follows:
 - Update source code so it can compile AND run **ON WINDOWS**. **[DONE]**
 - Implement *-almost-* all Opposing Force monsters. **[DONE]**
 - Implement *-almost-* all default Sven Co-op monsters. **[DONE]**
-- Make MonsterMod aware of normal game entities. *-For those who want to use the plugin in vanilla HL.-* **[DONE]**
-- Custom model support.
+- Make MonsterMod aware of normal game entities. *-For those wanting to use this in vanilla HL.-* **[DONE]**
+- Custom model support. **[DONE]**
 
 ### Tier 4
 
