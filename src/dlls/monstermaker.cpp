@@ -60,6 +60,11 @@ void CMMonsterMaker :: KeyValue( KeyValueData *pkvd )
 		}
 		pkvd->fHandled = TRUE;
 	}
+	else if ( FStrEq(pkvd->szKeyName, "new_model") )
+	{
+		m_iszCustomModel = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CMBaseMonster::KeyValue( pkvd );
 }
@@ -118,6 +123,7 @@ void CMMonsterMaker :: Precache( void )
 void CMMonsterMaker::MakeMonster( void )
 {
 	edict_t *pent;
+	pKVD keyvalue[1]; // sometimes, i don't know what am i doing. -Giegue
 	int createSF = SF_MONSTER_FALL_TO_GROUND;
 
 	if ( m_iMaxLiveChildren > 0 && m_cLiveChildren >= m_iMaxLiveChildren )
@@ -151,8 +157,16 @@ void CMMonsterMaker::MakeMonster( void )
 	if ( pev->spawnflags & SF_MONSTERMAKER_MONSTERCLIP )
 		createSF |= SF_MONSTER_HITMONSTERCLIP;
 
+	// Monster is to have a custom model?
+	if ( !FStringNull( m_iszCustomModel ) )
+	{
+		// setup model keyvalue
+		strcpy(keyvalue[0].key, "model");
+		strcpy(keyvalue[0].value, STRING( m_iszCustomModel ));
+	}
+
 	// Attempt to spawn monster
-	pent = spawn_monster(m_iMonsterIndex, pev->origin, pev->angles, createSF, NULL);
+	pent = spawn_monster(m_iMonsterIndex, pev->origin, pev->angles, createSF, keyvalue);
 	if ( pent == NULL )
 	{
 		ALERT ( at_console, "NULL Ent in MonsterMaker!\n" );

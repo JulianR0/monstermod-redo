@@ -626,7 +626,7 @@ void CMVoltigore::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/voltigore.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/voltigore.mdl"));
 	UTIL_SetSize(pev, Vector(-80, -80, 0), Vector(80, 80, 90));
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -1132,7 +1132,7 @@ void CMBabyVoltigore::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/baby_voltigore.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/baby_voltigore.mdl"));
 	UTIL_SetSize(pev, Vector(-32, -32, 0), Vector(32, 32, 36));
 
 	pev->solid			= SOLID_SLIDEBOX;

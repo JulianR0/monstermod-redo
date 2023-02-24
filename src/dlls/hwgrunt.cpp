@@ -202,7 +202,7 @@ void CMHWGrunt::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/hwgrunt.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/hwgrunt.mdl"));
 	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	pev->solid = SOLID_SLIDEBOX;
@@ -816,50 +816,41 @@ Schedule_t* CMHWGrunt :: GetScheduleOfType ( int Type )
 	case SCHED_HWGRUNT_ELOF_FAIL:
 		{
 			// human grunt is unable to move to a position that allows him to attack the enemy.
-			UTIL_ClientPrintAll( HUD_PRINTTALK, "* DEBUG: SCHED_HWGRUNT_ELOF_FAIL\n" );
 			return &slHWGruntELOFFail[ 0 ];
 		}
 		break;
 	case SCHED_HWGRUNT_ESTABLISH_LINE_OF_FIRE:
 		{
-			UTIL_ClientPrintAll( HUD_PRINTTALK, "* DEBUG: SCHED_HWGRUNT_ESTABLISH_LINE_OF_FIRE\n" );
 			return &slHWGruntEstablishLineOfFire[ 0 ];
 		}
 		break;
 	case SCHED_RANGE_ATTACK1:
 		{
 			// no pistols yet, always do standing attack
-			UTIL_ClientPrintAll( HUD_PRINTTALK, "* DEBUG: SCHED_RANGE_ATTACK1\n" );
 			return &slHWGruntRangeAttack1B[ 0 ];
 		}
 	case SCHED_COMBAT_FACE:
 		{
-			UTIL_ClientPrintAll( HUD_PRINTTALK, "* DEBUG: SCHED_COMBAT_FACE\n" );
 			return &slHWGruntCombatFace[ 0 ];
 		}
 	case SCHED_HWGRUNT_WAIT_FACE_ENEMY:
 		{
-			UTIL_ClientPrintAll( HUD_PRINTTALK, "* DEBUG: SCHED_HWGRUNT_WAIT_FACE_ENEMY\n" );
 			return &slHWGruntWaitInCover[ 0 ];
 		}
 	case SCHED_HWGRUNT_SWEEP:
 		{
-			UTIL_ClientPrintAll( HUD_PRINTTALK, "* DEBUG: SCHED_HWGRUNT_SWEEP\n" );
 			return &slHWGruntSweep[ 0 ];
 		}
 	case SCHED_VICTORY_DANCE:
 		{
-			UTIL_ClientPrintAll( HUD_PRINTTALK, "* DEBUG: SCHED_VICTORY_DANCE\n" );
 			return &slHWGruntVictoryDance[ 0 ];
 		}
 	case SCHED_HWGRUNT_SUPPRESS:
 		{
-			UTIL_ClientPrintAll( HUD_PRINTTALK, "* DEBUG: SCHED_HWGRUNT_SUPPRESS\n" );
 			return &slHWGruntSuppress[ 0 ];
 		}
 	case SCHED_FAIL:
 		{
-			UTIL_ClientPrintAll( HUD_PRINTTALK, "* DEBUG: SCHED_FAIL\n" );
 			if ( m_hEnemy != NULL )
 			{
 				// grunt has an enemy, so pick a different default fail schedule most likely to help recover.

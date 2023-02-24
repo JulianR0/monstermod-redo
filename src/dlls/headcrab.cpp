@@ -247,7 +247,7 @@ void CMHeadCrab :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/headcrab.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/headcrab.mdl"));
 	UTIL_SetSize(pev, Vector(-12, -12, 0), Vector(12, 12, 24));
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -461,7 +461,7 @@ Schedule_t* CMHeadCrab :: GetScheduleOfType ( int Type )
 void CMBabyCrab :: Spawn( void )
 {
 	CMHeadCrab::Spawn();
-	SET_MODEL(ENT(pev), "models/baby_headcrab.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/baby_headcrab.mdl"));
 	pev->rendermode = kRenderTransTexture;
 	pev->renderamt = 192;
 	UTIL_SetSize(pev, Vector(-12, -12, 0), Vector(12, 12, 24));

@@ -563,7 +563,7 @@ void CMPitdrone::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT(pev), "models/pit_drone.mdl" );
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/pit_drone.mdl"));
 	UTIL_SetSize(pev, Vector(-16, -16, 0), Vector(16, 16, 48));
 
 	pev->solid = SOLID_SLIDEBOX;

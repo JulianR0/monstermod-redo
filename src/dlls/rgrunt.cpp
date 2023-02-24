@@ -312,7 +312,7 @@ void CMRGrunt::Spawn()
 {
 	Precache();
 
-	SET_MODEL(ENT(pev), "models/rgrunt.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/rgrunt.mdl"));
 	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	pev->solid = SOLID_SLIDEBOX;

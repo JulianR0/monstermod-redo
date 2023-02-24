@@ -35,7 +35,7 @@ void CMApache :: Spawn( void )
 	pev->movetype = MOVETYPE_FLY;
 	pev->solid = SOLID_BBOX;
 
-	SET_MODEL(ENT(pev), "models/apache.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/apache.mdl"));
 	UTIL_SetSize( pev, Vector( -32, -32, -64 ), Vector( 32, 32, 0 ) );
 	UTIL_SetOrigin( pev, pev->origin );
 

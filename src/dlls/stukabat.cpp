@@ -99,7 +99,7 @@ void CMStukabat :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/stukabat.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/stukabat.mdl"));
 	UTIL_SetSize( pev, Vector( -12, -12, 0 ), Vector( 12, 12, 24 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;

@@ -240,6 +240,38 @@ void scan_monster_cfg(FILE *fp)
 									monster_spawnpoint[monster_spawn_count].spawnflags = x;
 								}
 							}
+							else if (strcmp(data[i].key, "model") == 0)
+							{
+								if (monster)
+								{
+									// only applicable for normal monsters
+									if (strcmp(data[kvd_index-1].value, "monstermaker") != 0)
+									{
+										// precache the custom model here
+										PRECACHE_MODEL( data[i].value );
+
+										// the entity will need the keyvalue
+										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
+										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].value, data[i].value);
+									}
+								}
+							}
+							else if (strcmp(data[i].key, "new_model") == 0)
+							{
+								if (monster)
+								{
+									// only applicable for monstermaket entity
+									if (strcmp(data[kvd_index-1].value, "monstermaker") == 0)
+									{
+										// precache the custom model
+										PRECACHE_MODEL( data[i].value );
+
+										// the entity will need the keyvalue as well
+										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
+										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].value, data[i].value);
+									}
+								}
+							}
 							else if (strcmp(data[i].key, "monstertype") == 0)
 							{
 								if (monster)

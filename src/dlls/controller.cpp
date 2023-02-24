@@ -302,7 +302,7 @@ void CMController :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/controller.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/controller.mdl"));
 	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ));
 
 	pev->solid			= SOLID_SLIDEBOX;

@@ -664,7 +664,7 @@ void CMGargantua :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/garg.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/garg.mdl"));
 	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;
@@ -1327,7 +1327,7 @@ void CMBabyGargantua::Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/babygarg.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/babygarg.mdl"));
 	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;

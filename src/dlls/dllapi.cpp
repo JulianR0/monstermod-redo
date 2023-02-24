@@ -806,7 +806,6 @@ void world_precache(void)
 	PRECACHE_MODEL ("models/w_grenade.mdl");
 }
 
-
 void MonsterCommand(void)
 {
 	int index;
@@ -1259,7 +1258,7 @@ int mmDispatchSpawn( edict_t *pent )
 		process_monster_precache_cfg();
 
 		process_monster_cfg();
-		
+
 		// node support. -Giegue
 		// init the WorldGraph.
 		WorldGraph.InitGraph();

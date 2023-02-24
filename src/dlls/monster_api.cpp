@@ -56,8 +56,8 @@ static META_FUNCTIONS gMetaFunctionTable =
 plugin_info_t Plugin_info = {
    META_INTERFACE_VERSION,							// interface version
    "MonsterMod",									// name
-   "3.0-dev",										// version
-   "15/02/2023",									// date in DD/MM/YYYY format
+   "3.0",											// version
+   "24/02/2023",									// date in DD/MM/YYYY format
    "botman, Rick90, Giegue",						// original authors + recreation by...
    "https://github.com/JulianR0/monstermod-redo",	// url
    "MONSTER",										// logtag
