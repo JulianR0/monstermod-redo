@@ -134,6 +134,8 @@ public:
 		virtual void MonsterThink( void );
 		void EXPORT	CallMonsterThink( void ) { this->MonsterThink(); }
 		virtual int IRelationship ( CMBaseEntity *pTarget );
+		virtual int IRelationship ( int iTargetClass );
+		int IRelationshipByClass ( int iClass );
 		virtual void MonsterInit ( void );
 		virtual void MonsterInitDead( void );	// Call after animation/pose is set up
 		virtual void BecomeDead( void );
@@ -213,7 +215,7 @@ public:
 		void AdvanceRoute ( float distance );
 		virtual BOOL FTriangulate ( const Vector &vecStart , const Vector &vecEnd, float flDist, edict_t *pTargetEnt, Vector *pApex );
 		void MakeIdealYaw( Vector vecTarget );
-		virtual void SetYawSpeed ( void ) { return; };// allows different yaw_speeds for each activity
+		virtual void SetYawSpeed ( void ) { return; }; // allows different yaw_speeds for each activity
 		BOOL BuildRoute ( const Vector &vecGoal, int iMoveFlag, edict_t *pTarget );
 		virtual BOOL BuildNearestRoute ( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist );
 		int RouteClassify( int iMoveFlag );
@@ -347,7 +349,7 @@ public:
 
 	virtual float GetDamageAmount( void ) { return gSkillData.headcrabDmgBite; }
 	virtual int GetVoicePitch( void ) { return 100; }
-	virtual float GetSoundVolue( void ) { return 1.0; }
+	virtual float GetSoundVolume( void ) { return 1.0; }
 	Schedule_t* GetScheduleOfType ( int Type );
 
 	CUSTOM_SCHEDULES;
@@ -370,7 +372,7 @@ public:
 	BOOL CheckRangeAttack1 ( float flDot, float flDist );
 	Schedule_t* GetScheduleOfType ( int Type );
 	virtual int GetVoicePitch( void ) { return PITCH_NORM + RANDOM_LONG(40,50); }
-	virtual float GetSoundVolue( void ) { return 0.8; }
+	virtual float GetSoundVolume( void ) { return 0.8; }
 };
 
 
@@ -1087,6 +1089,7 @@ public:
 private:
 	edict_t *GargantuaCheckTraceHullAttack(float flDist, int iDamage, int iDmgType);
 
+protected:
 	CMSprite	*m_pEyeGlow;		// Glow around the eyes
 	CMBeam		*m_pFlame[4];		// Flame beams
 
@@ -1236,5 +1239,475 @@ public:
 	void EXPORT SentryDeath( void );
 
 };
+
+//
+// opposing force monsters
+//
+
+//=========================================================
+// Gonome's guts projectile
+//=========================================================
+class CGonomeGuts : public CMBaseEntity
+{
+public:
+	void Spawn( void );
+	
+	static edict_t *Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity );
+	void GutsTouch( edict_t *pOther );
+	void EXPORT Animate( void );
+
+	int  m_maxFrame;
+};
+
+//=========================================================
+// Gonome
+//=========================================================
+class CMGonome : public CMBaseMonster
+{
+public:
+
+	void Spawn(void);
+	void Precache(void);
+
+	int  Classify(void);
+	void SetYawSpeed();
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+	int IgnoreConditions();
+	void IdleSound( void );
+	void PainSound( void );
+	void DeathSound( void );
+	void AlertSound( void );
+	void StartTask(Task_t *pTask);
+
+	BOOL CheckMeleeAttack2(float flDot, float flDist);
+	BOOL CheckRangeAttack1(float flDot, float flDist);
+	void SetActivity( Activity NewActivity );
+
+	Schedule_t *GetSchedule();
+	Schedule_t *GetScheduleOfType( int Type );
+	void RunTask(Task_t* pTask);
+
+	int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
+	void Killed(entvars_t *pevAttacker, int iGib);
+
+	void UnlockPlayer();
+	CGonomeGuts* GetGonomeGuts(entvars_t *pevOwner, const Vector& pos);
+	void ClearGuts();
+
+	CUSTOM_SCHEDULES;
+
+	static const char* pPainSounds[];
+	static const char* pIdleSounds[];
+	static const char* pDeathSounds[];
+	static const char *pAttackHitSounds[];
+	static const char *pAttackMissSounds[];
+
+protected:
+	float m_flNextFlinch;
+	float m_flNextThrowTime;// last time the gonome used the guts attack.
+	CGonomeGuts* m_pGonomeGuts;
+	
+	BOOL m_fPlayerLocked;
+	EHANDLE m_lockedPlayer;
+	
+	bool m_meleeAttack2;
+	bool m_playedAttackSound;
+};
+
+//=========================================================
+// Male Assassin
+//=========================================================
+class CMMassn : public CMHGrunt
+{
+public:
+	int  Classify(void);
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+	void Sniperrifle(void);
+
+	BOOL FOkToSpeak(void);
+
+	void Spawn( void );
+	void Precache( void );
+
+	void DeathSound(void);
+	void PainSound(void);
+	void IdleSound(void);
+};
+
+//=========================================================
+// Otis
+//=========================================================
+class CMOtis : public CMBarney
+{
+public:
+	void KeyValue(KeyValueData *pkvd);
+
+	void Spawn(void);
+	void Precache(void);
+	void BarneyFirePistol(void);
+	void AlertSound(void);
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+
+	int TakeDamage(entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType);
+
+	// Override these to set behavior
+	Schedule_t *GetSchedule(void);
+
+	void TalkInit(void);
+	void TraceAttack(entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+	void Killed(entvars_t *pevAttacker, int iGib);
+
+	int		head;
+	int		bodystate;
+};
+
+//=========================================================
+// Pit Drone's spit projectile
+//=========================================================
+class CPitdroneSpike : public CMBaseEntity
+{
+public:
+	void Spawn(void);
+	void EXPORT SpikeTouch(edict_t *pOther);
+	void EXPORT StartTrail();
+	static edict_t *Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, Vector vecAngles);
+};
+
+//=========================================================
+// Pit Drone
+//=========================================================
+class CMPitdrone : public CMBaseMonster
+{
+public:
+	void Spawn(void);
+	void Precache(void);
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+	void SetYawSpeed(void);
+	int ISoundMask();
+	void KeyValue(KeyValueData *pkvd);
+
+	int Classify(void);
+
+	BOOL CheckMeleeAttack1(float flDot, float flDist);
+	BOOL CheckRangeAttack1(float flDot, float flDist);
+	void IdleSound(void);
+	void PainSound(void);
+	void AlertSound(void);
+	void DeathSound(void);
+	void BodyChange(float spikes);
+	int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
+	int IgnoreConditions(void);
+	Schedule_t* GetSchedule(void);
+	Schedule_t* GetScheduleOfType(int Type);
+	void StartTask(Task_t *pTask);
+	void RunTask(Task_t *pTask);
+	void RunAI(void);
+	void CheckAmmo();
+	void GibMonster();
+	CUSTOM_SCHEDULES;
+
+	float	m_flLastHurtTime;
+	float	m_flNextSpitTime;// last time the PitDrone used the spit attack.
+	float	m_flNextFlinch;
+	int m_iInitialAmmo;
+	bool shouldAttackWithLeftClaw;
+
+	static const char *pIdleSounds[];
+	static const char *pAlertSounds[];
+	static const char *pPainSounds[];
+	static const char *pDieSounds[];
+	static const char *pAttackMissSounds[];
+};
+
+//=========================================================
+// Shock Roach
+//=========================================================
+class CMShockRoach : public CMHeadCrab
+{
+public:
+	void Spawn(void);
+	void Precache(void);
+	void EXPORT LeapTouch(edict_t *pOther);
+	void PainSound(void);
+	void DeathSound(void);
+	void IdleSound(void);
+	void AlertSound(void);
+	void MonsterThink(void);
+	void StartTask(Task_t* pTask);
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+
+	static const char *pIdleSounds[];
+	static const char *pAlertSounds[];
+	static const char *pPainSounds[];
+	static const char *pAttackSounds[];
+	static const char *pDeathSounds[];
+	static const char *pBiteSounds[];
+
+	float m_flBirthTime;
+	BOOL m_fRoachSolid;
+
+protected:
+	void AttackSound();
+};
+
+//=========================================================
+// Shock Trooper
+//=========================================================
+class CMStrooper : public CMHGrunt
+{
+public:
+	void Spawn(void);
+	void MonsterThink();
+	void Precache(void);
+	int  Classify(void);
+	BOOL CheckRangeAttack1(float flDot, float flDist);
+	BOOL CheckRangeAttack2(float flDot, float flDist);
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+	void SetObjectCollisionBox( void )
+	{
+		pev->absmin = pev->origin + Vector( -24, -24, 0 );
+		pev->absmax = pev->origin + Vector( 24, 24, 72 );
+	}
+
+	void SetActivity(Activity NewActivity);
+
+	void DeathSound(void);
+	void PainSound(void);
+	void IdleSound(void);
+	void GibMonster(void);
+
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType);
+
+	void DropShockRoach(bool gibbed);
+
+	Schedule_t	*GetSchedule(void);
+	Schedule_t  *GetScheduleOfType(int Type);
+
+	void SpeakSentence();
+
+	BOOL m_fRightClaw;
+	float m_rechargeTime;
+	float m_blinkTime;
+	float m_eyeChangeTime;
+
+	static const char *pGruntSentences[];
+};
+
+//=========================================================
+// Voltigore's energy ball projectile
+//=========================================================
+#define		VOLTIGORE_MAX_BEAMS		8
+class CMVoltigoreEnergyBall : public CMBaseEntity
+{
+public:
+	void Spawn(void);
+
+	static edict_t *Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity);
+	void EXPORT BallTouch(edict_t *pOther);
+	void EXPORT FlyThink(void);
+
+	void CreateBeams();
+	void ClearBeams();
+	void UpdateBeams();
+
+	CMBeam* m_pBeam[VOLTIGORE_MAX_BEAMS];
+	int m_iBeams;
+	float m_timeToDie;
+
+protected:
+
+	void CreateBeam(int nIndex, const Vector& vecPos, int width, int brightness);
+	void UpdateBeam(int nIndex, const Vector& vecPos, bool show);
+	void ClearBeam(int nIndex);
+};
+
+//=========================================================
+// Voltigore
+//=========================================================
+class CMVoltigore : public CMBaseMonster
+{
+public:
+	virtual void Spawn(void);
+	virtual void Precache(void);
+	void SetYawSpeed(void);
+	virtual int  Classify(void);
+	virtual void HandleAnimEvent(MonsterEvent_t *pEvent);
+	virtual void IdleSound(void);
+	virtual void PainSound(void);
+	virtual void DeathSound(void);
+	virtual void AlertSound(void);
+	void AttackSound(void);
+	virtual void StartTask(Task_t *pTask);
+	virtual BOOL CheckMeleeAttack1(float flDot, float flDist);
+	virtual BOOL CheckRangeAttack1(float flDot, float flDist);
+	virtual void RunAI(void);
+	virtual void GibMonster();
+	Schedule_t *GetSchedule(void);
+	Schedule_t *GetScheduleOfType(int Type);
+	virtual int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
+	virtual void Killed(entvars_t *pevAttacker, int iGib);
+
+	CUSTOM_SCHEDULES
+
+	float m_flNextZapTime; // last time the voltigore used the spit attack.
+	BOOL m_fShouldUpdateBeam;
+	CMBeam* m_pBeam[3];
+	CMSprite* m_pBeamGlow;
+	int m_glowBrightness;
+
+	static const char* pAlertSounds[];
+	static const char* pAttackMeleeSounds[];
+	static const char* pMeleeHitSounds[];
+	static const char* pMeleeMissSounds[];
+	static const char* pComSounds[];
+	static const char* pDeathSounds[];
+	static const char* pFootstepSounds[];
+	static const char* pIdleSounds[];
+	static const char* pPainSounds[];
+	static const char* pGruntSounds[];
+
+	void CreateBeams();
+	void DestroyBeams();
+	void UpdateBeams();
+
+	void CreateGlow();
+	void DestroyGlow();
+	void GlowUpdate();
+	void GlowOff(void);
+	void GlowOn(int level);
+protected:
+	void GibBeamDamage();
+	void PrecacheImpl(char* modelName);
+	int m_beamTexture;
+};
+
+//=========================================================
+// Baby Voltigore
+//=========================================================
+class CMBabyVoltigore : public CMVoltigore
+{
+public:
+	void	Spawn(void);
+	void	Precache(void);
+	void	HandleAnimEvent(MonsterEvent_t* pEvent);
+	BOOL	CheckMeleeAttack1(float flDot, float flDist);
+	BOOL	CheckRangeAttack1(float flDot, float flDist);
+	void	StartTask(Task_t *pTask);
+	void	Killed(entvars_t *pevAttacker, int iGib);
+	void	GibMonster();
+	Schedule_t* GetSchedule();
+	Schedule_t* GetScheduleOfType(int Type);
+};
+
+//
+// sven co-op monsters
+//
+
+//=========================================================
+// Baby Gargantua
+//=========================================================
+class CMBabyGargantua : public CMGargantua
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	void HandleAnimEvent( MonsterEvent_t *pEvent );
+	
+	BOOL CheckMeleeAttack1( float flDot, float flDist );		// Swipe
+	BOOL CheckMeleeAttack2( float flDot, float flDist );		// Flames
+	BOOL CheckRangeAttack1( float flDot, float flDist );		// Stomp attack
+	
+	void StartTask( Task_t *pTask );
+	void RunTask( Task_t *pTask );
+	
+	void StompAttack( void );
+	void FlameCreate( void );
+	void FlameUpdate( void );
+	void FlameDestroy( void );
+	
+	static const char *pBeamAttackSounds[];
+	static const char *pFootSounds[];
+	static const char *pIdleSounds[];
+	static const char *pAlertSounds[];
+	static const char *pPainSounds[];
+	static const char *pAttackSounds[];
+	static const char *pStompSounds[];
+	static const char *pBreatheSounds[];
+	static const char *pDieSounds[];
+	
+private:
+	edict_t *BabyGargCheckTraceHullAttack(float flDist, int iDamage, int iDmgType);
+};
+
+//=========================================================
+// Heavy Weapons Grunt
+//=========================================================
+class CMHWGrunt : public CMHGrunt
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int Classify(void);
+
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
+	void SetActivity(Activity NewActivity);
+	
+	Schedule_t	*GetSchedule( void );
+	Schedule_t  *GetScheduleOfType ( int Type );
+	
+	BOOL CheckRangeAttack1( float flDot, float flDist );
+	BOOL CheckMeleeAttack1( float flDot, float flDist );
+	BOOL CheckRangeAttack2( float flDot, float flDist );
+
+	void Minigun(void);
+	
+	CUSTOM_SCHEDULES
+
+	float m_flMinigunSpinTime;
+};
+
+//=========================================================
+// Robo Grunt
+//=========================================================
+class CMRGrunt : public CMHGrunt
+{
+public:
+	int  Classify(void);
+
+	BOOL FOkToSpeak(void);
+
+	void Spawn( void );
+	void Precache( void );
+
+	void DeathSound(void);
+	void PainSound(void);
+	void IdleSound(void);
+	
+	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	
+	void RunAI(void);
+	
+	void Killed(entvars_t *pevAttacker, int iGib);
+	void GibMonster();
+	
+	void EXPORT SparkTouch(edict_t *pOther);
+	void EXPORT StartGib(void);
+
+	float m_flNextSpark;
+	float m_flNextDischarge;
+	float m_flActiveDischarge;
+
+	int m_iBodyGibs;
+};
+
+//=========================================================
+// Looking for Stukabat? It's located in cmflyingmonster.h
+//=========================================================
 
 #endif // BASEMONSTER_H

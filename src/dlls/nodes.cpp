@@ -25,12 +25,12 @@
 #include	"animation.h"
 #include	"doors.h"
 
-//#if !defined ( _WIN32 ) 
+#if !defined ( _WIN32 ) 
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h> // mkdir
-//#endif
+#endif
 
 #define	HULL_STEP_SIZE 16// how far the test hull moves on each step
 #define	NODE_HEIGHT	8	// how high to lift nodes off the ground after we drop them all (make stair/ramp mapping easier)
@@ -38,7 +38,7 @@
 // to help eliminate node clutter by level designers, this is used to cap how many other nodes
 // any given node is allowed to 'see' in the first stage of graph creation "LinkVisibleNodes()".
 #define	MAX_NODE_INITIAL_LINKS	128
-#define	MAX_NODES               1024
+//#define	MAX_NODES               1024	// already defined in monster_plugin.h
 
 Vector VecBModelOrigin( entvars_t* pevBModel );
 

@@ -22,7 +22,7 @@
 struct skilldata_t
 {
 // Monster Health & Damage
-	float	agruntHealth;
+	float agruntHealth;
 	float agruntDmgPunch;
 
 	float apacheHealth;
@@ -81,18 +81,70 @@ struct skilldata_t
 	float zombieHealth;
 	float zombieDmgOneSlash;
 	float zombieDmgBothSlash;
-	
+
 	float turretHealth;
 	float miniturretHealth;
 	float sentryHealth;
+
+
+//OP4 monsters
+	float gonomeHealth;
+	float gonomeDmgGuts;
+	float gonomeDmgOneSlash;
+	float gonomeDmgOneBite;
+	
+	float massnHealth;
+	float massnDmgKick;
+	
+	float otisHealth;
+	
+	float pitdroneHealth;
+	float pitdroneDmgSpit;
+	float pitdroneDmgWhip;
+	float pitdroneDmgBite;
+	
+	float roachHealth;
+	float roachLifespan;
+	
+	float strooperHealth;
+	float strooperDmgKick;
+	float strooperMaxCharge;
+	float strooperRchgSpeed;
+	
+	float voltigoreHealth;
+	float voltigoreDmgBeam;
+	float voltigoreDmgPunch;
+	
+	float babyVoltigoreHealth;
+	float babyVoltigoreDmgPunch;
+
+
+//SC monsters
+	float babygargHealth;
+	float babygargDmgSlash;
+	float babygargDmgFire;
+	float babygargDmgStomp;
+	
+	float hwgruntHealth;
+	
+	float rgruntHealth;
+	float rgruntArmor;
+	
+	float stukabatHealth;
+	float stukabatDmgBite;
+	float stukabatSpeed;
 
 // weapons shared by monsters
 	float monDmg9MM;
 	float monDmgMP5;
 	float monDmg12MM;
 	float monDmgM203Grenade;
-
+	float monDmg762;
+	float monDmg357;
+	
 	float monDmgHornet;
+	float monDmgShockroach;
+	float monDmgSpore;
 };
 
 extern DLL_GLOBAL skilldata_t gSkillData;

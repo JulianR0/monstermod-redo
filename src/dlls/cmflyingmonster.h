@@ -17,6 +17,8 @@
 #ifndef FLYINGMONSTER_H
 #define FLYINGMONSTER_H
 
+#include "cmbasemonster.h"
+
 class CMFlyingMonster : public CMBaseMonster
 {
 public:
@@ -48,6 +50,32 @@ protected:
 	const char	*m_pFlapSound;
 };
 
+
+//=========================================================
+// Stukabat
+//=========================================================
+class CMStukabat : public CMFlyingMonster
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	void SetYawSpeed( void );
+	int  Classify ( void );
+	
+	void SetActivity ( Activity NewActivity );
+	void HandleAnimEvent( MonsterEvent_t *pEvent );
+	Schedule_t *GetScheduleOfType ( int Type );
+
+	int  GetBitePitch( void ) { return PITCH_NORM + RANDOM_LONG( 40, 50 ); }
+	BOOL CheckRangeAttack1 ( float flDot, float flDist );
+	
+	// Not used
+	BOOL CheckRangeAttack2 ( float flDot, float flDist ) { return FALSE; }
+	BOOL CheckMeleeAttack1 ( float flDot, float flDist ) { return FALSE; }
+	BOOL CheckMeleeAttack2 ( float flDot, float flDist ) { return FALSE; }
+
+	CUSTOM_SCHEDULES
+};
 
 #endif		//FLYINGMONSTER_H
 

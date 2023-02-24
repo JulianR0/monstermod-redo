@@ -50,7 +50,7 @@ CMBaseEntity
 // C functions for external declarations that call the appropriate C++ methods
 
 #ifdef _WIN32
-#define EXPORT	_declspec( dllexport )
+#define EXPORT	__declspec( dllexport )
 #else
 #define EXPORT	/* */
 #endif
@@ -80,6 +80,8 @@ typedef void (CMBaseEntity::*USEPTR)( edict_t *pActivator, edict_t *pCaller, USE
 #define CLASS_PLAYER_ALLY		11
 #define CLASS_PLAYER_BIOWEAPON	12 // hornets and snarks.launched by players
 #define CLASS_ALIEN_BIOWEAPON	13 // hornets and snarks.launched by the alien menace
+#define CLASS_RACEX_PITDRONE	14
+#define CLASS_RACEX_SHOCK		15
 #define	CLASS_BARNACLE			99 // special because no one pays attention to it, and it eats a wide cross-section of creatures.
 
 class CMBaseEntity;
@@ -599,7 +601,6 @@ template <class T> T * CreateClassPtr( T *a )
 	// store the class pointer in the array here!!!
 	monsters[monster_index].monster_index = edict_index;
 	monsters[monster_index].monster_pent = temp_edict;
-	monsters[monster_index].respawn_index = -1;
 	monsters[monster_index].pMonster = (CMBaseMonster *)a;
 
 	// get the private data

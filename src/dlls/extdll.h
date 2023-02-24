@@ -31,6 +31,7 @@
 #pragma warning(disable : 4201)		// nameless struct/union
 #pragma warning(disable : 4514)		// unreferenced inline function removed
 #pragma warning(disable : 4100)		// unreferenced formal parameter
+#pragma warning(disable : 4390)		// empty controlled statement (seems to work fine? monster_api.cpp[101/115])
 
 // Prevent tons of unused windows definitions
 #ifdef _WIN32

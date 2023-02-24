@@ -663,7 +663,9 @@ void CMHGrunt :: Shoot ( void )
 
 	pev->effects |= EF_MUZZLEFLASH;
 	
-	m_cAmmoLoaded--;// take away a bullet!
+	// BUG - For some reason that still eludes me, grunts are completely unable to reload their weapons.
+	// As a temporary fix, give them infinite ammo. It will look bad I know... I gotta find a solution. -Giegue
+	//m_cAmmoLoaded--;// take away a bullet!
 
 	Vector angDir = UTIL_VecToAngles( vecShootDir );
 	SetBlending( 0, angDir.x );
@@ -690,7 +692,9 @@ void CMHGrunt :: Shotgun ( void )
 
 	pev->effects |= EF_MUZZLEFLASH;
 	
-	m_cAmmoLoaded--;// take away a bullet!
+	// BUG - For some reason that still eludes me, grunts are completely unable to reload their weapons.
+	// As a temporary fix, give them infinite ammo. It will look bad I know... I gotta find a solution. -Giegue
+	//m_cAmmoLoaded--;// take away a bullet!
 
 	Vector angDir = UTIL_VecToAngles( vecShootDir );
 	SetBlending( 0, angDir.x );
@@ -827,7 +831,7 @@ void CMHGrunt :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/hgrunt.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/hgrunt.mdl"));
 	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	pev->solid			= SOLID_SLIDEBOX;

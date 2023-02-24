@@ -37,7 +37,13 @@
 #ifndef ENGINE_API_H
 #define ENGINE_API_H
 
-#include <stdint.h> // why?
+// No proper C99 support in old MVSC6, use custom stdint.h
+#ifdef _WIN32
+#include "stdint_c99.h"
+#else
+#include <stdint.h>
+#endif
+
 #include "comp_dep.h"
 
 // Plugin's GetEngineFunctions, called by metamod.

@@ -79,6 +79,8 @@ void ApplyMultiDamage(entvars_t *pevInflictor, entvars_t *pevAttacker )
 		CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(gMultiDamage.pEntity));
 		pMonster->TakeDamage(pevInflictor, pevAttacker, gMultiDamage.amount, gMultiDamage.type );
 	}
+	else
+		UTIL_TakeDamageExternal(gMultiDamage.pEntity, pevInflictor, pevAttacker, gMultiDamage.amount, gMultiDamage.type );
 }
 
 
@@ -136,6 +138,19 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 
 		switch( iBulletType )
 		{
+			case BULLET_PLAYER_CROWBAR:
+			{
+				// wall decal
+				UTIL_DecalTrace( pTrace, DamageDecal( pEntity, DMG_CLUB ) );
+				break;
+			}
+			default:
+			{
+				// smoke and decal
+				UTIL_GunshotDecalTrace( pTrace, DamageDecal( pEntity, DMG_BULLET ) );
+				break;
+			}
+		/* why the duplicate case?
 		case BULLET_PLAYER_9MM:
 		case BULLET_MONSTER_9MM:
 		case BULLET_PLAYER_MP5:
@@ -154,6 +169,7 @@ void DecalGunshot( TraceResult *pTrace, int iBulletType )
 			// wall decal
 			UTIL_DecalTrace( pTrace, DamageDecal( pEntity, DMG_CLUB ) );
 			break;
+		*/
 		}
 	}
 }

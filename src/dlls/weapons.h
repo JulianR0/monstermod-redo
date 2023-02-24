@@ -49,6 +49,33 @@ public:
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
 };
 
+// Contact/Timed spore grenade
+class CMSporeGrenade : public CMBaseMonster
+{
+public:
+	void Precache(void);
+	void Spawn(void);
+
+	static CMSporeGrenade *ShootTimed(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, bool ai);
+	static CMSporeGrenade *ShootContact(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity);
+
+	void Explode(TraceResult *pTrace);
+
+	void EXPORT BounceTouch(edict_t *pOther);
+	void EXPORT ExplodeTouch(edict_t *pOther);
+	void EXPORT DangerSoundThink(void);
+	void EXPORT Detonate(void);
+	void EXPORT TumbleThink(void);
+
+	void BounceSound(void);
+	void DangerSound();
+	static void SpawnTrailParticles(const Vector& origin, const Vector& direction, int modelindex, int count, float speed, float noise);
+	static void SpawnExplosionParticles(const Vector& origin, const Vector& direction, int modelindex, int count, float speed, float noise);
+
+	void UpdateOnRemove();
+
+	CMSprite* m_pSporeGlow;
+};
 
 // constant items
 #define ITEM_HEALTHKIT		1
@@ -177,6 +204,8 @@ typedef	enum
 	BULLET_MONSTER_9MM,
 	BULLET_MONSTER_MP5,
 	BULLET_MONSTER_12MM,
+	BULLET_MONSTER_762,
+	BULLET_MONSTER_357,
 } Bullet;
 
 

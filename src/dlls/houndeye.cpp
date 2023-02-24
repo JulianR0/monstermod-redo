@@ -267,7 +267,7 @@ void CMHoundeye :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/houndeye.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/houndeye.mdl"));
 	UTIL_SetSize(pev, Vector ( -16, -16, 0 ), Vector ( 16, 16, 36 ) );
 
 	pev->solid			= SOLID_SLIDEBOX;

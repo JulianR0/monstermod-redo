@@ -603,7 +603,7 @@ void CMBigMomma :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/big_mom.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/big_mom.mdl"));
 //	UTIL_SetSize( pev, Vector( -32, -32, 0 ), Vector( 32, 32, 64 ) );
 	UTIL_SetSize( pev, Vector( -64, -64, 0 ), Vector( 64, 64, 128 ) );
 

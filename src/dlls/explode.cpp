@@ -81,13 +81,52 @@ void CMShower::Touch( CMBaseEntity *pOther )
 		pev->speed = 0;
 }
 
+// Puff of Smoke
+class CSmoker : public CMBaseEntity
+{
+public:
+	void Spawn( void );
+	void Think( void );
+};
+
+void CSmoker::Spawn( void )
+{
+	pev->movetype = MOVETYPE_NONE;
+	pev->nextthink = gpGlobals->time;
+	pev->solid = SOLID_NOT;
+	UTIL_SetSize(pev, g_vecZero, g_vecZero );
+	pev->effects |= EF_NODRAW;
+	pev->angles = g_vecZero;
+}
+
+void CSmoker::Think( void )
+{
+	// lots of smoke
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
+		WRITE_BYTE( TE_SMOKE );
+		WRITE_COORD( pev->origin.x + RANDOM_FLOAT( -pev->dmg, pev->dmg ));
+		WRITE_COORD( pev->origin.y + RANDOM_FLOAT( -pev->dmg, pev->dmg ));
+		WRITE_COORD( pev->origin.z);
+		WRITE_SHORT( g_sModelIndexSmoke );
+		WRITE_BYTE( RANDOM_LONG(pev->scale, pev->scale * 1.1) );
+		WRITE_BYTE( RANDOM_LONG(8,14)  ); // framerate
+	MESSAGE_END();
+
+	pev->health--;
+	if ( pev->health > 0 )
+		pev->nextthink = gpGlobals->time + RANDOM_FLOAT(0.1, 0.2);
+	else
+		UTIL_Remove( this->edict() );
+}
+
+// Explosion
 class CMEnvExplosion : public CMBaseMonster
 {
 public:
 	void Spawn( );
 	void EXPORT Smoke ( void );
 	void KeyValue( KeyValueData *pkvd );
-	void DelayUse( void );
+	void EXPORT DelayUse( void );
 	void Use( CMBaseEntity *pActivator, CMBaseEntity *pCaller, USE_TYPE useType, float value );
 
 	int m_iMagnitude;// how large is the fireball? how much damage?
@@ -106,7 +145,7 @@ void CMEnvExplosion::KeyValue( KeyValueData *pkvd )
 }
 
 void CMEnvExplosion::Spawn( void )
-{ 
+{
 	pev->solid = SOLID_NOT;
 	pev->effects = EF_NODRAW;
 
@@ -142,7 +181,7 @@ void CMEnvExplosion::DelayUse( void )
 }
 
 void CMEnvExplosion::Use( CMBaseEntity *pActivator, CMBaseEntity *pCaller, USE_TYPE useType, float value )
-{ 
+{
 	TraceResult tr;
 
 	pev->model = iStringNull;//invisible
@@ -259,7 +298,8 @@ void CMEnvExplosion::Smoke( void )
 }
 
 
-// Stock to quickly create a one-time explosion
+// Stocks:
+// Create a one-time explosion
 void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwner, int magnitude, int flags, float delay )
 {
 	KeyValueData	kvd;
@@ -287,15 +327,19 @@ void ExplosionCreate( const Vector &center, const Vector &angles, edict_t *pOwne
 		pExplosion->pev->spawnflags &= ~SF_ENVEXPLOSION_REPEATABLE;
 		
 		pExplosion->Spawn();
-		if ( delay > 0.0f )
-		{
-			//pExplosion->SetThink( &CMBaseEntity::SUB_CallUseToggle ); // i don't trust you
-			pExplosion->SetThink( &CMEnvExplosion::DelayUse );
-			pExplosion->pev->nextthink = gpGlobals->time + delay;
-		}
-		else
-		{
-			pExplosion->Use( NULL, NULL, USE_TOGGLE, 0 );
-		}
+		pExplosion->SetThink( &CMEnvExplosion::DelayUse );
+		pExplosion->pev->nextthink = gpGlobals->time + delay;
 	}
+}
+
+// Emit smoke
+void SmokeCreate( const Vector &origin, int amount, int size, int radius, float delay )
+{
+	CMBaseEntity *pSmoker = CreateClassPtr((CSmoker *)NULL); // CMBaseEntity::Create( "env_smoker", pev->origin, g_vecZero, NULL );
+	UTIL_SetOrigin( pSmoker->pev, origin );
+	pSmoker->Spawn();
+	pSmoker->pev->health = amount;						// number of smoke balls
+	pSmoker->pev->scale = size;							// size in 0.1x - size 10 = x1.0
+	pSmoker->pev->dmg = radius;							// radial distribution
+	pSmoker->pev->nextthink = gpGlobals->time + delay;	// Start in ... seconds
 }

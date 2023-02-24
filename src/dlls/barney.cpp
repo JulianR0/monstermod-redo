@@ -345,7 +345,7 @@ void CMBarney :: Spawn()
 	// when a level is loaded, nobody will talk (time is reset to 0)
 	TalkInit();
 
-	SET_MODEL(ENT(pev), "models/barney.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/barney.mdl"));
 	UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
 
 	pev->solid			= SOLID_SLIDEBOX;

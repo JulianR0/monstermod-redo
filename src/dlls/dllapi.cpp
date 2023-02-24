@@ -42,6 +42,7 @@
 
 #include "cmbase.h"
 #include "cmbasemonster.h"
+#include "cmbaseextra.h"
 #include "monsters.h"
 #include "weapons.h"
 #include "hornet.h"
@@ -68,7 +69,6 @@ int g_DamageVictim;
 edict_t *g_DamageAttacker[33];
 int g_DamageBits[33];
 bool g_PlayerKilled[33];
-float g_flWaitTillMessage[33];
 
 // DeathMsg
 int g_DeathMsg;
@@ -134,7 +134,7 @@ monster_type_t monster_types[]=
 	// can be spawned. Monsters should go first.
 	// DO NOT ALTER THE ORDER OF ELEMENTS!
 	
-	"monster_alien_grunt", FALSE, // Monsters
+	"monster_alien_grunt", FALSE, // Original Half-Life Monsters
 	"monster_apache", FALSE,
 	"monster_barney", FALSE,
 	"monster_bigmomma", FALSE,
@@ -148,12 +148,25 @@ monster_type_t monster_types[]=
 	"monster_scientist", FALSE,
 	"monster_snark", FALSE,
 	"monster_zombie", FALSE,
-    "monster_gargantua", FALSE,
+	"monster_gargantua", FALSE,
 	"monster_turret", FALSE,
 	"monster_miniturret", FALSE,
 	"monster_sentry", FALSE,
+	"monster_gonome", FALSE, // Opposing Force Monsters
+	"monster_male_assassin", FALSE,
+	"monster_otis", FALSE,
+	"monster_pitdrone", FALSE,
+	"monster_shockroach", FALSE,
+	"monster_shocktrooper", FALSE,
+	"monster_alien_voltigore", FALSE,
+	"monster_alien_babyvoltigore", FALSE,
+	"monster_babygarg", FALSE, // Sven Co-op Monsters
+	"monster_hwgrunt", FALSE,
+	"monster_robogrunt", FALSE,
+	"monster_stukabat", FALSE,
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
+	"monstermaker", FALSE, // Extra entities
 	"", FALSE
 };
 
@@ -167,6 +180,7 @@ node_spawnpoint_t node_spawnpoint[MAX_NODES];
 int node_spawn_count = 0;
 
 float check_respawn_time;
+float check_graph_time;
 
 bool process_monster_cfg(void);
 bool process_monster_precache_cfg(void);
@@ -197,15 +211,6 @@ int GetMonsterIndex(void)
 
 void FreeMonsterIndex(int index)
 {
-	int idx = monsters[index].respawn_index;
-
-	if (idx != -1)
-	{
-		monster_spawnpoint[idx].need_to_respawn = TRUE;
-		monster_spawnpoint[idx].respawn_time = gpGlobals->time +
-		monster_spawnpoint[idx].delay;
-	}
-	
 	delete monsters[index].pMonster;
 	
 	monsters[index].monster_index = 0;
@@ -388,90 +393,100 @@ void check_player_dead( edict_t *pPlayer )
 		// Killed by a monster?
 		if ( pAttacker->v.flags & FL_MONSTER )
 		{
-			// Check the first character for 'aeiou'.
+			// Try to get the name of the monster
+			char szName[129], szCheck[2];
+
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pAttacker));
-			char szCheck[2];
-			strncpy( szCheck, STRING( pMonster->m_szMonsterName ), 1 );
+			if ( pMonster != NULL )
+			{
+				// One of our monsters
+				strcpy(szName, STRING( pMonster->m_szMonsterName ));
+			}
+			else
+			{
+				// SOMETHING that is a monster
+				if ( !FStringNull( pAttacker->v.netname ) )
+					strcpy(szName, STRING( pAttacker->v.netname ));
+				else
+				{
+					// No netname, use classname
+					strcpy(szName, STRING( pAttacker->v.classname ));
+				}
+			}
+
+			// Now, copy the first character to check for 'aeiou'.
+			strncpy( szCheck, szName, 1 );
 			
-			// Make the first character lowercase
+			// Make this character lowercase and inspect it. Select which message.
 			szCheck[0] = tolower( szCheck[ 0 ] );
 			if ( strncmp( szCheck, "a", 1 ) == 0 || strncmp( szCheck, "e", 1 ) == 0 || strncmp( szCheck, "i", 1 ) == 0 || strncmp( szCheck, "o", 1 ) == 0 || strncmp( szCheck, "u", 1 ) == 0 )
-				sprintf( szMessage, "* %s was killed by an %s.\n", szPlayerName, STRING( pMonster->m_szMonsterName ) );
+				sprintf( szMessage, "* %s was killed by an %s.\n", szPlayerName, szName );
 			else
-				sprintf( szMessage, "* %s was killed by a %s.\n", szPlayerName, STRING( pMonster->m_szMonsterName ) );
+				sprintf( szMessage, "* %s was killed by a %s.\n", szPlayerName, szName );
 		}
 		else
 		{
-			// Any messages from here should only be shown if allowed.
-			// Level 0 = Disabled
-			// Level 1 = All messages
-			// Level 2 = Only monster deaths
-			if (monster_show_deaths->value == 1)
+			// Suicide?
+			if ( pAttacker == pPlayer )
+				sprintf( szMessage, "* %s commited suicide.\n", szPlayerName );
+			// An entity killed this player.
+			else if ( ENTINDEX( pAttacker ) > 0 )
 			{
-				// Suicide?
-				if ( pAttacker == pPlayer )
-					sprintf( szMessage, "* %s commited suicide.\n", szPlayerName );
-				// An entity killed this player.
-				else if ( ENTINDEX( pAttacker ) > 0 )
-				{
-					// Gather damage type and format death message
-					if ( g_DamageBits[ iPlayerIndex ] == DMG_GENERIC )
-						sprintf( szMessage, "* %s died mysteriously.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_CRUSH )
-						sprintf( szMessage, "* %s was smashed.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_BULLET )
-						sprintf( szMessage, "* %s was shot.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLASH )
-						sprintf( szMessage, "* %s lost it's jelly.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_BURN )
-						sprintf( szMessage, "* %s burned to death.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_FREEZE )
-						sprintf( szMessage, "* %s froze to death.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_FALL )
-						sprintf( szMessage, "* %s broke it's bones.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_BLAST )
-						sprintf( szMessage, "* %s blew up.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_CLUB )
-						sprintf( szMessage, "* %s was crowbared.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SHOCK )
-						sprintf( szMessage, "* %s was electrocuted.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SONIC )
-						sprintf( szMessage, "* %s ears popped.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_ENERGYBEAM )
-						sprintf( szMessage, "* %s saw the pretty lights.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] == DMG_NEVERGIB )
-						sprintf( szMessage, "* %s had a painful death.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] == DMG_ALWAYSGIB )
-						sprintf( szMessage, "* %s was gibbed.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_DROWN )
-						sprintf( szMessage, "* %s became too drunk.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_PARALYZE )
-						sprintf( szMessage, "* %s was paralyzed.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_NERVEGAS )
-						sprintf( szMessage, "* %s lost it's brain.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_POISON )
-						sprintf( szMessage, "* %s had a slow death.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_RADIATION )
-						sprintf( szMessage, "* %s went nuclear.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_DROWNRECOVER )
-						sprintf( szMessage, "* %s used too much flex tape.\n", szPlayerName ); // is this type of death even possible?
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_ACID )
-						sprintf( szMessage, "* %s was melted.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLOWBURN )
-						sprintf( szMessage, "* %s became a cake.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLOWFREEZE )
-						sprintf( szMessage, "* %s died of hypothermia.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] & DMG_MORTAR )
-						sprintf( szMessage, "* %s blew his missile pet.\n", szPlayerName );
-					else if ( g_DamageBits[ iPlayerIndex ] == (1 << 30) ) // (1 << 30) = 1073741824. For custom death messages
-						sprintf( szMessage, "* %s %s.\n", szPlayerName, STRING( pAttacker->v.noise ) );
-					else // other mods could have more DMG_ variants that aren't registered here.
-						sprintf( szMessage, "* %s deadly died.\n", szPlayerName );
-				}
-				// the "world" killed this player
-				else
-					 sprintf( szMessage, "* %s fell or drowned or something.\n", szPlayerName );
+				// Gather damage type and format death message
+				if ( g_DamageBits[ iPlayerIndex ] == DMG_GENERIC )
+					sprintf( szMessage, "* %s died mysteriously.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_CRUSH )
+					sprintf( szMessage, "* %s was smashed.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_BULLET )
+					sprintf( szMessage, "* %s was shot.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLASH )
+					sprintf( szMessage, "* %s lost its jelly.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_BURN )
+					sprintf( szMessage, "* %s burned to death.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_FREEZE )
+					sprintf( szMessage, "* %s froze to death.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_FALL )
+					sprintf( szMessage, "* %s broke its bones.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_BLAST )
+					sprintf( szMessage, "* %s blew up.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_CLUB )
+					sprintf( szMessage, "* %s was crowbared.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SHOCK )
+					sprintf( szMessage, "* %s was electrocuted.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SONIC )
+					sprintf( szMessage, "* %s ears popped.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_ENERGYBEAM )
+					sprintf( szMessage, "* %s saw the pretty lights.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] == DMG_NEVERGIB )
+					sprintf( szMessage, "* %s had a painful death.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] == DMG_ALWAYSGIB )
+					sprintf( szMessage, "* %s was gibbed.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_DROWN )
+					sprintf( szMessage, "* %s became too drunk.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_PARALYZE )
+					sprintf( szMessage, "* %s was paralyzed.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_NERVEGAS )
+					sprintf( szMessage, "* %s lost its brain.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_POISON )
+					sprintf( szMessage, "* %s had a slow death.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_RADIATION )
+					sprintf( szMessage, "* %s went nuclear.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_DROWNRECOVER )
+					sprintf( szMessage, "* %s used too much flex tape.\n", szPlayerName ); // is this type of death even possible?
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_ACID )
+					sprintf( szMessage, "* %s was melted.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLOWBURN )
+					sprintf( szMessage, "* %s became a cake.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLOWFREEZE )
+					sprintf( szMessage, "* %s died of hypothermia.\n", szPlayerName );
+				else if ( g_DamageBits[ iPlayerIndex ] & DMG_MORTAR )
+					sprintf( szMessage, "* %s blew its missile pet.\n", szPlayerName );
+				else // other mods could have more DMG_ variants that aren't registered here.
+					sprintf( szMessage, "* %s deadly died.\n", szPlayerName );
 			}
+			// the "world" killed this player
+			else
+				sprintf( szMessage, "* %s fell or drowned or something.\n", szPlayerName );
 		}
 		
 		// Print the message
@@ -515,44 +530,86 @@ void check_monster_info( edict_t *pPlayer )
 		// Hit an entity?
 		if (tr.pHit != NULL)
 		{
-			// Must be a monster
-			if (tr.pHit->v.flags & FL_MONSTER)
+			// It should be alive
+			if ( UTIL_IsAlive( tr.pHit ) )
 			{
-				// Get monster info
-				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(tr.pHit));
-				
-				char szInfo[512];
-				sprintf(szInfo, "Enemy:  %s\nHealth:  %.0f\nFrags:    %.0f\n", STRING( pMonster->m_szMonsterName ), pMonster->pev->health, pMonster->pev->frags );
-				
-				// Create a TE_TEXTMESSAGE and show the monster information
-				MESSAGE_BEGIN( MSG_ONE, SVC_TEMPENTITY, NULL, pPlayer );
-				WRITE_BYTE( TE_TEXTMESSAGE );
-				WRITE_BYTE( 3 ); // Channel
-				WRITE_SHORT( 327 ); // X
-				WRITE_SHORT( 4771 ); // Y
-				WRITE_BYTE( 0 ); // Effect
-				WRITE_BYTE( 171 ); // R1
-				WRITE_BYTE( 23 ); // G1
-				WRITE_BYTE( 7 ); // B1
-				WRITE_BYTE( 0 ); // A1
-				WRITE_BYTE( 207 ); // R2
-				WRITE_BYTE( 23 ); // G2
-				WRITE_BYTE( 7 ); // B2
-				WRITE_BYTE( 255 ); // A2
-				WRITE_SHORT( 0 ); // Fade-in Time
-				WRITE_SHORT( 15 ); // Fade-out Time
-				WRITE_SHORT( 448 ); // Hold time
-				WRITE_STRING( szInfo ); // Message
-				MESSAGE_END();
-				
-				// Delay till next scan
-				g_NextMessage[ ENTINDEX( pPlayer ) ] = gpGlobals->time + 0.875;
+				// Must be a monster
+				if (tr.pHit->v.flags & FL_MONSTER)
+				{
+					char szName[129];
+					float monsterHealth, monsterFrags;
+					int classify;
+					BOOL isAlly = FALSE;
+					
+					// Get monster info
+					CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(tr.pHit));
+					if ( pMonster != NULL )
+					{
+						strcpy(szName, STRING( pMonster->m_szMonsterName ));
+						classify = pMonster->Classify();
+					}
+					else
+					{
+						// A monster that we do not recognize, use its netname
+						if ( !FStringNull( tr.pHit->v.netname ) )
+							strcpy(szName, STRING( tr.pHit->v.netname ));
+						else
+						{
+							// If all else fails, use classname as monster name
+							strcpy(szName, STRING( tr.pHit->v.classname ));
+						}
+						classify = tr.pHit->v.iuser4;
+					}
+					monsterHealth = tr.pHit->v.health;
+					monsterFrags = tr.pHit->v.frags;
+					
+					// Unless it is strictly ally to us, treat as enemy monster
+					if ( classify == CLASS_HUMAN_PASSIVE || classify == CLASS_PLAYER_ALLY )
+						isAlly = TRUE;
+					
+					// Prepare the message
+					char szInfo[257];
+					sprintf(szInfo, "%s:  %s\nHealth:  %.0f\nFrags:    %.0f\n", ( isAlly ? "Friend" : "Enemy" ), szName, monsterHealth, monsterFrags );
+					
+					// Create a TE_TEXTMESSAGE and show the monster information
+					MESSAGE_BEGIN( MSG_ONE, SVC_TEMPENTITY, NULL, pPlayer );
+					WRITE_BYTE( TE_TEXTMESSAGE );
+					WRITE_BYTE( 3 ); // Channel
+					WRITE_SHORT( 327 ); // X
+					WRITE_SHORT( 4771 ); // Y
+					WRITE_BYTE( 0 ); // Effect
+					if ( isAlly )
+					{
+						WRITE_BYTE( 9 ); // R1
+						WRITE_BYTE( 172 ); // G1
+						WRITE_BYTE( 96 ); // B1
+					}
+					else
+					{
+						WRITE_BYTE( 171 ); // R1
+						WRITE_BYTE( 23 ); // G1
+						WRITE_BYTE( 7 ); // B1
+					}
+					WRITE_BYTE( 0 ); // A1
+					WRITE_BYTE( 207 ); // R2
+					WRITE_BYTE( 23 ); // G2
+					WRITE_BYTE( 7 ); // B2
+					WRITE_BYTE( 255 ); // A2
+					WRITE_SHORT( 0 ); // Fade-in Time
+					WRITE_SHORT( 15 ); // Fade-out Time
+					WRITE_SHORT( 448 ); // Hold time
+					WRITE_STRING( szInfo ); // Message
+					MESSAGE_END();
+					
+					// Delay till next scan
+					g_NextMessage[ ENTINDEX( pPlayer ) ] = gpGlobals->time + 0.30;
+				}
 			}
 		}
 	}
 }
 
-bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_index, int spawnflags, pKVD *keyvalue)
+edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawnflags, pKVD *keyvalue)
 {
 	int monster_index;
 	edict_t *monster_pent;
@@ -562,7 +619,7 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 	{
 		//META_CONS("[MONSTER] ERROR: No FREE Monster edicts!");
 		LOG_MESSAGE(PLID, "ERROR: No FREE Monster edicts!");
-		return TRUE;
+		return NULL;
 	}
 	
 	// was this monster NOT precached?
@@ -596,11 +653,12 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 			LOG_MESSAGE(PLID, "%s", msg);
 		}
 		
-		return TRUE;
+		return NULL;
 	}
 	
 	switch (monster_type)
 	{
+		// Monsters
 		case 0: monsters[monster_index].pMonster = CreateClassPtr((CMAGrunt *)NULL); break;
 		case 1: monsters[monster_index].pMonster = CreateClassPtr((CMApache *)NULL); break;
 		case 2: monsters[monster_index].pMonster = CreateClassPtr((CMBarney *)NULL); break;
@@ -615,20 +673,32 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 		case 11: monsters[monster_index].pMonster = CreateClassPtr((CMScientist *)NULL); break;
 		case 12: monsters[monster_index].pMonster = CreateClassPtr((CMSqueakGrenade *)NULL); break;
 		case 13: monsters[monster_index].pMonster = CreateClassPtr((CMZombie *)NULL); break;
-        case 14: monsters[monster_index].pMonster = CreateClassPtr((CMGargantua *)NULL); break;
+		case 14: monsters[monster_index].pMonster = CreateClassPtr((CMGargantua *)NULL); break;
 		case 15: monsters[monster_index].pMonster = CreateClassPtr((CMTurret *)NULL); break;
 		case 16: monsters[monster_index].pMonster = CreateClassPtr((CMMiniTurret *)NULL); break;
 		case 17: monsters[monster_index].pMonster = CreateClassPtr((CMSentry *)NULL); break;
+		case 18: monsters[monster_index].pMonster = CreateClassPtr((CMGonome *)NULL); break;
+		case 19: monsters[monster_index].pMonster = CreateClassPtr((CMMassn *)NULL); break;
+		case 20: monsters[monster_index].pMonster = CreateClassPtr((CMOtis *)NULL); break;
+		case 21: monsters[monster_index].pMonster = CreateClassPtr((CMPitdrone *)NULL); break;
+		case 22: monsters[monster_index].pMonster = CreateClassPtr((CMShockRoach *)NULL); break;
+		case 23: monsters[monster_index].pMonster = CreateClassPtr((CMStrooper *)NULL); break;
+		case 24: monsters[monster_index].pMonster = CreateClassPtr((CMVoltigore *)NULL); break;
+		case 25: monsters[monster_index].pMonster = CreateClassPtr((CMBabyVoltigore *)NULL); break;
+		case 26: monsters[monster_index].pMonster = CreateClassPtr((CMBabyGargantua *)NULL); break;
+		case 27: monsters[monster_index].pMonster = CreateClassPtr((CMHWGrunt *)NULL); break;
+		case 28: monsters[monster_index].pMonster = CreateClassPtr((CMRGrunt *)NULL); break;
+		case 29: monsters[monster_index].pMonster = CreateClassPtr((CMStukabat *)NULL); break;
+		// Extra entities
+		case 32: monsters[monster_index].pMonster = CreateClassPtr((CMMonsterMaker *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
 	{
 		//META_CONS("[MONSTER] ERROR: Error Creating Monster!" );
 		LOG_MESSAGE(PLID, "ERROR: Error Creating Monster!");
-		return TRUE;
+		return NULL;
 	}
-
-	monsters[monster_index].respawn_index = respawn_index;
 
 	monster_pent = ENT(monsters[monster_index].pMonster->pev);
 	monsters[monster_index].monster_pent = monster_pent;
@@ -656,15 +726,19 @@ bool spawn_monster(int monster_type, Vector origin, Vector angles, int respawn_i
 	
 	monsters[monster_index].pMonster->Spawn();
 	
-	// Reverse fadecorpse behaviour
-	if ( ( spawnflags & SF_MONSTER_FADECORPSE ) )
-		monster_pent->v.spawnflags &= ~SF_MONSTER_FADECORPSE;
-	else
-		monster_pent->v.spawnflags |= SF_MONSTER_FADECORPSE;
-	
+	// Only modify starting spawnflags for monsters, not for entities!
+	if ( monster_index <= 29 )
+	{
+		// Reverse fadecorpse behaviour
+		if ( ( spawnflags & SF_MONSTER_FADECORPSE ) )
+			monster_pent->v.spawnflags &= ~SF_MONSTER_FADECORPSE;
+		else
+			monster_pent->v.spawnflags |= SF_MONSTER_FADECORPSE;
+	}
+
 	monster_pent->v.fuser4 = monster_pent->v.health;	 // save the original health
 
-	return FALSE;
+	return monster_pent;
 }
 
 
@@ -681,8 +755,7 @@ void check_respawn(void)
 
 	for (int index=0; index < monster_spawn_count; index++)
 	{
-		if (monster_spawnpoint[index].need_to_respawn &&
-			(monster_spawnpoint[index].respawn_time <= gpGlobals->time))
+		if (monster_spawnpoint[index].need_to_respawn)
 		{
 			monster_spawnpoint[index].need_to_respawn = FALSE;
 
@@ -696,12 +769,10 @@ void check_respawn(void)
 			
 			keyvalue = monster_spawnpoint[index].keyvalue;
 			
-			if (spawn_monster(monster_type, origin, angles, index, spawnflags, keyvalue))
+			if (spawn_monster(monster_type, origin, angles, spawnflags, keyvalue) == NULL)
 			{
-				// spawn_monster failed, retry again after delay...
-				monster_spawnpoint[index].need_to_respawn = TRUE;
-				monster_spawnpoint[index].respawn_time = gpGlobals->time +
-				monster_spawnpoint[index].delay;
+				// spawn_monster failed
+				ALERT( at_error, "Failed to spawn %s at origin %f %f %f\n", monster_types[monster_type].name, origin.x, origin.y, origin.z );
 			}
 		}
 	}
@@ -710,6 +781,7 @@ void check_respawn(void)
 
 DLL_GLOBAL short g_sModelIndexFireball;// holds the index for the fireball
 DLL_GLOBAL short g_sModelIndexSmoke;// holds the index for the smoke cloud
+DLL_GLOBAL short g_sModelIndexTinySpit;// holds the index for the spore grenade explosion
 DLL_GLOBAL short g_sModelIndexWExplosion;// holds the index for the underwater explosion
 DLL_GLOBAL short g_sModelIndexBubbles;// holds the index for the bubbles model
 DLL_GLOBAL short g_sModelIndexBloodDrop;// holds the sprite index for the initial blood
@@ -722,6 +794,7 @@ void world_precache(void)
 {
 	g_sModelIndexFireball = PRECACHE_MODEL ("sprites/zerogxplode.spr");// fireball
 	g_sModelIndexSmoke = PRECACHE_MODEL ("sprites/steam1.spr");// smoke
+	g_sModelIndexTinySpit = PRECACHE_MODEL ("sprites/tinyspit.spr");// spore
 	g_sModelIndexWExplosion = PRECACHE_MODEL ("sprites/WXplo1.spr");// underwater fireball
 	g_sModelIndexBubbles = PRECACHE_MODEL ("sprites/bubble.spr");//bubbles
 	g_sModelIndexBloodSpray = PRECACHE_MODEL ("sprites/bloodspray.spr"); // initial blood
@@ -732,7 +805,6 @@ void world_precache(void)
 
 	PRECACHE_MODEL ("models/w_grenade.mdl");
 }
-
 
 void MonsterCommand(void)
 {
@@ -867,7 +939,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
+						spawn_monster(monster_type, v_src, monster_angle, spawnflags, NULL);
 
 						return;
 					}
@@ -895,9 +967,9 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
+						spawn_monster(monster_type, v_src, monster_angle, spawnflags, NULL);
 
-					return;
+						return;
 					}
 				}
 
@@ -923,7 +995,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
+						spawn_monster(monster_type, v_src, monster_angle, spawnflags, NULL);
 
 						return;
 					}
@@ -950,7 +1022,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
+						spawn_monster(monster_type, v_src, monster_angle, spawnflags, NULL);
 
 						return;
 					}
@@ -977,7 +1049,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
+						spawn_monster(monster_type, v_src, monster_angle, spawnflags, NULL);
 
 						return;
 					}
@@ -1004,7 +1076,7 @@ void MonsterCommand(void)
 						if (monster_angle.y < 0)
 							monster_angle.y += 360;
 
-						spawn_monster(monster_type, v_src, monster_angle, -1, spawnflags, NULL);
+						spawn_monster(monster_type, v_src, monster_angle, spawnflags, NULL);
 
 						return;
 					}
@@ -1186,33 +1258,13 @@ int mmDispatchSpawn( edict_t *pent )
 		process_monster_precache_cfg();
 
 		process_monster_cfg();
-		
+
 		// node support. -Giegue
 		// init the WorldGraph.
 		WorldGraph.InitGraph();
+		check_graph_time = gpGlobals->time + 2.00; // give enough gap
 
-		// make sure the .NOD file is newer than the .BSP file.
-		if ( !WorldGraph.CheckNODFile ( ( char * )STRING( gpGlobals->mapname ) ) )
-		{
-			// NOD file is not present, or is older than the BSP file.
-			WorldGraph.AllocNodes();
-		}
-		else
-		{
-			// Load the node graph for this level
-			if ( !WorldGraph.FLoadGraph ( (char *)STRING( gpGlobals->mapname ) ) )
-			{
-				// couldn't load, so alloc and prepare to build a graph.
-				ALERT ( at_console, "*Error opening .NOD file\n" );
-				WorldGraph.AllocNodes();
-			}
-			else
-			{
-				ALERT ( at_console, "\n*Graph Loaded!\n" );
-			}
-		}
-		
-		check_respawn_time = 0.0;
+		check_respawn_time = gpGlobals->time + 4.00;
 
 		for (index = 0; index < MAX_MONSTER_ENTS; index++)
 		{
@@ -1275,8 +1327,9 @@ void mmDispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
 	int index;
-
-	CMAGrunt agrunt;
+	
+	// Monsters
+	CMAGrunt agrunt; // 0
 	CMApache apache;
 	CMBarney barney;
 	CMBigMomma bigmomma;
@@ -1294,6 +1347,21 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMTurret turret;
 	CMMiniTurret miniturret;
 	CMSentry sentry;
+	CMGonome gonome;
+	CMMassn massn;
+	CMOtis otis;
+	CMPitdrone pitdrone;
+	CMShockRoach shockroach;
+	CMStrooper strooper;
+	CMVoltigore voltigore;
+	CMBabyVoltigore babyvoltigore;
+	CMBabyGargantua babygargantua;
+	CMHWGrunt hwgrunt;
+	CMRGrunt rgrunt;
+	CMStukabat stukabat; // 29
+	
+	// Extra entities
+	CMMonsterMaker monstermaker; // 32
 	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1312,7 +1380,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 			switch (index)
 			{
 				case 0: agrunt.Precache(); break;
-				case 1:	apache.Precache(); break;
+				case 1: apache.Precache(); break;
 				case 2: barney.Precache(); break;
 				case 3: bigmomma.Precache(); break;
 				case 4: bullsquid.Precache(); break;
@@ -1325,10 +1393,23 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 11: scientist.Precache(); break;
 				case 12: snark.Precache(); break;
 				case 13: zombie.Precache(); break;
-                case 14: gargantua.Precache(); break;
+				case 14: gargantua.Precache(); break;
 				case 15: turret.Precache(); break;
 				case 16: miniturret.Precache(); break;
 				case 17: sentry.Precache(); break;
+				case 18: gonome.Precache(); break;
+				case 19: massn.Precache(); break;
+				case 20: otis.Precache(); break;
+				case 21: pitdrone.Precache(); break;
+				case 22: shockroach.Precache(); break;
+				case 23: strooper.Precache(); break;
+				case 24: voltigore.Precache(); break;
+				case 25: babyvoltigore.Precache(); break;
+				case 26: babygargantua.Precache(); break;
+				case 27: hwgrunt.Precache(); break;
+				case 28: rgrunt.Precache(); break;
+				case 29: stukabat.Precache(); break;
+				case 32: monstermaker.Precache(); break;
 			}
 		}
 	}
@@ -1340,38 +1421,89 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 		monsters[index].killed = FALSE;  // not killed yet
 		monsters[index].pMonster = NULL;
 	}
+	
+	for (index = 0; index < 33; index++)
+	{
+		g_DamageAttacker[index] = NULL;
+		g_DamageBits[index] = 0;
+		g_PlayerKilled[index] = false;
+		g_NextMessage[index] = 0.0;
+	}
 
 	monster_ents_used = 0;
-	
-	// spawn nodes
-	for (index = 0; index < node_spawn_count; index++)
-	{
-		CMBaseEntity *pNode;
-		pNode = CreateClassPtr((CNodeEnt *)NULL);
-		
-		if (pNode == NULL)
-		{
-			//META_CONS("[MONSTER] ERROR: Error Creating Node!" );
-			LOG_MESSAGE(PLID, "ERROR: Error Creating Node!");
-		}
-		else
-		{
-			pNode->pev->origin = node_spawnpoint[index].origin;
-		
-			if (node_spawnpoint[index].is_air_node)
-				pNode->pev->classname = MAKE_STRING("info_node_air");
-			else
-				pNode->pev->classname = MAKE_STRING("info_node");
-			
-			pNode->Spawn();
-		}
-	}
 	
 	RETURN_META(MRES_IGNORED);
 }
 
 void mmStartFrame( void )
 {
+	// Don't generate node graph right away
+	if (check_graph_time != -1 && check_graph_time <= gpGlobals->time)
+	{
+		BOOL generateNodes = FALSE;
+		
+		check_graph_time = -1; // only once
+		
+		// it could be possible that the mod can generate the node graph
+		// on it's own, so we wait a bit before attempting to create ours.
+		// if we can use the game's generated graph, stick to that one.
+		// if not, then do standard node allocation and spawns. -Giegue
+
+		// make sure the .NOD file is newer than the .BSP file.
+		if ( !WorldGraph.CheckNODFile ( ( char * )STRING( gpGlobals->mapname ) ) )
+		{
+			// NOD file is not present, or is older than the BSP file.
+			generateNodes = TRUE;
+			WorldGraph.AllocNodes();
+		}
+		else
+		{
+			// Load the node graph for this level
+			if ( !WorldGraph.FLoadGraph ( (char *)STRING( gpGlobals->mapname ) ) )
+			{
+				// couldn't load, so alloc and prepare to build a graph.
+				generateNodes = TRUE;
+				ALERT ( at_console, "*Error opening .NOD file\n" );
+				WorldGraph.AllocNodes();
+			}
+			else
+			{
+				// node graph is OK, we can spawn the monsters instantly
+				check_respawn_time = 0.0;
+				ALERT ( at_console, "\n[MONSTER] Graph Loaded!\n" );
+			}
+		}
+
+		if ( generateNodes )
+		{
+			// spawn nodes
+			int index;
+			for (index = 0; index < node_spawn_count; index++)
+			{
+				CMBaseEntity *pNode;
+				pNode = CreateClassPtr((CNodeEnt *)NULL);
+				
+				if (pNode == NULL)
+				{
+					//META_CONS("[MONSTER] ERROR: Error Creating Node!" );
+					LOG_MESSAGE(PLID, "ERROR: Error Creating Node!");
+				}
+				else
+				{
+					pNode->pev->origin = node_spawnpoint[index].origin;
+				
+					if (node_spawnpoint[index].is_air_node)
+						pNode->pev->classname = MAKE_STRING("info_node_air");
+					else
+						pNode->pev->classname = MAKE_STRING("info_node");
+					
+					pNode->Spawn();
+				}
+			}
+		}
+	}
+
+	// Wait for node graph before spawning the monsters
 	if (check_respawn_time <= gpGlobals->time)
 	{
 		check_respawn_time = gpGlobals->time + 1.0;

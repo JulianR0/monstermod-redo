@@ -1520,15 +1520,13 @@ Vector VecBModelOrigin( entvars_t* pevBModel )
 
 bool UTIL_IsAlive(entvars_t *pev)
 {
-   return ((pev->deadflag == DEAD_NO) && (pev->health > 0) &&
-           ((pev->flags & FL_NOTARGET) == 0) && (pev->takedamage != 0));
+   return ((pev->deadflag == DEAD_NO) && (pev->health > 0));
 }
 
 
 bool UTIL_IsAlive(edict_t *pEdict)
 {
-   return ((pEdict->v.deadflag == DEAD_NO) && (pEdict->v.health > 0) &&
-            ((pEdict->v.flags & FL_NOTARGET) == 0) && (pEdict->v.takedamage != 0));
+   return ((pEdict->v.deadflag == DEAD_NO) && (pEdict->v.health > 0));
 }
 
 
@@ -1540,10 +1538,10 @@ bool UTIL_IsPlayer(edict_t *pEdict)
 
 Vector UTIL_BodyTarget(edict_t *pEdict, Vector posSrc)
 {
-   if (pEdict->v.flags & FL_CLIENT)
-	   return pEdict->v.origin + (pEdict->v.view_ofs * RANDOM_FLOAT(0.5, 1.1));
-   else
-      return (pEdict->v.origin + ((pEdict->v.mins + pEdict->v.maxs) * 0.5));
+	if (pEdict->v.flags & FL_CLIENT)
+		return pEdict->v.origin + (pEdict->v.view_ofs * RANDOM_FLOAT(0.5, 1.1));
+	else
+		return (pEdict->v.origin + ((pEdict->v.mins + pEdict->v.maxs) * 0.5));
 }
 
 //=========================================================
@@ -1677,8 +1675,8 @@ int UTIL_TakeDamage( edict_t *pEdict, entvars_t *pevInflictor, entvars_t *pevAtt
 	flBonus = ARMOR_BONUS;
 	flRatio = ARMOR_RATIO;
 
-	if (!pEdict->v.takedamage)
-		return 0;
+	if (!pEdict->v.takedamage || (pEdict->v.flags & FL_GODMODE))
+		return 0; // refuse the damage
 
 	if ( ( bitsDamageType & DMG_BLAST ) )
 	{
@@ -1807,7 +1805,7 @@ int UTIL_TakeDamage( edict_t *pEdict, entvars_t *pevInflictor, entvars_t *pevAtt
 			WRITE_COORD( pevInflictor->origin.z );
 		MESSAGE_END();
 	}
-	
+
 	return fTookDamage;
 }
 
@@ -1875,7 +1873,11 @@ void UTIL_TraceBleed( edict_t *pEdict, float flDamage, Vector vecDir, TraceResul
 
 		if ( Bloodtr.flFraction != 1.0 )
 		{
-		   UTIL_BloodDecalTrace( &Bloodtr, BLOOD_COLOR_RED );
+			int bloodColor = pEdict->v.iuser3;
+			if ( !bloodColor )
+				bloodColor = BLOOD_COLOR_RED;
+
+			UTIL_BloodDecalTrace( &Bloodtr, bloodColor );
 		}
 	}
 }
@@ -1886,9 +1888,13 @@ void UTIL_TraceAttack( edict_t *pEdict, entvars_t *pevAttacker, float flDamage, 
 
 	if ( pEdict->v.takedamage )
 	{
+		int bloodColor = pEdict->v.iuser3;
+		if ( !bloodColor )
+			bloodColor = BLOOD_COLOR_RED;
+
 		AddMultiDamage( pevAttacker, pEdict, flDamage, bitsDamageType );
 
-      SpawnBlood(ptr->vecEndPos, BLOOD_COLOR_RED, flDamage);// a little surface blood.
+		SpawnBlood(ptr->vecEndPos, bloodColor, flDamage);// a little surface blood.
 
 		UTIL_TraceBleed( pEdict, flDamage, vecDir, ptr, bitsDamageType );
 	}
@@ -1967,4 +1973,12 @@ edict_t *UTIL_FindNearestPlayer(edict_t *pEdict, float m_flFieldOfView)
 bool UTIL_IsBSPModel( edict_t *pent )
 {
 	return (pent->v.solid == SOLID_BSP || pent->v.movetype == MOVETYPE_PUSHSTEP);
+}
+
+void UTIL_TakeDamageExternal( edict_t *pEdict, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
+{
+	// Tell AMXX to call TakeDamage for us.
+	char extCmd[64];
+	sprintf( extCmd, "monster_hurt_entity %i %i %i %f %i\n", ENTINDEX( pEdict ), ENTINDEX( ENT( pevInflictor ) ), ENTINDEX( ENT( pevAttacker ) ), flDamage, bitsDamageType );
+	SERVER_COMMAND( extCmd );
 }

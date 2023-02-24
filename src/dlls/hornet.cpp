@@ -326,11 +326,10 @@ void CMHornet :: TrackTouch ( edict_t *pOther )
 	}
 
    // is this NOT a player and IS a monster?
-   if (!UTIL_IsPlayer(pOther) && (pOther->v.euser4 != NULL))
+   if (!UTIL_IsPlayer(pOther) && (pOther->v.flags & FL_MONSTER))
    {
 		CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
-
-		if ( IRelationship( pMonster ) <= R_NO )
+		if ( pMonster != NULL && IRelationship( pMonster ) <= R_NO || IRelationshipByClass( pOther->v.iuser4 ) <= R_NO )
 		{
 			// hit something we don't want to hurt, so turn around.
 

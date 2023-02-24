@@ -120,7 +120,7 @@ void CMBaseMonster :: Look ( int iDistance )
 	// DON'T let visibility information from last frame sit around!
 	ClearConditions(bits_COND_SEE_HATE | bits_COND_SEE_DISLIKE | bits_COND_SEE_ENEMY | bits_COND_SEE_FEAR | bits_COND_SEE_NEMESIS | bits_COND_SEE_CLIENT);
 
-   m_edictList_count = 0;
+	m_edictList_count = 0;
 
 	edict_t	*pSightEnt = NULL;// the current visible entity that we're dealing with
 
@@ -137,23 +137,20 @@ void CMBaseMonster :: Look ( int iDistance )
 		{
 			pSightEnt = pList[i];
 			// !!!temporarily only considering other monsters and clients, don't see prisoners
-			if ( pSightEnt != this->edict()												&& 
-				 !FBitSet( pSightEnt->v.spawnflags, SF_MONSTER_PRISONER )	&& 
-				 pSightEnt->v.health > 0 )
+			if ( pSightEnt != this->edict()	&& !FBitSet( pSightEnt->v.spawnflags, SF_MONSTER_PRISONER ) && pSightEnt->v.health > 0 )
 			{
-            // is this a player AND are they alive?
-            if (UTIL_IsPlayer(pSightEnt) && UTIL_IsAlive(pSightEnt))
-            {
+				// is this a player AND are they alive?
+				if (UTIL_IsPlayer(pSightEnt) && UTIL_IsAlive(pSightEnt))
+				{
 					// the looker will want to consider this entity
 					// don't check anything else about an entity that can't be seen.
-					if ( UTIL_FInViewCone( pSightEnt, ENT(pev), m_flFieldOfView ) &&
-                    !FBitSet( pSightEnt->v.flags, FL_NOTARGET ) && UTIL_FVisible( pSightEnt, ENT(pev) ) )
+					if ( UTIL_FInViewCone( pSightEnt, ENT(pev), m_flFieldOfView ) && !FBitSet( pSightEnt->v.flags, FL_NOTARGET ) && UTIL_FVisible( pSightEnt, ENT(pev) ) )
 					{
-                  m_edictList[m_edictList_count] = pSightEnt;
-                  m_edictList_count++;
+						m_edictList[m_edictList_count] = pSightEnt;
+						m_edictList_count++;
 
-                  // if we see a client, remember that (mostly for scripted AI)
-                  iSighted |= bits_COND_SEE_CLIENT;
+						// if we see a client, remember that (mostly for scripted AI)
+						iSighted |= bits_COND_SEE_CLIENT;
 
 						// is this monster NOT a scientist?
 						if (strcmp(STRING(pev->model), "models/scientist.mdl") != 0)
@@ -166,19 +163,19 @@ void CMBaseMonster :: Look ( int iDistance )
 								iSighted |= bits_COND_SEE_ENEMY;
 							}
 						}
-               }
-            }
-            else if (pSightEnt->v.euser4 != NULL)
-            {
-               CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pSightEnt));
+					}
+				}
+				else if (pSightEnt->v.euser4 != NULL)
+				{
+					/* MonsterMod monster looking at another MonsterMod monster */
+					CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pSightEnt));
 
 					// the looker will want to consider this entity
 					// don't check anything else about an entity that can't be seen, or an entity that you don't care about.
-					if ( IRelationship( pMonster ) != R_NO && UTIL_FInViewCone( pSightEnt, ENT(pev), m_flFieldOfView ) &&
-                    !FBitSet( pSightEnt->v.flags, FL_NOTARGET ) && UTIL_FVisible( pSightEnt, ENT(pev) ) )
+					if ( IRelationship( pMonster ) != R_NO && UTIL_FInViewCone( pSightEnt, ENT(pev), m_flFieldOfView ) && !FBitSet( pSightEnt->v.flags, FL_NOTARGET ) && UTIL_FVisible( pSightEnt, ENT(pev) ) )
 					{
-                  m_edictList[m_edictList_count] = pSightEnt;
-                  m_edictList_count++;
+						m_edictList[m_edictList_count] = pSightEnt;
+						m_edictList_count++;
 
 						if ( ENT(pMonster->pev) == m_hEnemy )
 						{
@@ -206,6 +203,47 @@ void CMBaseMonster :: Look ( int iDistance )
 							break;
 						default:
 							ALERT ( at_aiconsole, "%s can't assess %s\n", STRING(pev->classname), STRING(pMonster->pev->classname ) );
+							break;
+						}
+					}
+				}
+				else
+				{
+					/* MonsterMod monster looking at a NON-MonsterMod monster */
+
+					// the looker will want to consider this entity
+					// don't check anything else about an entity that can't be seen, or an entity that you don't care about.
+					if ( IRelationship( pSightEnt->v.iuser4 ) != R_NO && UTIL_FInViewCone( pSightEnt, ENT(pev), m_flFieldOfView ) && !FBitSet( pSightEnt->v.flags, FL_NOTARGET ) && UTIL_FVisible( pSightEnt, ENT(pev) ) )
+					{
+						m_edictList[m_edictList_count] = pSightEnt;
+						m_edictList_count++;
+
+						if ( pSightEnt == m_hEnemy )
+						{
+							// we know this ent is visible, so if it also happens to be our enemy, store that now.
+							iSighted |= bits_COND_SEE_ENEMY;
+						}
+
+						// don't add the Enemy's relationship to the conditions. We only want to worry about conditions when
+						// we see monsters other than the Enemy.
+						switch ( IRelationship ( pSightEnt->v.iuser4 ) )
+						{
+						case	R_NM:
+							iSighted |= bits_COND_SEE_NEMESIS;		
+							break;
+						case	R_HT:		
+							iSighted |= bits_COND_SEE_HATE;		
+							break;
+						case	R_DL:
+							iSighted |= bits_COND_SEE_DISLIKE;
+							break;
+						case	R_FR:
+							iSighted |= bits_COND_SEE_FEAR;
+							break;
+						case    R_AL:
+							break;
+						default:
+							ALERT ( at_aiconsole, "%s can't assess %s\n", STRING(pev->classname), STRING(pSightEnt->v.classname ) );
 							break;
 						}
 					}
@@ -1743,6 +1781,9 @@ void CMBaseMonster :: StartMonster ( void )
 		SetActivity( ACT_IDLE );
 		ChangeSchedule( GetScheduleOfType( SCHED_WAIT_TRIGGER ) );
 	}
+
+	// Notify normal game engine of monster classify
+	pev->iuser4 = Classify();
 }
 
 
@@ -1785,25 +1826,35 @@ int CMBaseMonster::TaskIsRunning( void )
 //=========================================================
 int CMBaseMonster::IRelationship ( CMBaseEntity *pTarget )
 {
-	static int iEnemy[14][14] =
-	{			 //   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN
-	/*NONE*/		{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO	},
-	/*MACHINE*/		{ R_NO	,R_NO	,R_DL	,R_DL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_DL,	R_DL	},
-	/*PLAYER*/		{ R_NO	,R_DL	,R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_DL,	R_DL	},
-	/*HUMANPASSIVE*/{ R_NO	,R_NO	,R_AL	,R_AL	,R_HT	,R_FR	,R_NO	,R_HT	,R_DL	,R_FR	,R_NO	,R_AL,	R_NO,	R_NO	},
-	/*HUMANMILITAR*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO	},
-	/*ALIENMILITAR*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO	},
-	/*ALIENPASSIVE*/{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO	},
-	/*ALIENMONSTER*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO	},
-	/*ALIENPREY   */{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_FR	,R_NO	,R_DL,	R_NO,	R_NO	},
-	/*ALIENPREDATO*/{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO	},
-	/*INSECT*/		{ R_FR	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR,	R_NO,	R_NO	},
-	/*PLAYERALLY*/	{ R_NO	,R_DL	,R_AL	,R_AL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_NO,	R_NO	},
-	/*PBIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_DL	},
-	/*ABIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_NO	,R_NO	,R_DL,	R_DL,	R_NO	}
+	return IRelationshipByClass( pTarget->Classify() );
+}
+int CMBaseMonster::IRelationship ( int iTargetClass )
+{
+	return IRelationshipByClass( iTargetClass );
+}
+int CMBaseMonster::IRelationshipByClass ( int iClass )
+{
+	static int iEnemy[16][16] =
+	{			 //   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN	RXPIT	RXSHK
+	/*NONE*/		{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO,	R_NO,	R_NO	},
+	/*MACHINE*/		{ R_NO	,R_NO	,R_DL	,R_DL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_DL,	R_DL,	R_DL,	R_DL	},
+	/*PLAYER*/		{ R_NO	,R_DL	,R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_DL,	R_DL,	R_DL,	R_DL	},
+	/*HUMANPASSIVE*/{ R_NO	,R_FR	,R_AL	,R_AL	,R_HT	,R_DL	,R_DL	,R_HT	,R_DL	,R_DL	,R_NO	,R_AL,	R_NO,	R_NO,	R_FR,	R_FR	},
+	/*HUMANMILITAR*/{ R_NO	,R_NO	,R_DL	,R_DL	,R_AL	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_HT,	R_HT	},
+	/*ALIENMILITAR*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_HT	,R_AL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_HT	},
+	/*ALIENPASSIVE*/{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO,	R_NO,	R_NO	},
+	/*ALIENMONSTER*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_NO,	R_NO	},
+	/*ALIENPREY   */{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_FR	,R_NO	,R_DL,	R_NO,	R_NO,	R_FR,	R_NO	},
+	/*ALIENPREDATO*/{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_HT	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO,	R_DL,	R_DL	},
+	/*INSECT*/		{ R_NO	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR,	R_NO,	R_NO,	R_NO,	R_NO	},
+	/*PLAYERALLY*/	{ R_NO	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_NO,	R_NO,	R_DL,	R_DL	},
+	/*PBIOWEAPON*/	{ R_NO	,R_NO	,R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_NO,	R_DL,	R_DL,	R_DL	},
+	/*ABIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_NO	,R_NO	,R_DL,	R_DL,	R_NO,	R_DL,	R_DL	},
+	/*RXPITDRONE*/	{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_AL,	R_AL	},
+	/*RXSHOCKTRP*/	{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_HT	,R_DL	,R_NO	,R_NO	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO,	R_AL,	R_AL	}
 	};
 
-	return iEnemy[ Classify() ][ pTarget->Classify() ];
+	return iEnemy[ Classify() ][ iClass ];
 }
 
 //=========================================================
@@ -2017,38 +2068,52 @@ edict_t *CMBaseMonster :: BestVisibleEnemy ( void )
 	int			iNearest;
 	int			iDist;
 	int			iBestRelationship;
-   edict_t *pReturn;
-   edict_t *pEnt;
-   int edictList_index = 0;
+	edict_t *pReturn;
+	edict_t *pEnt;
+	int edictList_index = 0;
 
 	iNearest = 8192;// so first visible entity will become the closest.
 
 	iBestRelationship = R_NO;
 
-   pReturn = NULL;
+	pReturn = NULL;
 
-   while (edictList_index < m_edictList_count)
+	while (edictList_index < m_edictList_count)
 	{
-      pEnt = m_edictList[edictList_index];
-
-      if ( UTIL_IsPlayer(pEnt) )
-      {
-         // it's a player...
-			iDist = ( pEnt->v.origin - pev->origin ).Length();
-				
-			if ( iDist <= iNearest )
+		pEnt = m_edictList[edictList_index];
+		
+		if ( UTIL_IsPlayer(pEnt) )
+		{
+			// it's a player...
+			if ( UTIL_IsAlive(pEnt) )
 			{
-				iNearest = iDist;
-				iBestRelationship = R_NM; // player is always nemsis
-				pReturn = pEnt;
+				// repeat2
+				if ( IRelationshipByClass( CLASS_PLAYER ) > iBestRelationship )
+				{
+					iBestRelationship = IRelationshipByClass( CLASS_PLAYER );
+					iNearest = ( pEnt->v.origin - pev->origin ).Length();
+					pReturn = pEnt;
+				}
+				else if ( IRelationshipByClass( CLASS_PLAYER ) == iBestRelationship )
+				{
+					iDist = ( pEnt->v.origin - pev->origin ).Length();
+					
+					if ( iDist <= iNearest )
+					{
+						iNearest = iDist;
+						iBestRelationship = IRelationshipByClass( CLASS_PLAYER );
+						pReturn = pEnt;
+					}
+				}
 			}
-      }
-      else if (pEnt->v.euser4 != NULL)
-      {
+		}
+		else if (pEnt->v.euser4 != NULL)
+		{
+			// it's a monstermod monster...
 			CMBaseMonster *pNextEnt = GetClassPtr((CMBaseMonster *)VARS(pEnt));
 			if ( pNextEnt->IsAlive() )
 			{
-				if ( IRelationship( pNextEnt) > iBestRelationship )
+				if ( IRelationship( pNextEnt ) > iBestRelationship )
 				{
 					// this entity is disliked MORE than the entity that we 
 					// currently think is the best visible enemy. No need to do 
@@ -2057,13 +2122,13 @@ edict_t *CMBaseMonster :: BestVisibleEnemy ( void )
 					iNearest = ( pNextEnt->pev->origin - pev->origin ).Length();
 					pReturn = pEnt;
 				}
-				else if ( IRelationship( pNextEnt) == iBestRelationship )
+				else if ( IRelationship( pNextEnt ) == iBestRelationship )
 				{
 					// this entity is disliked just as much as the entity that
 					// we currently think is the best visible enemy, so we only
 					// get mad at it if it is closer.
 					iDist = ( pNextEnt->pev->origin - pev->origin ).Length();
-				
+
 					if ( iDist <= iNearest )
 					{
 						iNearest = iDist;
@@ -2072,9 +2137,34 @@ edict_t *CMBaseMonster :: BestVisibleEnemy ( void )
 					}
 				}
 			}
-      }
+		}
+		else
+		{
+			// it's a normal game entity...
+			if ( UTIL_IsAlive(pEnt) )
+			{
+				//repeat3
+				if ( IRelationship( pEnt->v.iuser4 ) > iBestRelationship )
+				{
+					iBestRelationship = IRelationship( pEnt->v.iuser4 );
+					iNearest = ( pEnt->v.origin - pev->origin ).Length();
+					pReturn = pEnt;
+				}
+				else if ( IRelationship( pEnt->v.iuser4 ) == iBestRelationship )
+				{
+					iDist = ( pEnt->v.origin - pev->origin ).Length();
 
-      edictList_index++;
+					if ( iDist <= iNearest )
+					{
+						iNearest = iDist;
+						iBestRelationship = IRelationship( pEnt->v.iuser4 );
+						pReturn = pEnt;
+					}
+				}
+			}
+		}
+
+		edictList_index++;
 	}
 
 	return pReturn;
@@ -2519,6 +2609,11 @@ void CMBaseMonster :: KeyValue( KeyValueData *pkvd )
 		m_iClassifyOverride = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "model"))
+	{
+		pev->model = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
 	else
 	{
 		CMBaseToggle::KeyValue( pkvd );
@@ -2882,8 +2977,13 @@ BOOL CMBaseMonster :: GetEnemy ( void )
 	if (HasConditions(bits_COND_SEE_CLIENT) && (m_hEnemy == NULL))
 	{
 		m_hEnemy = BestVisibleEnemy();
-		m_hTargetEnt = m_hEnemy;
-		m_vecEnemyLKP = m_hEnemy->v.origin;
+
+		// the player we've just seen might not always be our enemy
+		if ( m_hEnemy != NULL )
+		{
+			m_hTargetEnt = m_hEnemy;
+			m_vecEnemyLKP = m_hEnemy->v.origin;
+		}
 	}
 
 	// remember old enemies
