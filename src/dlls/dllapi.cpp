@@ -66,13 +66,8 @@ extern cvar_t *monster_show_info;
 int g_DamageMsg;
 bool g_DamageActive;
 int g_DamageVictim;
-edict_t *g_DamageAttacker[33];
 int g_DamageBits[33];
 bool g_PlayerKilled[33];
-
-// DeathMsg
-int g_DeathMsg;
-bool g_DeathActive;
 
 // TE_TEXTMESSAGE
 float g_NextMessage[33];
@@ -432,21 +427,32 @@ void check_player_dead( edict_t *pPlayer )
 			// An entity killed this player.
 			else if ( ENTINDEX( pAttacker ) > 0 )
 			{
+				// HLSDK: "int visibleDamageBits = m_bitsDamageType & DMG_SHOWNHUD;"
+				// When the game sends a "Damage" NetworkMessage, the damageBits
+				// gets filtered so only damages that can be shown on HUD will pass
+				// through, otherwise it gets neutered to DMG_GENERIC.
+
+				// This means that players will only see a few death messages
+				// instead of all possibilities that are written here.
+
+				// If you want to make use of all possible death messages, you
+				// will have to override the NetworkMessage. -Giegue
+
 				// Gather damage type and format death message
 				if ( g_DamageBits[ iPlayerIndex ] == DMG_GENERIC )
 					sprintf( szMessage, "* %s died mysteriously.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_CRUSH )
-					sprintf( szMessage, "* %s was smashed.\n", szPlayerName );
+					sprintf( szMessage, "* %s was crushed.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_BULLET )
 					sprintf( szMessage, "* %s was shot.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLASH )
-					sprintf( szMessage, "* %s lost its jelly.\n", szPlayerName );
+					sprintf( szMessage, "* %s has been chopped.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_BURN )
-					sprintf( szMessage, "* %s burned to death.\n", szPlayerName );
+					sprintf( szMessage, "* %s burned down.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_FREEZE )
 					sprintf( szMessage, "* %s froze to death.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_FALL )
-					sprintf( szMessage, "* %s broke its bones.\n", szPlayerName );
+					sprintf( szMessage, "* %s fell.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_BLAST )
 					sprintf( szMessage, "* %s blew up.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_CLUB )
@@ -456,31 +462,29 @@ void check_player_dead( edict_t *pPlayer )
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SONIC )
 					sprintf( szMessage, "* %s ears popped.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_ENERGYBEAM )
-					sprintf( szMessage, "* %s saw the pretty lights.\n", szPlayerName );
+					sprintf( szMessage, "* %s was cut by a laser.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] == DMG_NEVERGIB )
 					sprintf( szMessage, "* %s had a painful death.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] == DMG_ALWAYSGIB )
 					sprintf( szMessage, "* %s was gibbed.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_DROWN )
-					sprintf( szMessage, "* %s became too drunk.\n", szPlayerName );
+					sprintf( szMessage, "* %s drowned.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_PARALYZE )
 					sprintf( szMessage, "* %s was paralyzed.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_NERVEGAS )
 					sprintf( szMessage, "* %s lost its brain.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_POISON )
-					sprintf( szMessage, "* %s had a slow death.\n", szPlayerName );
+					sprintf( szMessage, "* %s has been poisoned.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_RADIATION )
 					sprintf( szMessage, "* %s went nuclear.\n", szPlayerName );
-				else if ( g_DamageBits[ iPlayerIndex ] & DMG_DROWNRECOVER )
-					sprintf( szMessage, "* %s used too much flex tape.\n", szPlayerName ); // is this type of death even possible?
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_ACID )
 					sprintf( szMessage, "* %s was melted.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLOWBURN )
-					sprintf( szMessage, "* %s became a cake.\n", szPlayerName );
+					sprintf( szMessage, "* %s was baked like a cake.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_SLOWFREEZE )
 					sprintf( szMessage, "* %s died of hypothermia.\n", szPlayerName );
 				else if ( g_DamageBits[ iPlayerIndex ] & DMG_MORTAR )
-					sprintf( szMessage, "* %s blew its missile pet.\n", szPlayerName );
+					sprintf( szMessage, "* %s was killed by a Mortar Shell.\n", szPlayerName );
 				else // other mods could have more DMG_ variants that aren't registered here.
 					sprintf( szMessage, "* %s deadly died.\n", szPlayerName );
 			}
@@ -1424,7 +1428,6 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	
 	for (index = 0; index < 33; index++)
 	{
-		g_DamageAttacker[index] = NULL;
 		g_DamageBits[index] = 0;
 		g_PlayerKilled[index] = false;
 		g_NextMessage[index] = 0.0;
@@ -1514,10 +1517,12 @@ void mmStartFrame( void )
 	RETURN_META(MRES_IGNORED);
 }
 
-void mmClientKill( edict_t *pPlayer )
+void mmClientKill_Post( edict_t *pPlayer )
 {
-	// Just to let the system know the player commited suicide
+	// Show "commited suicide" message
 	pPlayer->v.dmg_inflictor = pPlayer;
+	check_player_dead( pPlayer );
+
 	RETURN_META(MRES_IGNORED);
 }
 
@@ -1543,7 +1548,7 @@ static DLL_FUNCTIONS gFunctionTable =
 
 	NULL,			// pfnClientConnect
 	NULL,			// pfnClientDisconnect
-	mmClientKill,			//! pfnClientKill
+	NULL,			// pfnClientKill
 	NULL,			// pfnClientPutInServer
 	NULL,			// pfnClientCommand
 	NULL,			// pfnClientUserInfoChanged
@@ -1615,7 +1620,7 @@ void mmPlayerPostThink_Post( edict_t *pEntity )
 {
 	check_monster_hurt(pEntity);
 	check_monster_dead(pEntity);
-	check_player_dead(pEntity);
+	//check_player_dead(pEntity); // too early for damageBits
 	check_monster_info(pEntity);
 	
 	RETURN_META(MRES_IGNORED);
@@ -1643,7 +1648,7 @@ static DLL_FUNCTIONS gFunctionTable_Post =
 
 	NULL,			// pfnClientConnect
 	NULL,			// pfnClientDisconnect
-	NULL,			// pfnClientKill
+	mmClientKill_Post,			//! pfnClientKill
 	NULL,			// pfnClientPutInServer
 	NULL,			// pfnClientCommand
 	NULL,			// pfnClientUserInfoChanged
@@ -1720,8 +1725,6 @@ int mmRegUserMsg_Post( const char *pName, int iSize )
 	
 	if ( strcmp( pName, "Damage" ) == 0 )
 		g_DamageMsg = META_RESULT_ORIG_RET( int ) - cs_server;
-	else if ( strcmp( pName, "DeathMsg" ) == 0 )
-		g_DeathMsg = META_RESULT_ORIG_RET( int );// - cs_server;
 	
 	RETURN_META_VALUE( MRES_IGNORED, 0 );
 }
@@ -1735,13 +1738,7 @@ void mmMessageBegin_Post( int msg_dest, int msg_type, const float *pOrigin, edic
 		{
 			g_DamageActive = true;
 			g_DamageVictim = ENTINDEX( ed );
-			g_DamageAttacker[ g_DamageVictim ] = ed->v.dmg_inflictor;
 		}
-	}
-	else if ( msg_type == g_DeathMsg )
-	{
-		// Prepare to update deathmsg
-		g_DeathActive = true;
 	}
 	
 	RETURN_META( MRES_IGNORED );
@@ -1755,30 +1752,12 @@ void mmWriteLong_Post( int iValue )
 	RETURN_META( MRES_IGNORED );
 }
 
-// This cannot be done on post!
-void mmWriteString( const char *szValue )
-{
-	if ( g_DeathActive )
-	{
-		// Prevent recursion
-		g_DeathActive = false;
-		
-		// Ensure whatever killed the player is a valid entity
-		if (g_DamageAttacker[ g_DamageVictim ] != NULL)
-		{
-			// Send a new WriteString with the killer's classname
-			WRITE_STRING( STRING( g_DamageAttacker[ g_DamageVictim ]->v.classname ) );
-			
-			// Supercede the old message
-			RETURN_META( MRES_SUPERCEDE );
-		}
-	}
-	
-	RETURN_META( MRES_IGNORED );
-}
-
 void mmMessageEnd_Post( void )
 {
+	if ( g_DamageActive )
+	{
+		check_player_dead( INDEXENT( g_DamageVictim ) );
+	}
 	g_DamageActive = false;
 	
 	RETURN_META( MRES_IGNORED );
@@ -1853,7 +1832,7 @@ enginefuncs_t meta_engfuncs =
 	NULL,			// pfnWriteLong()
 	NULL,			// pfnWriteAngle()
 	NULL,			// pfnWriteCoord()
-	mmWriteString,			//! pfnWriteString()
+	NULL,			// pfnWriteString()
 	NULL,			// pfnWriteEntity()
 
 	NULL,			// pfnCVarRegister()
