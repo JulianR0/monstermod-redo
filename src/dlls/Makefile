@@ -35,6 +35,7 @@ OBJ = \
 	massn.o \
 	monster_api.o \
 	monster_config.o \
+	monstermaker.o \
 	monsters.o \
 	monsterstate.o \
 	nodes.o \
