@@ -288,34 +288,24 @@ void CMStrooper::HandleAnimEvent(MonsterEvent_t *pEvent)
 			UTIL_MakeVectors(pev->angles);
 			Vector vecShootOrigin = vecGunPos + gpGlobals->v_forward * 32;
 			Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
-			vecGunAngles = UTIL_VecToAngles(vecShootDir);
-
-			//CBaseEntity *pShock = CBaseEntity::Create("shock_beam", vecShootOrigin, vecGunAngles, edict());
-			CMShock *pShock = CreateClassPtr((CMShock *)NULL);
-
+			vecGunAngles = UTIL_VecToAngles( vecShootDir );
+			vecGunAngles.z += RANDOM_FLOAT( -0.05, 0 );
+			
+			Vector vecVelocity = vecShootDir * 2000;
+			
+			edict_t *pShock = CMShock::Shoot( pev, vecGunAngles, vecShootOrigin, vecVelocity );
 			if (pShock != NULL)
 			{
-				pShock->pev->origin = vecShootOrigin;
+				m_cAmmoLoaded--;
+				SetBlending( 0, vecGunAngles.x );
 				
-				vecGunAngles.z += RANDOM_FLOAT( -0.05, 0 );
-				pShock->pev->angles = UTIL_VecToAngles( vecGunAngles );
-				pShock->pev->owner = edict();
-				
-				// Initialize these for entities who don't link to the world
-				pShock->pev->absmin = pShock->pev->origin - Vector(1,1,1);
-				pShock->pev->absmax = pShock->pev->origin + Vector(1,1,1);
-				
-				pShock->Spawn();
-				
-				pShock->pev->velocity = vecShootDir * 2000;
-				pShock->pev->nextthink = gpGlobals->time;
+				// Play fire sound.
+				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/shock_fire.wav", 1, ATTN_NORM);
 			}
-			
-			m_cAmmoLoaded--;
-			SetBlending( 0, vecGunAngles.x );
-
-			// Play fire sound.
-			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/shock_fire.wav", 1, ATTN_NORM);
+			else
+			{
+				ALERT( at_console, "Cannot create shock_beam!\n" );
+			}
 		}
 	}
 	break;
@@ -590,12 +580,8 @@ void CMStrooper::DropShockRoach(bool gibbed)
 	CMShockRoach *roach = CreateClassPtr((CMShockRoach *)NULL);
 	if (roach != NULL)
 	{
-		roach->pev->origin = vecPos;
-		roach->pev->angles = UTIL_VecToAngles( vecDropAngles );
-		
-		// Initialize these for entities who don't link to the world
-		roach->pev->absmin = roach->pev->origin - Vector(1,1,1);
-		roach->pev->absmax = roach->pev->origin + Vector(1,1,1);
+		UTIL_SetOrigin(roach->pev, vecPos);
+		roach->pev->angles = vecDropAngles;
 		
 		roach->Spawn();
 		
