@@ -156,13 +156,11 @@ Doing this will free **85** sounds from the precache list that you can now use f
 
 I'm aware that the plugin is far from perfect, and there are a few things that need polishing *-especially the AI-*. I'll try to fix/will be fixing as the project evolves:
 
-- Human Grunts are unable to reload their weapons. As a workaround, infinite ammo has been given to them.
-
-- Male Assassins share the same AI as HGrunts, so their ammo problem is still a thing, and the same workaround is used.
-
-- Shock Troopers seems to be broken despite sharing HGrunts AI code. Despite having infinite ammo, they eventually stop firing. Worse, taking cover is absolutely broken, and they remain completely frozen in place when it happens.
-
 - If a Heavy Weapons Grunt is to lose their target while his minigun is still spinning, the next time it targets an enemy it will instantly fire instead of spinning up the minigun again.
+
+- Monster "turning speed" (yaw speed) is too slow. While this doesn't cause any breaks, it degrades the quality of the AI, making them really easy to cheese.
+
+There are probably more issues that aren't listed here, I'll attempt to fix them as I find them. Of course, any bug report is welcome.
 
 ## Milestones
 
@@ -201,7 +199,7 @@ Current milestones are separated by "Tiers", which are as follows:
 ### Tier 4
 
 - Implement reading entities within the BSP itself.
-- Model scaling. *-If possible.-*
+- Add build instructions.
 - Custom sound support, along with sentences.
 - Fix all pending bugs.
 
