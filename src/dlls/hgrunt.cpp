@@ -663,9 +663,7 @@ void CMHGrunt :: Shoot ( void )
 
 	pev->effects |= EF_MUZZLEFLASH;
 	
-	// BUG - For some reason that still eludes me, grunts are completely unable to reload their weapons.
-	// As a temporary fix, give them infinite ammo. It will look bad I know... I gotta find a solution. -Giegue
-	//m_cAmmoLoaded--;// take away a bullet!
+	m_cAmmoLoaded--;// take away a bullet!
 
 	Vector angDir = UTIL_VecToAngles( vecShootDir );
 	SetBlending( 0, angDir.x );
@@ -692,9 +690,7 @@ void CMHGrunt :: Shotgun ( void )
 
 	pev->effects |= EF_MUZZLEFLASH;
 	
-	// BUG - For some reason that still eludes me, grunts are completely unable to reload their weapons.
-	// As a temporary fix, give them infinite ammo. It will look bad I know... I gotta find a solution. -Giegue
-	//m_cAmmoLoaded--;// take away a bullet!
+	m_cAmmoLoaded--;// take away a bullet!
 
 	Vector angDir = UTIL_VecToAngles( vecShootDir );
 	SetBlending( 0, angDir.x );
@@ -1677,6 +1673,37 @@ Schedule_t	slGruntRepelLand[] =
 	},
 };
 
+//=========================================================
+// Chase enemy failure schedule
+//=========================================================
+Task_t	tlGruntChaseEnemyFailed[] =
+{
+	{ TASK_STOP_MOVING,				(float)0					},
+	{ TASK_WAIT,					(float)0.2					},
+	{ TASK_FIND_COVER_FROM_ENEMY,	(float)0					},
+	{ TASK_RUN_PATH,				(float)0					},
+	{ TASK_WAIT_FOR_MOVEMENT,		(float)0					},
+	{ TASK_REMEMBER,				(float)bits_MEMORY_INCOVER	},
+//	{ TASK_TURN_LEFT,				(float)179					},
+	{ TASK_FACE_ENEMY,				(float)0					},
+	{ TASK_WAIT,					(float)1					},
+};
+
+Schedule_t	slGruntChaseEnemyFailed[] =
+{
+	{ 
+		tlGruntChaseEnemyFailed,
+		ARRAYSIZE ( tlGruntChaseEnemyFailed ), 
+		bits_COND_NEW_ENEMY			|
+		bits_COND_CAN_RANGE_ATTACK1	|
+		bits_COND_CAN_MELEE_ATTACK1	|
+		bits_COND_CAN_RANGE_ATTACK2	|
+		bits_COND_CAN_MELEE_ATTACK2	|
+		bits_COND_HEAR_SOUND,
+		0,
+		"GruntChaseEnemyFailed"
+	},
+};
 
 DEFINE_CUSTOM_SCHEDULES( CMHGrunt )
 {
@@ -1701,6 +1728,7 @@ DEFINE_CUSTOM_SCHEDULES( CMHGrunt )
 	slGruntRepel,
 	slGruntRepelAttack,
 	slGruntRepelLand,
+	slGruntChaseEnemyFailed,
 };
 
 IMPLEMENT_CUSTOM_SCHEDULES( CMHGrunt, CMBaseMonster );
@@ -1856,6 +1884,8 @@ Schedule_t *CMHGrunt :: GetSchedule( void )
 // new enemy
 			if ( HasConditions(bits_COND_NEW_ENEMY) )
 			{
+				// none of this should take place as CSquadMonster functions were completely stripped. -Giegue
+				/*
 				{
 					{
 						//!!!KELLY - the leader of a squad of grunts has just seen the player or a 
@@ -1871,14 +1901,14 @@ Schedule_t *CMHGrunt :: GetSchedule( void )
 							if ((m_hEnemy != NULL) && UTIL_IsPlayer(m_hEnemy))
 								// player
 								SENTENCEG_PlayRndSz( ENT(pev), "HG_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-/*jlb
+
 							else if ((m_hEnemy != NULL) &&
 									(m_hEnemy->Classify() != CLASS_PLAYER_ALLY) && 
 									(m_hEnemy->Classify() != CLASS_HUMAN_PASSIVE) && 
 									(m_hEnemy->Classify() != CLASS_MACHINE))
 								// monster
 								SENTENCEG_PlayRndSz( ENT(pev), "HG_MONST", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-jlb*/
+
 							JustSpoke();
 						}
 						
@@ -1892,6 +1922,7 @@ jlb*/
 						}
 					}
 				}
+				*/
 			}
 // no ammo
 			else if ( HasConditions ( bits_COND_NO_AMMO_LOADED ) )
@@ -1943,6 +1974,10 @@ jlb*/
 // can shoot
 			else if ( HasConditions ( bits_COND_CAN_RANGE_ATTACK1 ) )
 			{
+				// lack of CSquadMonster functionality makes hgrunt behave erraticaly as is removes
+				// core conditions to make them attack (OccupySlot). -Giegue
+				
+				// check if a grenade can be thrown, otherwise force weapon fire.
 				if ( HasConditions ( bits_COND_CAN_RANGE_ATTACK2 ) )
 				{
 					// throw a grenade if can and no engage slots are available
@@ -1950,13 +1985,18 @@ jlb*/
 				}
 				else
 				{
+					return GetScheduleOfType( SCHED_RANGE_ATTACK1 );
+					
 					// hide!
-					return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
+					//return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
 				}
 			}
 // can't see enemy
 			else if ( HasConditions( bits_COND_ENEMY_OCCLUDED ) )
 			{
+				// missing CSquadMonster functions means that the monster will stand still if its enemy is out of sight
+				// and if it is impossible to throw a grenade. force it to chase the enemy if attack isn't possible
+				// -Giegue
 				if ( HasConditions( bits_COND_CAN_RANGE_ATTACK2 ) )
 				{
 					//!!!KELLY - this grunt is about to throw or fire a grenade at the player. Great place for "fire in the hole"  "frag out" etc
@@ -1969,6 +2009,11 @@ jlb*/
 				}
 				else
 				{
+					return GetScheduleOfType( SCHED_GRUNT_ESTABLISH_LINE_OF_FIRE );
+				}
+				/*
+				else
+				{
 					//!!!KELLY - grunt is going to stay put for a couple seconds to see if
 					// the enemy wanders back out into the open, or approaches the
 					// grunt's covered position. Good place for a taunt, I guess?
@@ -1979,6 +2024,7 @@ jlb*/
 					}
 					return GetScheduleOfType( SCHED_STANDOFF );
 				}
+				*/
 			}
 			
 			if ( HasConditions( bits_COND_SEE_ENEMY ) && !HasConditions ( bits_COND_CAN_RANGE_ATTACK1 ) )
@@ -2112,6 +2158,11 @@ Schedule_t* CMHGrunt :: GetScheduleOfType ( int Type )
 	case SCHED_GRUNT_REPEL_LAND:
 		{
 			return &slGruntRepelLand[ 0 ];
+		}
+	case SCHED_CHASE_ENEMY_FAILED:
+		{
+			// add missing schedule from squadmonster.cpp
+			return &slGruntChaseEnemyFailed[ 0 ];
 		}
 	default:
 		{

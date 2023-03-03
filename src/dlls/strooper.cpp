@@ -216,7 +216,7 @@ int	CMStrooper::Classify()
 
 BOOL CMStrooper::CheckRangeAttack1(float flDot, float flDist)
 {
-	return m_cAmmoLoaded >= 1;// && CMHGrunt::CheckRangeAttack1(flDot, flDist);
+	return (m_cAmmoLoaded >= 1) && CMHGrunt::CheckRangeAttack1(flDot, flDist);
 }
 
 BOOL CMStrooper::CheckRangeAttack2( float flDot, float flDist )
@@ -730,6 +730,8 @@ Schedule_t *CMStrooper::GetSchedule(void)
 		// new enemy
 		if (HasConditions(bits_COND_NEW_ENEMY))
 		{
+			// pretty much a copypaste of hgrunt and so the same issues. -Giegue
+			/*
 			//!!!KELLY - the leader of a squad of grunts has just seen the player or a 
 			// monster and has made it the squad's enemy. You
 			// can check pev->flags for FL_CLIENT to determine whether this is the player
@@ -743,14 +745,14 @@ Schedule_t *CMStrooper::GetSchedule(void)
 				if ((m_hEnemy != 0) && UTIL_IsPlayer( m_hEnemy ))
 					// player
 					SENTENCEG_PlayRndSz(ENT(pev), "ST_ALERT", STROOPER_SENTENCE_VOLUME, STROOPER_ATTN, 0, m_voicePitch);
-/*
+
 				else if ((m_hEnemy != 0) &&
 					(m_hEnemy->Classify() != CLASS_PLAYER_ALLY) &&
 					(m_hEnemy->Classify() != CLASS_HUMAN_PASSIVE) &&
 					(m_hEnemy->Classify() != CLASS_MACHINE))
 					// monster
 					SENTENCEG_PlayRndSz(ENT(pev), "ST_MONST", STROOPER_SENTENCE_VOLUME, STROOPER_ATTN, 0, m_voicePitch);
-*/
+
 				JustSpoke();
 			}
 
@@ -762,6 +764,7 @@ Schedule_t *CMStrooper::GetSchedule(void)
 			{
 				return GetScheduleOfType(SCHED_STROOPER_ESTABLISH_LINE_OF_FIRE);
 			}
+			*/
 		}
 		// no ammo
 		else if (HasConditions(bits_COND_NO_AMMO_LOADED))
@@ -814,8 +817,10 @@ Schedule_t *CMStrooper::GetSchedule(void)
 			}
 			else
 			{
+				return GetScheduleOfType(SCHED_RANGE_ATTACK1);
+
 				// hide!
-				return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
+				//return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
 			}
 		}
 		// can't see enemy
@@ -833,6 +838,11 @@ Schedule_t *CMStrooper::GetSchedule(void)
 			}
 			else
 			{
+				return GetScheduleOfType(SCHED_STROOPER_ESTABLISH_LINE_OF_FIRE);
+			}
+			/*
+			else
+			{
 				//!!!KELLY - grunt is going to stay put for a couple seconds to see if
 				// the enemy wanders back out into the open, or approaches the
 				// grunt's covered position. Good place for a taunt, I guess?
@@ -843,6 +853,7 @@ Schedule_t *CMStrooper::GetSchedule(void)
 				}
 				return GetScheduleOfType(SCHED_STANDOFF);
 			}
+			*/
 		}
 
 		if (HasConditions(bits_COND_SEE_ENEMY) && !HasConditions(bits_COND_CAN_RANGE_ATTACK1))
