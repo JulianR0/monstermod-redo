@@ -399,12 +399,12 @@ void check_player_dead( edict_t *pPlayer )
 			}
 			else
 			{
-				// SOMETHING that is a monster
+				// Does this monster have a name?
 				if ( !FStringNull( pAttacker->v.netname ) )
 					strcpy(szName, STRING( pAttacker->v.netname ));
 				else
 				{
-					// No netname, use classname
+					// No name, use class
 					strcpy(szName, STRING( pAttacker->v.classname ));
 				}
 			}
@@ -537,8 +537,8 @@ void check_monster_info( edict_t *pPlayer )
 			// It should be alive
 			if ( UTIL_IsAlive( tr.pHit ) )
 			{
-				// Must be a monster
-				if (tr.pHit->v.flags & FL_MONSTER)
+				// Must be a monster (and strictly a monster!)
+				if (strncmp( STRING( tr.pHit->v.classname ), "monster_", 8 ) == 0 && tr.pHit->v.flags & FL_MONSTER)
 				{
 					char szName[129];
 					float monsterHealth, monsterFrags;

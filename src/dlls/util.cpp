@@ -39,7 +39,7 @@ typedef struct {
 } gamedll_funcs_t;
 
 extern gamedll_funcs_t *gpGamedllFuncs;
-
+extern void check_player_dead( edict_t *pPlayer );
 
 // Print to console.
 void META_CONS(char *fmt, ...) {
@@ -1760,7 +1760,8 @@ int UTIL_TakeDamage( edict_t *pEdict, entvars_t *pevInflictor, entvars_t *pevAtt
 	{
 		pEdict->v.health = 1;  // can't suicide if already dead!
 		gpGamedllFuncs->dllapi_table->pfnClientKill(pEdict);
-		
+		check_player_dead(pEdict); // will you just fucking work?
+
 		// Add 1 score to the monster that killed this player
 		if ( pevAttacker->flags & FL_MONSTER )
 			pevAttacker->frags += 1.0;

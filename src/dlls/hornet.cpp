@@ -372,6 +372,8 @@ void CMHornet::DieTouch ( edict_t *pOther )
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 			pMonster->TakeDamage( pev, VARS( pev->owner ), pev->dmg, DMG_BULLET );
 		}
+		else
+			UTIL_TakeDamageExternal( pOther, pev, VARS( pev->owner ), pev->dmg, DMG_BULLET );
 	}
 
 	pev->modelindex = 0;// so will disappear for the 0.1 secs we wait until NEXTTHINK gets rid

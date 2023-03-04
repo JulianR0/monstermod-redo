@@ -153,7 +153,7 @@ void CMShockRoach::MonsterThink(void)
 	{
 		pev->health = -1;
 		Killed(pev, 0);
-		return;
+		//return; // it still needs to think
 	}
 
 	CMHeadCrab::MonsterThink();

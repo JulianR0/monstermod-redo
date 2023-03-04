@@ -16,7 +16,7 @@ new Trie:g_HLDefaultNames;
 
 public plugin_init()
 {
-	register_plugin( "HL-MONSTER Bridge", "1.0", "Giegue" );
+	register_plugin( "HL-MONSTER Bridge", "1.1", "Giegue" );
 	
 	RegisterHam( Ham_IRelationship, "monster_alien_controller", "mmIRelationship" );
 	RegisterHam( Ham_IRelationship, "monster_alien_grunt", "mmIRelationship" );
@@ -67,10 +67,12 @@ public plugin_init()
 	TrieSetString( g_HLDefaultNames, "monster_osprey", "Osprey Helicopter" );
 	TrieSetString( g_HLDefaultNames, "monster_gargantua", "Gargantua" );
 	TrieSetString( g_HLDefaultNames, "monster_nihilanth", "Nihilanth" );
-	TrieSetString( g_HLDefaultNames, "monster_tentacle"," Tentacle" );
+	TrieSetString( g_HLDefaultNames, "monster_tentacle", "Tentacle" );
 	
 	set_task( 0.3, "hlScan", 0, "", 0, "b" );
 	register_srvcmd( "monster_hurt_entity", "hlTakeDamage" );
+	
+	RegisterHam( Ham_Killed, "player", "PlayerKilled", 1 );
 }
 public plugin_end()
 {
@@ -185,4 +187,18 @@ public hlTakeDamage()
 		
 		ExecuteHamB( Ham_TakeDamage, victim, inflictor, attacker, damage, damageBits );
 	}
+}
+
+public PlayerKilled( victim, attacker, shouldgib )
+{
+	// don't obstruct monstermod
+	if ( victim == attacker )
+		return HAM_IGNORED;
+	
+	// fix monster score
+	if ( entity_get_int( attacker, EV_INT_flags ) & FL_MONSTER )
+		entity_set_float( attacker, EV_FL_frags, entity_get_float( attacker, EV_FL_frags ) + 2 );
+	
+	entity_set_edict( victim, EV_ENT_dmg_inflictor, attacker );
+	return HAM_IGNORED;
 }

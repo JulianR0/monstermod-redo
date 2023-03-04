@@ -700,7 +700,18 @@ void CMHWGrunt :: SetActivity ( Activity NewActivity )
 		case ACT_RUN:
 		case ACT_WALK:
 		default:
-			iSequence = LookupActivity ( NewActivity );
+			if ( m_flMinigunSpinTime != 0 )
+			{
+				// if the hwgrunt used his minigun but became unable to attack
+				// then spin it down before doing anything else
+				refreshActivity = FALSE;
+
+				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 0.8, ATTN_NORM);
+				m_flMinigunSpinTime = gpGlobals->time + 1.40;
+				iSequence = LookupSequence( "spindown" );
+			}
+			else
+				iSequence = LookupActivity ( NewActivity );
 			break;
 		}
 		
