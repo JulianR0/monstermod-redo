@@ -156,7 +156,7 @@ Doing this will free **85** sounds from the precache list that you can now use f
 
 I'm aware that the plugin is far from perfect, and there are a few things that need polishing *-especially the AI-*. I'll try to fix/will be fixing as the project evolves:
 
-- If a Heavy Weapons Grunt is to lose their target while his minigun is still spinning, the next time it targets an enemy it will instantly fire instead of spinning up the minigun again.
+- The Heavy Weapons Grunt AI is borked, they "run" with their miniguns like if they have pistols.
 
 - Monster "turning speed" (yaw speed) is too slow. While this doesn't cause any breaks, it degrades the quality of the AI, making them really easy to cheese.
 
