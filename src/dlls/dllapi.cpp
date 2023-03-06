@@ -1327,6 +1327,46 @@ void mmDispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 	RETURN_META(MRES_IGNORED);
 }
 
+// pfnUse has been deprecated so the only way to trigger a monstermod
+// entity from the outside is to do it manually. ARRGHH! -Giegue
+void mmDispatchUse( void )
+{
+	if ( CMD_ARGC() >= 6 ) // the command itself is an argument, we need 5. so argc == 6
+	{
+		edict_t *entity = INDEXENT( atoi( CMD_ARGV( 1 ) ) );
+		edict_t *caller = INDEXENT( atoi( CMD_ARGV( 2 ) ) );
+		edict_t *activator = INDEXENT( atoi( CMD_ARGV( 3 ) ) );
+		USE_TYPE useType = USE_TYPE( atoi( CMD_ARGV( 4 ) ) );
+		float flValue = atof( CMD_ARGV( 5 ) );
+		
+		// nevermind the unoptimization that this brings... >C
+		for (int index=0; index < monster_ents_used; index++)
+		{
+			if ((entity != NULL) && (entity == monsters[index].monster_pent))
+			{
+				if ( FNullEnt( caller ) ) caller = NULL;
+				if ( FNullEnt( activator ) ) activator = NULL;
+
+				monsters[index].pMonster->Use( caller, activator, useType, flValue );
+				return;
+			}
+		}
+	}
+}
+
+void mmDispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd )
+{
+	for (int index=0; index < monster_ents_used; index++)
+	{
+		if ((pentKeyvalue != NULL) && (pentKeyvalue == monsters[index].monster_pent))
+		{
+			monsters[index].pMonster->KeyValue( pkvd );
+			RETURN_META(MRES_SUPERCEDE);
+		}
+	}
+	
+	RETURN_META(MRES_IGNORED);
+}
 
 void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
@@ -1371,6 +1411,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	(g_engfuncs.pfnAddServerCommand)("monster", MonsterCommand);
 	(g_engfuncs.pfnAddServerCommand)("node_viewer", SpawnViewerCommand);
+	(g_engfuncs.pfnAddServerCommand)("_use", mmDispatchUse);
 
 	for (index = 0; monster_types[index].name[0]; index++)
 	{
@@ -1531,10 +1572,10 @@ static DLL_FUNCTIONS gFunctionTable =
 	mmGameDLLInit,	//! pfnGameInit()	Initialize the game (one-time call after loading of game .dll)
 	mmDispatchSpawn, //! pfnSpawn()
 	mmDispatchThink, //! pfnThink
-	NULL,			// pfnUse
+	NULL,			// pfnUse [DEPRECATED]
 	mmDispatchTouch, //! pfnTouch
 	NULL,			// pfnBlocked
-	NULL,			// pfnKeyValue
+	mmDispatchKeyValue,	//! pfnKeyValue
 	NULL,			// pfnSave
 	NULL,			// pfnRestore
 	NULL,			// pfnSetAbsBox
@@ -1631,7 +1672,7 @@ static DLL_FUNCTIONS gFunctionTable_Post =
 	NULL,			// pfnGameInit()   Initialize the game (one-time call after loading of game .dll)
 	NULL,			// pfnSpawn()
 	mmDispatchThink_Post, //! pfnThink
-	NULL,			// pfnUse
+	NULL,			// pfnUse [DEPRECATED]
 	NULL,			// pfnTouch
 	NULL,			// pfnBlocked
 	NULL,			// pfnKeyValue

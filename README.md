@@ -158,8 +158,6 @@ I'm aware that the plugin is far from perfect, and there are a few things that n
 
 - Rarely, Stukabats will become unable to fly towards their target, standing in air doing seemingly nothing. Cause of bug unknown.
 
-- Entvars are not recognized, so anything that is a pevfield that is not used by monstermod is unusable.
-
 There are probably more issues that aren't listed here, I'll attempt to fix them as I find them. Of course, any bug report is welcome. If reporting a bug, try to explain step by step how the bug ocurred. The easier it is to replicate a bug, the easier it is to locate it and fix it.
 
 ## Milestones
