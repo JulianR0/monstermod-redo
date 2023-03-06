@@ -39,6 +39,8 @@ extern DLL_GLOBAL	BOOL	g_fDrawLines;
 
 extern CGraph WorldGraph;// the world node graph
 
+extern cvar_t *monster_turn_coeficient;
+
 
 
 //=========================================================
@@ -2234,7 +2236,22 @@ float CMBaseMonster::ChangeYaw ( int yawSpeed )
 	ideal = pev->ideal_yaw;
 	if (current != ideal)
 	{
-		speed = (float)yawSpeed * gpGlobals->frametime * 10;
+		// -SamVanheer
+		if ( m_flLastYawTime == 0 )
+		{
+			m_flLastYawTime = gpGlobals->time - gpGlobals->frametime;
+		}
+
+		float delta = gpGlobals->time - m_flLastYawTime;
+		if ( delta > 0.25 )
+			delta = 0.25;
+		
+		// let server operators modify the multiplier coeficient -Giegue
+		float multiplier = monster_turn_coeficient->value;
+		if ( multiplier < 0.1 || multiplier > 10.0 )
+			multiplier = 1.75;
+
+		speed = (float)yawSpeed * delta * multiplier;
 		move = ideal - current;
 
 		if (ideal > current)

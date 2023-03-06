@@ -1085,7 +1085,7 @@ jlb*/
 			{
 				m_movementActivity = ACT_FLY;
 			}
-			if ( LookupActivity( ACT_WALK ) != ACTIVITY_NOT_AVAILABLE )
+			else if ( LookupActivity( ACT_WALK ) != ACTIVITY_NOT_AVAILABLE )
 			{
 				m_movementActivity = ACT_WALK;
 			}

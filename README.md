@@ -156,11 +156,11 @@ Doing this will free **85** sounds from the precache list that you can now use f
 
 I'm aware that the plugin is far from perfect, and there are a few things that need polishing *-especially the AI-*. I'll try to fix/will be fixing as the project evolves:
 
-- The Heavy Weapons Grunt AI is borked, they "run" with their miniguns like if they have pistols.
+- Rarely, Stukabats will become unable to fly towards their target, standing in air doing seemingly nothing. Cause of bug unknown.
 
-- Monster "turning speed" (yaw speed) is too slow. While this doesn't cause any breaks, it degrades the quality of the AI, making them really easy to cheese.
+- Entvars are not recognized, so anything that is a pevfield that is not used by monstermod is unusable.
 
-There are probably more issues that aren't listed here, I'll attempt to fix them as I find them. Of course, any bug report is welcome.
+There are probably more issues that aren't listed here, I'll attempt to fix them as I find them. Of course, any bug report is welcome. If reporting a bug, try to explain step by step how the bug ocurred. The easier it is to replicate a bug, the easier it is to locate it and fix it.
 
 ## Milestones
 

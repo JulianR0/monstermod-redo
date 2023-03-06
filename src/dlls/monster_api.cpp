@@ -87,6 +87,8 @@ cvar_t init_monster_show_deaths = {"monster_show_deaths", "1", FCVAR_EXTDLL, 0, 
 cvar_t *monster_show_deaths = NULL;
 cvar_t init_monster_show_info = {"monster_show_info", "1", FCVAR_EXTDLL, 0, NULL};
 cvar_t *monster_show_info = NULL;
+cvar_t init_monster_turn_coeficient = {"monster_turn_coeficient", "1.75", FCVAR_EXTDLL, 0, NULL};
+cvar_t *monster_turn_coeficient = NULL;
 
 
 // Metamod requesting info about this plugin:
@@ -146,6 +148,9 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS *pFunctionTable, m
 	CVAR_REGISTER(&init_monster_show_info);
 	monster_show_info = CVAR_GET_POINTER("monster_show_info");
 	
+	CVAR_REGISTER(&init_monster_turn_coeficient);
+	monster_turn_coeficient = CVAR_GET_POINTER("monster_turn_coeficient");
+
 	return(TRUE);
 }
 

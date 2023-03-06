@@ -32,45 +32,37 @@
 //=========================================================
 // monster-specific DEFINE's
 //=========================================================
-#define	HWGRUNT_9MM_CLIP_SIZE		17 // clip ammo per gun
-#define HWGRUNT_DGL_CLIP_SIZE		7
-#define HWGRUNT_357_CLIP_SIZE		6
-
 // Weapon flags
 #define HWGRUNT_MINIGUN				0
-#define HWGRUNT_PISTOL_9MM			1
-#define HWGRUNT_PISTOL_DGL			2
-#define HWGRUNT_PISTOL_357			3
 
 #define GUN_GROUP					1
 
 // Gun values
 #define GUN_MINIGUN					0
-#define GUN_PISTOL_9MM				1
-#define GUN_PISTOL_357				2
-#define GUN_PISTOL_DGL				3
-#define GUN_NONE					4
-
-//=========================================================
-// Monster's Anim Events Go Here
-//=========================================================
-#define		HWGRUNT_AE_DEATH		( 11 )
-#define		HWGRUNT_AE_MINIGUN		( 5001 )
 
 //=========================================================
 // monster-specific schedule types
 //=========================================================
 enum
 {
-	SCHED_HWGRUNT_SUPPRESS = LAST_COMMON_SCHEDULE + 1,
-	SCHED_HWGRUNT_ESTABLISH_LINE_OF_FIRE,// move to a location to set up an attack against the enemy. (usually when a friendly is in the way).
-	SCHED_HWGRUNT_SWEEP,
+	SCHED_HWGRUNT_ESTABLISH_LINE_OF_FIRE = LAST_COMMON_SCHEDULE + 1,// move to a location to set up an attack against the enemy.
 	SCHED_HWGRUNT_REPEL,
-	SCHED_HWGRUNT_REPEL_ATTACK,
 	SCHED_HWGRUNT_REPEL_LAND,
 	SCHED_HWGRUNT_WAIT_FACE_ENEMY,
+	SCHED_HWGRUNT_TAKECOVER_FAILED,// force analysis of conditions and pick the best possible schedule to recover from failure.
 	SCHED_HWGRUNT_ELOF_FAIL,
 };
+
+//=========================================================
+// monster-specific conditions
+//=========================================================
+#define bits_MEMORY_HWGRUNT_SPINUP	( bits_MEMORY_CUSTOM1 )
+
+//=========================================================
+// Monster's Anim Events Go Here
+//=========================================================
+#define		HWGRUNT_AE_DEATH		( 11 )
+#define		HWGRUNT_AE_MINIGUN		( 5001 )
 
 //=========================================================
 // Classify - indicates this monster's place in the 
@@ -214,7 +206,7 @@ void CMHWGrunt::Spawn()
 	m_MonsterState = MONSTERSTATE_NONE;
 	//m_flNextGrenadeCheck = gpGlobals->time + 1;
 	m_flNextPainTime = gpGlobals->time;
-	m_flMinigunSpinTime = 0; // be able to spin up/down minigun right away
+	//m_flMinigunSpinTime = 0; // be able to spin up/down minigun right away
 	m_iSentence = -1;
 	m_fStanding = TRUE;
 
@@ -259,14 +251,15 @@ void CMHWGrunt::Precache()
 	PRECACHE_SOUND("hassault/hw_shoot1.wav");
 	PRECACHE_SOUND("hassault/hw_spinup.wav");
 	PRECACHE_SOUND("hassault/hw_spindown.wav");
-	
-	PRECACHE_SOUND("common/null.wav");
 
 	// get voice pitch
 	if (RANDOM_LONG(0, 1))
 		m_voicePitch = 102 + RANDOM_LONG(0, 7);
 	else
 		m_voicePitch = 93; // slight voice change for hwgrunt
+
+	CMHGrunt hgrunt;
+	hgrunt.Precache();
 }
 
 //=========================================================
@@ -274,7 +267,7 @@ void CMHWGrunt::Precache()
 //=========================================================
 
 //=========================================================
-// GruntFail
+// Fail
 //=========================================================
 Task_t	tlHWGruntFail[] =
 {
@@ -296,7 +289,7 @@ Schedule_t	slHWGruntFail[] =
 };
 
 //=========================================================
-// Grunt Combat Fail
+// Combat Fail
 //=========================================================
 Task_t	tlHWGruntCombatFail[] =
 {
@@ -318,7 +311,7 @@ Schedule_t	slHWGruntCombatFail[] =
 };
 
 //=========================================================
-// Victory dance!
+// Not really victory dance
 //=========================================================
 Task_t	tlHWGruntVictoryDance[] =
 {
@@ -328,7 +321,8 @@ Task_t	tlHWGruntVictoryDance[] =
 	{ TASK_GET_PATH_TO_ENEMY_CORPSE,		(float)0					},
 	{ TASK_WALK_PATH,						(float)0					},
 	{ TASK_WAIT_FOR_MOVEMENT,				(float)0					},
-	{ TASK_FACE_ENEMY,						(float)0					}
+	{ TASK_FACE_ENEMY,						(float)0					},
+//	{ TASK_PLAY_SEQUENCE,					(float)ACT_VICTORY_DANCE	},
 };
 
 Schedule_t	slHWGruntVictoryDance[] =
@@ -336,35 +330,11 @@ Schedule_t	slHWGruntVictoryDance[] =
 	{ 
 		tlHWGruntVictoryDance,
 		ARRAYSIZE ( tlHWGruntVictoryDance ), 
-		bits_COND_NEW_ENEMY,
+		bits_COND_NEW_ENEMY		|
+		bits_COND_LIGHT_DAMAGE	|
+		bits_COND_HEAVY_DAMAGE,
 		0,
-		"HWGruntVictoryDance"
-	},
-};
-
-
-//=========================================================
-// ELOF fail, just wait and try again
-//=========================================================
-Task_t	tlHWGruntELOFFail[] =
-{
-	{ TASK_STOP_MOVING,				(float)0									},
-	{ TASK_SET_ACTIVITY,			(float)ACT_IDLE								},
-	{ TASK_FACE_ENEMY,				(float)0									},
-	{ TASK_WAIT,					(float)1.5									},
-	{ TASK_SET_SCHEDULE,			(float)SCHED_HWGRUNT_ESTABLISH_LINE_OF_FIRE	},
-};
-
-Schedule_t	slHWGruntELOFFail[] =
-{
-	{ 
-		tlHWGruntELOFFail,
-		ARRAYSIZE ( tlHWGruntELOFFail ), 
-		bits_COND_NEW_ENEMY				|
-		bits_COND_ENEMY_DEAD			|
-		bits_COND_CAN_RANGE_ATTACK1,
-		0,
-		"HWGrunt Failed ELOF"
+		"HWGrunt Victory Dance"
 	},
 };
 
@@ -376,6 +346,7 @@ Task_t tlHWGruntEstablishLineOfFire[] =
 {
 	{ TASK_SET_FAIL_SCHEDULE,	(float)SCHED_HWGRUNT_ELOF_FAIL	},
 	{ TASK_GET_PATH_TO_ENEMY,	(float)0						},
+//	{ TASK_GRUNT_SPEAK_SENTENCE,(float)0						},
 	{ TASK_RUN_PATH,			(float)0						},
 	{ TASK_WAIT_FOR_MOVEMENT,	(float)0						},
 };
@@ -390,66 +361,14 @@ Schedule_t slHWGruntEstablishLineOfFire[] =
 		bits_COND_CAN_RANGE_ATTACK1	|
 		bits_COND_HEAR_SOUND,
 		0,
-		"HWGruntEstablishLineOfFire"
+		"HWGrunt Establish Line Of Fire"
 	},
 };
 
 //=========================================================
-// GruntCombatFace Schedule
-//=========================================================
-Task_t	tlHWGruntCombatFace1[] =
-{
-	{ TASK_STOP_MOVING,				0							},
-	{ TASK_SET_ACTIVITY,			(float)ACT_IDLE				},
-	{ TASK_FACE_ENEMY,				(float)0					},
-	{ TASK_WAIT,					(float)1.5					},
-	{ TASK_SET_SCHEDULE,			(float)SCHED_HWGRUNT_SWEEP	},
-};
-
-Schedule_t	slHWGruntCombatFace[] =
-{
-	{ 
-		tlHWGruntCombatFace1,
-		ARRAYSIZE ( tlHWGruntCombatFace1 ), 
-		bits_COND_NEW_ENEMY				|
-		bits_COND_ENEMY_DEAD			|
-		bits_COND_CAN_RANGE_ATTACK1,
-		0,
-		"HWCombat Face"
-	},
-};
-
-Task_t	tlHWGruntSuppress[] =
-{
-	{ TASK_STOP_MOVING,			0							},
-	{ TASK_FACE_ENEMY,			(float)0					},
-	{ TASK_RANGE_ATTACK1,		(float)0					},
-	{ TASK_FACE_ENEMY,			(float)0					},
-	{ TASK_RANGE_ATTACK1,		(float)0					},
-	{ TASK_FACE_ENEMY,			(float)0					},
-	{ TASK_RANGE_ATTACK1,		(float)0					},
-	{ TASK_FACE_ENEMY,			(float)0					},
-	{ TASK_RANGE_ATTACK1,		(float)0					},
-	{ TASK_FACE_ENEMY,			(float)0					},
-	{ TASK_RANGE_ATTACK1,		(float)0					},
-};
-
-Schedule_t	slHWGruntSuppress[] =
-{
-	{ 
-		tlHWGruntSuppress,
-		ARRAYSIZE ( tlHWGruntSuppress ), 
-		0,
-		0,
-		"HWSuppress"
-	},
-};
-
-
-//=========================================================
-// grunt wait in cover - we don't allow danger or the ability
-// to attack to break a grunt's run to cover schedule, but
-// when a grunt is in cover, we do want them to attack if they can.
+// wait in cover - we don't allow danger or the ability to
+// attack to break a grunt's run to cover schedule, but when
+// a grunt is in cover, we do want them to attack if they can.
 //=========================================================
 Task_t	tlHWGruntWaitInCover[] =
 {
@@ -467,73 +386,90 @@ Schedule_t	slHWGruntWaitInCover[] =
 		bits_COND_HEAR_SOUND		|
 		bits_COND_CAN_RANGE_ATTACK1,
 		0,
-		"HWGruntWaitInCover"
+		"HWGrunt Wait In Cover"
 	},
 };
 
-
 //=========================================================
-// Do a turning sweep of the area
+// run to cover.
 //=========================================================
-Task_t	tlHWGruntSweep[] =
+Task_t	tlHWGruntTakeCover[] =
 {
-	{ TASK_TURN_LEFT,			(float)179	},
-	{ TASK_WAIT,				(float)1	},
-	{ TASK_TURN_LEFT,			(float)179	},
-	{ TASK_WAIT,				(float)1	},
+	{ TASK_STOP_MOVING,				(float)0								},
+	{ TASK_SET_FAIL_SCHEDULE,		(float)SCHED_HWGRUNT_TAKECOVER_FAILED	},
+	{ TASK_WAIT,					(float)0.2								},
+	{ TASK_FIND_COVER_FROM_ENEMY,	(float)0								},
+//	{ TASK_GRUNT_SPEAK_SENTENCE,	(float)0								},
+	{ TASK_RUN_PATH,				(float)0								},
+	{ TASK_WAIT_FOR_MOVEMENT,		(float)0								},
+	{ TASK_REMEMBER,				(float)bits_MEMORY_INCOVER				},
+	{ TASK_SET_SCHEDULE,			(float)SCHED_HWGRUNT_WAIT_FACE_ENEMY	},
 };
 
-Schedule_t	slHWGruntSweep[] =
+Schedule_t	slHWGruntTakeCover[] =
 {
 	{ 
-		tlHWGruntSweep,
-		ARRAYSIZE ( tlHWGruntSweep ),
-		bits_COND_NEW_ENEMY		|
-		bits_COND_CAN_RANGE_ATTACK1,
+		tlHWGruntTakeCover,
+		ARRAYSIZE ( tlHWGruntTakeCover ), 
 		0,
-		"HWGrunt Sweep"
+		0,
+		"HWGrunt Take Cover"
 	},
 };
 
-
 //=========================================================
-// primary range attack. Overriden because base class stops attacking when the enemy is occluded.
-// grunt's grenade toss requires the enemy be occluded.
+// minigun spinup
 //=========================================================
-Task_t	tlHWGruntRangeAttack1B[] =
+Task_t	tlHWGruntMinigunSpinUp[] =
 {
-	{ TASK_STOP_MOVING,				(float)0		},
-	{ TASK_PLAY_SEQUENCE_FACE_ENEMY,(float)ACT_IDLE_ANGRY  },
-	{ TASK_RANGE_ATTACK1,		(float)0		},
-	{ TASK_FACE_ENEMY,			(float)0		},
-	{ TASK_RANGE_ATTACK1,		(float)0		},
-	{ TASK_FACE_ENEMY,			(float)0		},
-	{ TASK_RANGE_ATTACK1,		(float)0		},
-	{ TASK_FACE_ENEMY,			(float)0		},
-	{ TASK_RANGE_ATTACK1,		(float)0		},
+	{ TASK_STOP_MOVING,					(float)0							},
+	{ TASK_SET_ACTIVITY,				(float)ACT_THREAT_DISPLAY			},
+	{ TASK_WAIT_FACE_ENEMY,				(float)1							},
+	{ TASK_REMEMBER,					(float)bits_MEMORY_HWGRUNT_SPINUP	},
 };
 
-Schedule_t	slHWGruntRangeAttack1B[] =
+Schedule_t	slHWGruntMinigunSpinUp[] =
 {
 	{ 
-		tlHWGruntRangeAttack1B,
-		ARRAYSIZE ( tlHWGruntRangeAttack1B ), 
+		tlHWGruntMinigunSpinUp,
+		ARRAYSIZE ( tlHWGruntMinigunSpinUp ), 
+		0, // nothing should interrupt this
+		0,
+		"HWGrunt Minigun Spin Up"
+	},
+};
+
+//=========================================================
+// minigun attack
+//=========================================================
+Task_t	tlHWGruntMinigunAttack[] =
+{
+	{ TASK_STOP_MOVING,					(float)0					},
+	{ TASK_PLAY_SEQUENCE_FACE_ENEMY,	(float)ACT_RANGE_ATTACK1	},
+	{ TASK_RANGE_ATTACK1,				(float)0					},
+};
+
+Schedule_t	slHWGruntMinigunAttack[] =
+{
+	{ 
+		tlHWGruntMinigunAttack,
+		ARRAYSIZE ( tlHWGruntMinigunAttack ), 
 		bits_COND_NEW_ENEMY			|
 		bits_COND_ENEMY_DEAD		|
-		bits_COND_ENEMY_OCCLUDED,
+		bits_COND_ENEMY_OCCLUDED	|
+		bits_COND_HEAR_SOUND,
 		0,
-		"HWRange Attack1B"
+		"HWGrunt Minigun Attack"
 	},
 };
-
 
 //=========================================================
 // repel 
 //=========================================================
 Task_t	tlHWGruntRepel[] =
 {
-	{ TASK_STOP_MOVING,			(float)0		},
-	{ TASK_FACE_IDEAL,			(float)0		},
+	{ TASK_STOP_MOVING,			(float)0			},
+	{ TASK_FACE_IDEAL,			(float)0			},
 	{ TASK_PLAY_SEQUENCE,		(float)ACT_GLIDE 	},
 };
 
@@ -543,31 +479,12 @@ Schedule_t	slHWGruntRepel[] =
 		tlHWGruntRepel,
 		ARRAYSIZE ( tlHWGruntRepel ), 
 		bits_COND_SEE_ENEMY			|
-		bits_COND_NEW_ENEMY,
+		bits_COND_NEW_ENEMY			|
+		bits_COND_LIGHT_DAMAGE		|
+		bits_COND_HEAVY_DAMAGE		|
+		bits_COND_HEAR_SOUND,
 		0,
-		"HWRepel"
-	},
-};
-
-
-//=========================================================
-// repel 
-//=========================================================
-Task_t	tlHWGruntRepelAttack[] =
-{
-	{ TASK_STOP_MOVING,			(float)0		},
-	{ TASK_FACE_ENEMY,			(float)0		},
-	{ TASK_PLAY_SEQUENCE,		(float)ACT_FLY 	},
-};
-
-Schedule_t	slHWGruntRepelAttack[] =
-{
-	{ 
-		tlHWGruntRepelAttack,
-		ARRAYSIZE ( tlHWGruntRepelAttack ), 
-		bits_COND_ENEMY_OCCLUDED,
-		0,
-		"HWRepel Attack"
+		"HWGrunt Repel"
 	},
 };
 
@@ -576,12 +493,12 @@ Schedule_t	slHWGruntRepelAttack[] =
 //=========================================================
 Task_t	tlHWGruntRepelLand[] =
 {
-	{ TASK_STOP_MOVING,			(float)0		},
-	{ TASK_PLAY_SEQUENCE,		(float)ACT_LAND	},
-	{ TASK_GET_PATH_TO_LASTPOSITION,(float)0				},
-	{ TASK_RUN_PATH,				(float)0				},
-	{ TASK_WAIT_FOR_MOVEMENT,		(float)0				},
-	{ TASK_CLEAR_LASTPOSITION,		(float)0				},
+	{ TASK_STOP_MOVING,						(float)0		},
+	{ TASK_PLAY_SEQUENCE,					(float)ACT_LAND	},
+	{ TASK_GET_PATH_TO_LASTPOSITION,		(float)0		},
+	{ TASK_RUN_PATH,						(float)0		},
+	{ TASK_WAIT_FOR_MOVEMENT,				(float)0		},
+	{ TASK_CLEAR_LASTPOSITION,				(float)0		},
 };
 
 Schedule_t	slHWGruntRepelLand[] =
@@ -590,9 +507,41 @@ Schedule_t	slHWGruntRepelLand[] =
 		tlHWGruntRepelLand,
 		ARRAYSIZE ( tlHWGruntRepelLand ), 
 		bits_COND_SEE_ENEMY			|
-		bits_COND_NEW_ENEMY,
+		bits_COND_NEW_ENEMY			|
+		bits_COND_LIGHT_DAMAGE		|
+		bits_COND_HEAVY_DAMAGE		|
+		bits_COND_HEAR_SOUND,
 		0,
-		"HWRepel Land"
+		"HWGrunt Repel Land"
+	},
+};
+
+//=========================================================
+// Chase enemy failure
+//=========================================================
+Task_t	tlHWGruntChaseEnemyFailed[] =
+{
+	{ TASK_STOP_MOVING,				(float)0					},
+	{ TASK_WAIT,					(float)0.2					},
+	{ TASK_FIND_COVER_FROM_ENEMY,	(float)0					},
+	{ TASK_RUN_PATH,				(float)0					},
+	{ TASK_WAIT_FOR_MOVEMENT,		(float)0					},
+	{ TASK_REMEMBER,				(float)bits_MEMORY_INCOVER	},
+//	{ TASK_TURN_LEFT,				(float)179					},
+	{ TASK_FACE_ENEMY,				(float)0					},
+	{ TASK_WAIT,					(float)1					},
+};
+
+Schedule_t	slHWGruntChaseEnemyFailed[] =
+{
+	{ 
+		tlHWGruntChaseEnemyFailed,
+		ARRAYSIZE ( tlHWGruntChaseEnemyFailed ), 
+		bits_COND_NEW_ENEMY			|
+		bits_COND_CAN_RANGE_ATTACK1	|
+		bits_COND_HEAR_SOUND,
+		0,
+		"HWGrunt Chase Enemy Failed"
 	},
 };
 
@@ -602,121 +551,43 @@ DEFINE_CUSTOM_SCHEDULES( CMHWGrunt )
 	slHWGruntFail,
 	slHWGruntCombatFail,
 	slHWGruntVictoryDance,
-	slHWGruntELOFFail,
 	slHWGruntEstablishLineOfFire,
-	slHWGruntCombatFace,
-	slHWGruntSuppress,
 	slHWGruntWaitInCover,
-	slHWGruntSweep,
-	slHWGruntRangeAttack1B,
+	slHWGruntTakeCover,
+	slHWGruntMinigunSpinUp,
+	slHWGruntMinigunAttack,
 	slHWGruntRepel,
-	slHWGruntRepelAttack,
 	slHWGruntRepelLand,
+	slHWGruntChaseEnemyFailed,
 };
 
 IMPLEMENT_CUSTOM_SCHEDULES( CMHWGrunt, CMBaseMonster );
 
 //=========================================================
-// SetActivity - different set than normal hgrunt, adapt
+// SetActivity 
 //=========================================================
 void CMHWGrunt :: SetActivity ( Activity NewActivity )
 {
 	int	iSequence = ACTIVITY_NOT_AVAILABLE;
 	void *pmodel = GET_MODEL_PTR( ENT(pev) );
-	bool refreshActivity = TRUE;
+
+	switch ( NewActivity )
+	{
+	case ACT_RANGE_ATTACK1:
+		iSequence = LookupSequence( "attack" );
+		break;
+	case ACT_RUN:
+		iSequence = LookupSequence( "run" );
+		break;
+	case ACT_WALK:
+		iSequence = LookupSequence( "creeping_walk" );
+		break;
+	default:
+		iSequence = LookupActivity( NewActivity );
+		break;
+	}
 	
-	// PS: This is terrible code. -Giegue
-
-	// Time to die?
-	if ( NewActivity < ACT_DIESIMPLE )
-	{
-		if ( pev->sequence == LookupSequence( "attack" ) )
-		{
-			// I won't do anything else if I'm attacking!
-			refreshActivity = FALSE;
-			
-			// Unless the enemy has gone out of my sight
-			if ( m_hEnemy == 0 || !UTIL_IsAlive( m_hEnemy ) || !UTIL_FVisible( m_hEnemy, ENT(pev) ) )
-			{
-				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 0.8, ATTN_NORM);
-				m_flMinigunSpinTime = gpGlobals->time + 1.40;
-				iSequence = LookupSequence( "spindown" ); // time to relax
-			}
-		}
-		else if ( pev->sequence == LookupSequence( "spindown" ) )
-		{
-			// Not yet!
-			refreshActivity = FALSE;
-			
-			// Wait until the minigun is no longer spinning before doing something else
-			if ( gpGlobals->time > m_flMinigunSpinTime )
-			{
-				refreshActivity = TRUE;
-				m_flMinigunSpinTime = 0; // do spin up again when required
-			}
-		}
-	}
-
-	if (refreshActivity)
-	{
-		switch (NewActivity)
-		{
-		case ACT_RANGE_ATTACK1:
-			// if carring a gun, either standing or crouched.
-			// always standing when firing minigun
-			if (pev->weapons > 0) // any pistol
-			{
-				// same animation regardless of pistol
-				if ( m_fStanding )
-				{
-					// get aimable sequence
-					iSequence = LookupSequence( "pistol_shoot" );
-				}
-				else
-				{
-					// get crouching shoot
-					iSequence = LookupSequence( "pistol_crouchshoot" );
-				}
-			}
-			else // minigun
-			{
-				if ( m_flMinigunSpinTime == 0 ) // starting to spin up the minigun
-				{
-					EMIT_SOUND(ENT(pev), CHAN_WEAPON, "hassault/hw_spinup.wav", 0.8, ATTN_NORM);
-					m_flMinigunSpinTime = gpGlobals->time + 1.15;
-					iSequence = LookupSequence( "spinup" );
-				}
-				else if ( gpGlobals->time > m_flMinigunSpinTime ) // spun up, ready to fire
-					iSequence = LookupSequence( "attack" );
-			}
-			break;
-		case ACT_IDLE:
-			if ( m_MonsterState == MONSTERSTATE_COMBAT )
-			{
-				NewActivity = ACT_IDLE_ANGRY;
-			}
-			iSequence = LookupActivity ( NewActivity );
-			break;
-		case ACT_RUN:
-		case ACT_WALK:
-		default:
-			if ( m_flMinigunSpinTime != 0 )
-			{
-				// if the hwgrunt used his minigun but became unable to attack
-				// then spin it down before doing anything else
-				refreshActivity = FALSE;
-
-				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "hassault/hw_spindown.wav", 0.8, ATTN_NORM);
-				m_flMinigunSpinTime = gpGlobals->time + 1.40;
-				iSequence = LookupSequence( "spindown" );
-			}
-			else
-				iSequence = LookupActivity ( NewActivity );
-			break;
-		}
-		
-		m_Activity = NewActivity; // Go ahead and set this so it doesn't keep trying when the anim is not present
-	}
+	m_Activity = NewActivity; // Go ahead and set this so it doesn't keep trying when the anim is not present
 
 	// Set to the desired anim, or default anim if the desired is not present
 	if ( iSequence > ACTIVITY_NOT_AVAILABLE )
@@ -730,7 +601,7 @@ void CMHWGrunt :: SetActivity ( Activity NewActivity )
 		ResetSequenceInfo( );
 		SetYawSpeed();
 	}
-	else if (refreshActivity)
+	else
 	{
 		// Not available try to get default anim
 		ALERT ( at_console, "%s has no sequence for act:%d\n", STRING(pev->classname), NewActivity );
@@ -743,6 +614,9 @@ void CMHWGrunt :: SetActivity ( Activity NewActivity )
 //=========================================================
 Schedule_t *CMHWGrunt :: GetSchedule( void )
 {
+	// clear old sentence
+	m_iSentence = -1; // we don't care about sounds for now.
+
 	// flying? If PRONE, barnacle has me. IF not, it's assumed I am rapelling. 
 	if ( pev->movetype == MOVETYPE_FLY && m_MonsterState != MONSTERSTATE_PRONE )
 	{
@@ -754,11 +628,8 @@ Schedule_t *CMHWGrunt :: GetSchedule( void )
 		}
 		else
 		{
-			// repel down a rope, 
-			if ( m_MonsterState == MONSTERSTATE_COMBAT )
-				return GetScheduleOfType ( SCHED_HWGRUNT_REPEL_ATTACK );
-			else
-				return GetScheduleOfType ( SCHED_HWGRUNT_REPEL );
+			// can not attack while holding a minigun in rapel
+			return GetScheduleOfType ( SCHED_HWGRUNT_REPEL );
 		}
 	}
 
@@ -769,6 +640,13 @@ Schedule_t *CMHWGrunt :: GetSchedule( void )
 // dead enemy
 			if ( HasConditions( bits_COND_ENEMY_DEAD ) )
 			{
+				// was attacking, spin down
+				if ( HasMemory( bits_MEMORY_HWGRUNT_SPINUP ) )
+				{
+					Forget( bits_MEMORY_HWGRUNT_SPINUP );
+					EMIT_SOUND(ENT(pev), CHAN_ITEM, "hassault/hw_spindown.wav", 0.8, ATTN_NORM);
+				}
+
 				// call base class, all code to handle dead enemies is centralized there.
 				return CMBaseMonster :: GetSchedule();
 			}
@@ -776,40 +654,76 @@ Schedule_t *CMHWGrunt :: GetSchedule( void )
 // new enemy
 			if ( HasConditions(bits_COND_NEW_ENEMY) )
 			{
-				if ( HasConditions ( bits_COND_CAN_RANGE_ATTACK1 ) )
+				// none of this should take place as CSquadMonster functions were completely stripped. -Giegue
+				/*
 				{
-					return GetScheduleOfType ( SCHED_HWGRUNT_SUPPRESS );
+					{
+						//!!!KELLY - the leader of a squad of grunts has just seen the player or a 
+						// monster and has made it the squad's enemy. You
+						// can check pev->flags for FL_CLIENT to determine whether this is the player
+						// or a monster. He's going to immediately start
+						// firing, though. If you'd like, we can make an alternate "first sight" 
+						// schedule where the leader plays a handsign anim
+						// that gives us enough time to hear a short sentence or spoken command
+						// before he starts pluggin away.
+						if (FOkToSpeak())// && RANDOM_LONG(0,1))
+						{
+							if ((m_hEnemy != NULL) && UTIL_IsPlayer(m_hEnemy))
+								// player
+								SENTENCEG_PlayRndSz( ENT(pev), "HG_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+
+							else if ((m_hEnemy != NULL) &&
+									(m_hEnemy->Classify() != CLASS_PLAYER_ALLY) && 
+									(m_hEnemy->Classify() != CLASS_HUMAN_PASSIVE) && 
+									(m_hEnemy->Classify() != CLASS_MACHINE))
+								// monster
+								SENTENCEG_PlayRndSz( ENT(pev), "HG_MONST", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+
+							JustSpoke();
+						}
+						
+						if ( HasConditions ( bits_COND_CAN_RANGE_ATTACK1 ) )
+						{
+							return GetScheduleOfType ( SCHED_GRUNT_SUPPRESS );
+						}
+						else
+						{
+							return GetScheduleOfType ( SCHED_GRUNT_ESTABLISH_LINE_OF_FIRE );
+						}
+					}
 				}
-				else
-				{
-					return GetScheduleOfType ( SCHED_HWGRUNT_ESTABLISH_LINE_OF_FIRE );
-				}
+				*/
 			}
-// no ammo
-			else if ( HasConditions ( bits_COND_NO_AMMO_LOADED ) )
+
+// damaged just a little
+			else if ( HasConditions( bits_COND_LIGHT_DAMAGE ) )
 			{
-				// Stop believing you have no ammo! -Giegue
-				ClearConditions( bits_COND_NO_AMMO_LOADED );
-				if ( HasConditions ( bits_COND_CAN_RANGE_ATTACK1 ) )
-				{
-					return GetScheduleOfType ( SCHED_HWGRUNT_SUPPRESS );
-				}
-				else
-				{
-					return GetScheduleOfType ( SCHED_HWGRUNT_ESTABLISH_LINE_OF_FIRE );
-				}
+				// we don't want the monster to take cover when hurt while attacking, clear this
+				ClearConditions( bits_COND_LIGHT_DAMAGE );
 			}
 // can shoot
 			else if ( HasConditions ( bits_COND_CAN_RANGE_ATTACK1 ) )
 			{
-				// Force attack!
-				return GetScheduleOfType ( SCHED_HWGRUNT_SUPPRESS );
+				// can fire? shoot. destroy without a care
+				return GetScheduleOfType( SCHED_RANGE_ATTACK1 );
 			}
 // can't see enemy
+			else if ( HasConditions( bits_COND_ENEMY_OCCLUDED ) )
+			{
+				// do sound
+				if ( HasMemory( bits_MEMORY_HWGRUNT_SPINUP ) )
+				{
+					Forget( bits_MEMORY_HWGRUNT_SPINUP );
+					EMIT_SOUND(ENT(pev), CHAN_ITEM, "hassault/hw_spindown.wav", 0.8, ATTN_NORM);
+				}
+
+				// then go kamikaze and chase the enemy
+				return GetScheduleOfType( SCHED_HWGRUNT_ESTABLISH_LINE_OF_FIRE );
+			}
 			
 			if ( HasConditions( bits_COND_SEE_ENEMY ) && !HasConditions ( bits_COND_CAN_RANGE_ATTACK1 ) )
 			{
-				return GetScheduleOfType ( SCHED_HWGRUNT_ESTABLISH_LINE_OF_FIRE );
+				return GetScheduleOfType( SCHED_HWGRUNT_ESTABLISH_LINE_OF_FIRE );
 			}
 		}
 	}
@@ -824,10 +738,24 @@ Schedule_t* CMHWGrunt :: GetScheduleOfType ( int Type )
 {
 	switch	( Type )
 	{
+	case SCHED_TAKE_COVER_FROM_ENEMY:
+		{
+			return &slHWGruntTakeCover[ 0 ];
+		}
+	case SCHED_HWGRUNT_TAKECOVER_FAILED:
+		{
+			if ( HasConditions( bits_COND_CAN_RANGE_ATTACK1 ) )
+			{
+				return GetScheduleOfType( SCHED_RANGE_ATTACK1 );
+			}
+
+			return GetScheduleOfType ( SCHED_FAIL );
+		}
+		break;
 	case SCHED_HWGRUNT_ELOF_FAIL:
 		{
-			// human grunt is unable to move to a position that allows him to attack the enemy.
-			return &slHWGruntELOFFail[ 0 ];
+			// unable to move to a position that allows attacking the enemy.
+			return GetScheduleOfType ( SCHED_TAKE_COVER_FROM_ENEMY );
 		}
 		break;
 	case SCHED_HWGRUNT_ESTABLISH_LINE_OF_FIRE:
@@ -837,34 +765,28 @@ Schedule_t* CMHWGrunt :: GetScheduleOfType ( int Type )
 		break;
 	case SCHED_RANGE_ATTACK1:
 		{
-			// no pistols yet, always do standing attack
-			return &slHWGruntRangeAttack1B[ 0 ];
-		}
-	case SCHED_COMBAT_FACE:
-		{
-			return &slHWGruntCombatFace[ 0 ];
+			// minigun should spin up first
+			if ( !HasMemory( bits_MEMORY_HWGRUNT_SPINUP ) )
+			{
+				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "hassault/hw_spinup.wav", 0.8, ATTN_NORM);
+				return &slHWGruntMinigunSpinUp[ 0 ];
+			}
+			else
+				return &slHWGruntMinigunAttack[ 0 ];
 		}
 	case SCHED_HWGRUNT_WAIT_FACE_ENEMY:
 		{
 			return &slHWGruntWaitInCover[ 0 ];
 		}
-	case SCHED_HWGRUNT_SWEEP:
-		{
-			return &slHWGruntSweep[ 0 ];
-		}
 	case SCHED_VICTORY_DANCE:
 		{
 			return &slHWGruntVictoryDance[ 0 ];
-		}
-	case SCHED_HWGRUNT_SUPPRESS:
-		{
-			return &slHWGruntSuppress[ 0 ];
 		}
 	case SCHED_FAIL:
 		{
 			if ( m_hEnemy != NULL )
 			{
-				// grunt has an enemy, so pick a different default fail schedule most likely to help recover.
+				// has an enemy, so pick a different default fail schedule most likely to help recover.
 				return &slHWGruntCombatFail[ 0 ];
 			}
 
@@ -876,15 +798,14 @@ Schedule_t* CMHWGrunt :: GetScheduleOfType ( int Type )
 				pev->velocity.z -= 32;
 			return &slHWGruntRepel[ 0 ];
 		}
-	case SCHED_HWGRUNT_REPEL_ATTACK:
-		{
-			if (pev->velocity.z > -128)
-				pev->velocity.z -= 32;
-			return &slHWGruntRepelAttack[ 0 ];
-		}
 	case SCHED_HWGRUNT_REPEL_LAND:
 		{
 			return &slHWGruntRepelLand[ 0 ];
+		}
+	case SCHED_CHASE_ENEMY_FAILED:
+		{
+			// add missing schedule from squadmonster.cpp
+			return &slHWGruntChaseEnemyFailed[ 0 ];
 		}
 	default:
 		{
@@ -892,3 +813,4 @@ Schedule_t* CMHWGrunt :: GetScheduleOfType ( int Type )
 		}
 	}
 }
+

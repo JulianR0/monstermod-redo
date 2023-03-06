@@ -138,42 +138,72 @@ void CMStukabat :: Precache()
 // AI Schedules Specific to this monster
 //=========================================================
 
-/* Chase */
+// Chase enemy
 Task_t tlStukabatChaseEnemy[] = 
 {
-	{ TASK_GET_PATH_TO_ENEMY,	(float)128		}, // is the 128 number really used?
-	{ TASK_SET_ACTIVITY,		(float)ACT_FLY	},
-	{ TASK_WAIT_FOR_MOVEMENT,	(float)0		},
-
+	{ TASK_SET_FAIL_SCHEDULE,	(float)SCHED_CHASE_ENEMY_FAILED	},
+	{ TASK_GET_PATH_TO_ENEMY,	(float)0						},
+	{ TASK_WALK_PATH,			(float)0						}, // flying monster, use walk
+	{ TASK_WAIT_FOR_MOVEMENT,	(float)0						},
 };
+
 Schedule_t slStukabatChaseEnemy[] =
 {
 	{ 
 		tlStukabatChaseEnemy,
 		ARRAYSIZE ( tlStukabatChaseEnemy ),
 		bits_COND_NEW_ENEMY			|
+		bits_COND_CAN_RANGE_ATTACK1	|
 		bits_COND_TASK_FAILED,
-		0,
-		"StukabatChaseEnemy"
+		0,		
+		"Stukabat Chase Enemy"
 	},
 };
 
-/* Fail */
+
+// Chase failed
+Task_t	tlStukabatChaseEnemyFailed[] =
+{
+	{ TASK_STOP_MOVING,				(float)0					},
+	{ TASK_WAIT,					(float)0.2					},
+	{ TASK_FIND_COVER_FROM_ENEMY,	(float)0					},
+	{ TASK_WALK_PATH,				(float)0					},
+	{ TASK_WAIT_FOR_MOVEMENT,		(float)0					},
+	{ TASK_REMEMBER,				(float)bits_MEMORY_INCOVER	},
+//	{ TASK_TURN_LEFT,				(float)179					},
+	{ TASK_FACE_ENEMY,				(float)0					},
+	{ TASK_WAIT,					(float)1					},
+};
+
+Schedule_t	slStukabatChaseEnemyFailed[] =
+{
+	{ 
+		tlStukabatChaseEnemyFailed,
+		ARRAYSIZE ( tlStukabatChaseEnemyFailed ), 
+		bits_COND_NEW_ENEMY			|
+		bits_COND_CAN_RANGE_ATTACK1,
+		0,
+		"Stukabat Chase Failed"
+	},
+};
+
+// Fail
 Task_t	tlStukabatFail[] =
 {
-	{ TASK_STOP_MOVING,			0					},
+	{ TASK_STOP_MOVING,			(float)0			},
 	{ TASK_SET_ACTIVITY,		(float)ACT_HOVER	},
 	{ TASK_WAIT,				(float)2			},
 	{ TASK_WAIT_PVS,			(float)0			},
 };
+
 Schedule_t	slStukabatFail[] =
 {
 	{
 		tlStukabatFail,
 		ARRAYSIZE ( tlStukabatFail ),
+		bits_COND_CAN_ATTACK,
 		0,
-		0,
-		"StukabatFail"
+		"Stukabat Fail"
 	},
 };
 
@@ -181,6 +211,7 @@ Schedule_t	slStukabatFail[] =
 DEFINE_CUSTOM_SCHEDULES( CMStukabat )
 {
 	slStukabatChaseEnemy,
+	slStukabatChaseEnemyFailed,
 	slStukabatFail,
 };
 
@@ -198,9 +229,8 @@ void CMStukabat :: SetActivity ( Activity NewActivity )
 	{
 	case ACT_IDLE:
 		return; // refuse
+	case ACT_HOVER:
 	case ACT_FLY:
-		iSequence = LookupActivity ( NewActivity );
-		break;
 	default:
 		iSequence = LookupActivity ( NewActivity );
 		break;
@@ -238,6 +268,8 @@ Schedule_t* CMStukabat :: GetScheduleOfType ( int Type )
 	{
 	case SCHED_CHASE_ENEMY:
 		return slStukabatChaseEnemy;
+	case SCHED_CHASE_ENEMY_FAILED:
+		return slStukabatChaseEnemyFailed;
 	case SCHED_FAIL:
 		return slStukabatFail;
 	}

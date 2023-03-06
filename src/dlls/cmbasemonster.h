@@ -104,7 +104,8 @@ public:
 	
 	string_t			m_szMonsterName; // Monster name to display on HUD
 	int					m_iClassifyOverride; // Overriden classification for this monster
-	
+	float				m_flLastYawTime;
+
 	void KeyValue( KeyValueData *pkvd );
 
 // monster use function
@@ -1667,8 +1668,6 @@ public:
 	void Minigun(void);
 	
 	CUSTOM_SCHEDULES
-
-	float m_flMinigunSpinTime;
 };
 
 //=========================================================
