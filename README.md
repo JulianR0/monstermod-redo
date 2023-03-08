@@ -47,7 +47,7 @@ Additional configuration files are included in the release files, each explainin
 
 ## Build Instructions
 
-*TODO: Add build instructions.*
+The [wiki](https://github.com/JulianR0/monstermod-redo/wiki) contains instructions on how to compile MonsterMod by yourself.
 
 ## MonsterMod and ReHLDS
 
