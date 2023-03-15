@@ -163,7 +163,11 @@ int LookupSequence( void *pmodel, const char *label )
 
 	for (int i = 0; i < pstudiohdr->numseq; i++)
 	{
+#if defined (_WIN32)
+		if (_stricmp( pseqdesc[i].label, label ) == 0)
+#else
 		if (stricmp( pseqdesc[i].label, label ) == 0)
+#endif
 			return i;
 	}
 
