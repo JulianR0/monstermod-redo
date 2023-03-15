@@ -424,6 +424,16 @@ void check_player_dead( edict_t *pPlayer )
 			// Suicide?
 			if ( pAttacker == pPlayer )
 				sprintf( szMessage, "* %s commited suicide.\n", szPlayerName );
+			// Player killed by another player
+			else if ( UTIL_IsPlayer( pAttacker ) )
+			{
+				// Get attacker name
+				char szAttackerName[33];
+				strcpy(szAttackerName, STRING(pAttacker->v.netname));
+
+				// Print a very basic death message until we can detect teamkills
+				sprintf( szMessage, "* %s was killed by %s.\n", szPlayerName, szAttackerName );
+			}
 			// An entity killed this player.
 			else if ( ENTINDEX( pAttacker ) > 0 )
 			{
