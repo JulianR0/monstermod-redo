@@ -131,6 +131,8 @@ void CMShockRoach::LeapTouch(edict_t *pOther)
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 			pMonster->TakeDamage( pev, pev, GetDamageAmount(), DMG_SLASH );
 		}
+		else
+			UTIL_TakeDamageExternal( pOther, pev, pev, GetDamageAmount(), DMG_SLASH );
 	}
 	
 	SetTouch(NULL);

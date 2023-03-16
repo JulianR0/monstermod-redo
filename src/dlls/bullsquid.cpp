@@ -113,7 +113,7 @@ void CSquidSpit::Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity
 
 	pSpit->SetThink ( &CSquidSpit::Animate );
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;
-   pSpit->SetTouch ( &CSquidSpit::SpitTouch );
+	pSpit->SetTouch ( &CSquidSpit::SpitTouch );
 }
 
 void CSquidSpit :: SpitTouch ( edict_t *pOther )
@@ -166,6 +166,8 @@ void CSquidSpit :: SpitTouch ( edict_t *pOther )
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 			pMonster->TakeDamage ( pev, pev, gSkillData.bullsquidDmgSpit, DMG_GENERIC );
 		}
+		else
+			UTIL_TakeDamageExternal( pOther, pev, pev, gSkillData.bullsquidDmgSpit, DMG_GENERIC );
 	}
 
 	SetThink ( &CSquidSpit::SUB_Remove );

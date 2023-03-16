@@ -142,7 +142,9 @@ void CMShock::Touch(edict_t *pOther)
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 			pMonster->TraceAttack( pevAttacker, pev->dmg, pev->velocity.Normalize(), &tr, damageType );
 		}
-		
+		else
+			UTIL_TraceAttack( pOther, pevAttacker, pev->dmg, pev->velocity.Normalize(), &tr, damageType );
+
 		ApplyMultiDamage(pev, pevAttacker);
 	}
 

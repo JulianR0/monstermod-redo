@@ -524,7 +524,8 @@ void CMHoundeye :: SonicAttack ( void )
 	{
 		if ( pEntity->v.takedamage != DAMAGE_NO )
 		{
-			if ( strcmp(STRING(pEntity->v.model), "models/houndeye.mdl") != 0 )
+			// don't compare by model because a mapper might change it
+			if ( strcmp(STRING(pEntity->v.classname), "monster_houndeye") != 0 )
 			{// houndeyes don't hurt other houndeyes with their attack
 
 				// houndeyes do FULL damage if the ent in question is visible. Half damage otherwise.
@@ -565,6 +566,8 @@ void CMHoundeye :: SonicAttack ( void )
 						CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 						pMonster->TakeDamage( pev, pev, flAdjustedDamage, DMG_SONIC | DMG_ALWAYSGIB );
 					}
+					else
+						UTIL_TakeDamageExternal( pEntity, pev, pev, flAdjustedDamage, DMG_SONIC | DMG_ALWAYSGIB );
 				}
 			}
 		}

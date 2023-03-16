@@ -1185,6 +1185,8 @@ void CMControllerHeadBall :: HuntThink( void  )
 				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(tr.pHit));
 				pMonster->TraceAttack( VARS(m_hOwner), gSkillData.controllerDmgZap, pev->velocity, &tr, DMG_SHOCK );
 			}
+			else
+				UTIL_TraceAttack( tr.pHit, VARS(m_hOwner), gSkillData.controllerDmgZap, pev->velocity, &tr, DMG_SHOCK );
 
 			ApplyMultiDamage( pev, VARS(m_hOwner) );
 		}
@@ -1361,6 +1363,8 @@ void CMControllerZapBall::ExplodeTouch( edict_t *pOther )
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 			pMonster->TraceAttack(pevOwner, gSkillData.controllerDmgBall, pev->velocity.Normalize(), &tr, DMG_ENERGYBEAM ); 
 		}
+		else
+			UTIL_TraceAttack(pOther, pevOwner, gSkillData.controllerDmgBall, pev->velocity.Normalize(), &tr, DMG_ENERGYBEAM );
 		ApplyMultiDamage( pevOwner, pevOwner );
 
 		UTIL_EmitAmbientSound( ENT(pev), tr.vecEndPos, "weapons/electro4.wav", 0.3, ATTN_NORM, 0, RANDOM_LONG( 90, 99 ) );

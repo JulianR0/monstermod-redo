@@ -97,7 +97,9 @@ void CPitdroneSpike::SpikeTouch(edict_t *pOther)
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 			pMonster->TakeDamage( pev, pevOwner, gSkillData.pitdroneDmgSpit, DMG_GENERIC | DMG_NEVERGIB );
 		}
-		
+		else
+			UTIL_TakeDamageExternal( pOther, pev, pevOwner, gSkillData.pitdroneDmgSpit, DMG_GENERIC | DMG_NEVERGIB );
+
 		if (RANDOM_LONG(0,1))
 			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/xbow_hitbod1.wav", 1, ATTN_NORM, 0, iPitch);
 		else

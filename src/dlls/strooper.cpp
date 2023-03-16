@@ -330,6 +330,8 @@ void CMStrooper::HandleAnimEvent(MonsterEvent_t *pEvent)
 				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pHurt));
 				pMonster->TakeDamage( pev, pev, gSkillData.strooperDmgKick, DMG_CLUB );
 			}
+			else
+				UTIL_TakeDamageExternal( pHurt, pev, pev, gSkillData.strooperDmgKick, DMG_CLUB );
 		}
 
 		m_fRightClaw = !m_fRightClaw;

@@ -130,13 +130,23 @@ void CStomp::Think( void )
 	
 	if ( tr.pHit && tr.pHit != pev->owner )
 	{
-		CMBaseEntity *pEntity = CMBaseEntity::Instance( tr.pHit );
+		edict_t *pEntity = tr.pHit;
 		entvars_t *pevOwner = pev;
 		if ( pev->owner )
 			pevOwner = VARS(pev->owner);
 
-		if ( pEntity )
-			pEntity->TakeDamage( pev, pevOwner, pev->dmg, DMG_SONIC );
+		if (pEntity->v.takedamage)
+		{
+			if (UTIL_IsPlayer(pEntity))
+				UTIL_TakeDamage(pEntity, pev, pevOwner, pev->dmg, DMG_SONIC);
+			else if (pEntity->v.euser4 != NULL)
+			{
+				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
+				pMonster->TakeDamage(pev, pevOwner, pev->dmg, DMG_SONIC);
+			}
+			else
+				UTIL_TakeDamageExternal(pEntity, pev, pevOwner, pev->dmg, DMG_SONIC);
+		}
 	}
 	
 	// Accelerate the effect
@@ -564,6 +574,8 @@ void CMGargantua :: FlameDamage( Vector vecStart, Vector vecEnd, entvars_t *pevI
 						CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 						pMonster->TraceAttack( pevInflictor, flAdjustedDamage, (tr.vecEndPos - vecSrc).Normalize(), &tr, bitsDamageType );
 					}
+					else
+						UTIL_TraceAttack( pEntity, pevInflictor, flAdjustedDamage, (tr.vecEndPos - vecSrc).Normalize(), &tr, bitsDamageType );
 					ApplyMultiDamage( pevInflictor, pevAttacker );
 				}
 				else
@@ -575,6 +587,8 @@ void CMGargantua :: FlameDamage( Vector vecStart, Vector vecEnd, entvars_t *pevI
 						CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 						pMonster->TakeDamage( pevInflictor, pevAttacker, flAdjustedDamage, bitsDamageType );
 					}
+					else
+						UTIL_TakeDamageExternal( pEntity, pevInflictor, pevAttacker, flAdjustedDamage, bitsDamageType );
 				}
 			}
 		}
@@ -976,6 +990,8 @@ edict_t *CMGargantua::GargantuaCheckTraceHullAttack(float flDist, int iDamage, i
 				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(tr.pHit));
 				pMonster->TakeDamage( pev, pev, iDamage, iDmgType );
 			}
+			else
+				UTIL_TakeDamageExternal( tr.pHit, pev, pev, iDamage, iDmgType );
 		}
 
 		return tr.pHit;
@@ -1791,6 +1807,8 @@ edict_t *CMBabyGargantua::BabyGargCheckTraceHullAttack(float flDist, int iDamage
 				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(tr.pHit));
 				pMonster->TakeDamage( pev, pev, iDamage, iDmgType );
 			}
+			else
+				UTIL_TakeDamageExternal( tr.pHit, pev, pev, iDamage, iDmgType );
 		}
 	
 		return tr.pHit;

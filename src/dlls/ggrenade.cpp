@@ -227,13 +227,15 @@ void CMGrenade::BounceTouch( edict_t *pOther )
 			TraceResult tr = UTIL_GetGlobalTrace( );
 			ClearMultiDamage( );
 
-         if (UTIL_IsPlayer(pOther))
-				UTIL_TraceAttack(pOther, pevOwner, 1, gpGlobals->v_forward, &tr, DMG_CLUB ); 
-         else if (pOther->v.euser4 != NULL)
-         {
+			if (UTIL_IsPlayer(pOther))
+				UTIL_TraceAttack(pOther, pevOwner, 1, gpGlobals->v_forward, &tr, DMG_CLUB );
+			else if (pOther->v.euser4 != NULL)
+			{
 				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
-				pMonster->TraceAttack(pevOwner, 1, gpGlobals->v_forward, &tr, DMG_CLUB ); 
-         }
+				pMonster->TraceAttack(pevOwner, 1, gpGlobals->v_forward, &tr, DMG_CLUB );
+			}
+			else
+				UTIL_TraceAttack(pOther, pevOwner, 1, gpGlobals->v_forward, &tr, DMG_CLUB); // lmao
 
 			ApplyMultiDamage( pev, pevOwner);
 		}
@@ -277,7 +279,6 @@ void CMGrenade::BounceTouch( edict_t *pOther )
 		pev->framerate = 1;
 	else if (pev->framerate < 0.5)
 		pev->framerate = 0;
-
 }
 
 

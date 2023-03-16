@@ -737,6 +737,8 @@ void CMISlave :: ZapBeam( int side )
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 			pMonster->TraceAttack( pev, gSkillData.slaveDmgZap, vecAim, &tr, DMG_SHOCK );
 		}
+		else
+			UTIL_TraceAttack( pEntity, pev, gSkillData.slaveDmgZap, vecAim, &tr, DMG_SHOCK );
 	}
 
 	UTIL_EmitAmbientSound( ENT(pev), tr.vecEndPos, "weapons/electro4.wav", 0.5, ATTN_NORM, 0, RANDOM_LONG( 140, 160 ) );

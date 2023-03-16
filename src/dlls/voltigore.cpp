@@ -127,6 +127,8 @@ void CMVoltigoreEnergyBall::BallTouch(edict_t *pOther)
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 			pMonster->TakeDamage( pev, VARS( pev->owner ), gSkillData.voltigoreDmgBeam, DMG_SHOCK|DMG_ALWAYSGIB );
 		}
+		else
+			UTIL_TakeDamageExternal( pOther, pev, VARS(pev->owner), gSkillData.voltigoreDmgBeam, DMG_SHOCK | DMG_ALWAYSGIB );
 	}
 	pev->velocity = Vector(0,0,0);
 
@@ -154,6 +156,8 @@ void CMVoltigoreEnergyBall::FlyThink(void)
 					CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 					pMonster->TakeDamage( pev, pev, gSkillData.voltigoreDmgBeam/5, DMG_SHOCK );
 				}
+				else
+					UTIL_TakeDamageExternal( pEntity, pev, pev, gSkillData.voltigoreDmgBeam / 5, DMG_SHOCK );
 			}
 		}
 		
@@ -387,7 +391,7 @@ BOOL CMVoltigore::CheckRangeAttack1(float flDot, float flDist)
 {
 	if (IsMoving() && flDist >= 512)
 	{
-		// voltigore will far too far behind if he stops running to spit at this distance from the enemy.
+	// voltigore will far too far behind if he stops running to spit at this distance from the enemy.
 		return FALSE;
 	}
 
@@ -1020,6 +1024,8 @@ void CMVoltigore::GibBeamDamage()
 						CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 						pMonster->TakeDamage( pev, pev, flAdjustedDamage, DMG_SHOCK );
 					}
+					else
+						UTIL_TakeDamageExternal( pEntity, pev, pev, flAdjustedDamage, DMG_SHOCK );
 				}
 			}
 		}
