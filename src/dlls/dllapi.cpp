@@ -162,6 +162,7 @@ monster_type_t monster_types[]=
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
 	"monstermaker", FALSE, // Extra entities
+	"ambient_music", FALSE,
 	"", FALSE
 };
 
@@ -705,6 +706,7 @@ edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawn
 		case 29: monsters[monster_index].pMonster = CreateClassPtr((CMStukabat *)NULL); break;
 		// Extra entities
 		case 32: monsters[monster_index].pMonster = CreateClassPtr((CMMonsterMaker *)NULL); break;
+		case 33: monsters[monster_index].pMonster = CreateClassPtr((CMAmbientMusic *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -786,7 +788,7 @@ void check_respawn(void)
 			if (spawn_monster(monster_type, origin, angles, spawnflags, keyvalue) == NULL)
 			{
 				// spawn_monster failed
-				ALERT( at_error, "Failed to spawn %s at origin %f %f %f\n", monster_types[monster_type].name, origin.x, origin.y, origin.z );
+				ALERT( at_error, "[MONSTER] Failed to spawn %s at origin %f %f %f\n", monster_types[monster_type].name, origin.x, origin.y, origin.z );
 			}
 		}
 	}
@@ -1416,6 +1418,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	
 	// Extra entities
 	CMMonsterMaker monstermaker; // 32
+	CMAmbientMusic ambientmusic;
 	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1465,6 +1468,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 28: rgrunt.Precache(); break;
 				case 29: stukabat.Precache(); break;
 				case 32: monstermaker.Precache(); break;
+				//case 33: ambientmusic.Precache(); break;
 			}
 		}
 	}

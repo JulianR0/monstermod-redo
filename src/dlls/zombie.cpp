@@ -245,7 +245,7 @@ void CMZombie :: HandleAnimEvent( MonsterEvent_t *pEvent )
 void CMZombie :: Spawn()
 {
 	Precache( );
-
+	
 	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/zombie.mdl"));
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 

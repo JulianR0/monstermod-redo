@@ -13,6 +13,7 @@
 #include "meta_api.h"
 
 #include "monster_plugin.h"
+#include "ripent.h"
 
 extern cvar_t *dllapi_log;
 
@@ -117,6 +118,21 @@ void scan_monster_cfg(FILE *fp)
 									{
 										// error.exe
 										LOG_MESSAGE(PLID, "ERROR: can't add monstermaker, reached MAX_MONSTERS!");
+										badent = TRUE;
+									}
+									else
+									{
+										monster_spawnpoint[monster_spawn_count].monster = mIndex;
+										monster_types[mIndex].need_to_precache = TRUE;
+										monster = TRUE;
+									}
+								}
+								else if (strcmp(monster_types[mIndex].name, "ambient_music") == 0)
+								{
+									// TODO - Extra entities should go towards a separate counter like nodes
+									if (monster_spawn_count == MAX_MONSTERS)
+									{
+										LOG_MESSAGE(PLID, "ERROR: can't add ambient_music, reached MAX_MONSTERS!");
 										badent = TRUE;
 									}
 									else
@@ -260,7 +276,7 @@ void scan_monster_cfg(FILE *fp)
 							{
 								if (monster)
 								{
-									// only applicable for monstermaket entity
+									// only applicable for monstermaker entity
 									if (strcmp(data[kvd_index-1].value, "monstermaker") == 0)
 									{
 										// precache the custom model
@@ -291,6 +307,22 @@ void scan_monster_cfg(FILE *fp)
 										}
 
 										// pass the keyvalue to the entity
+										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
+										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].value, data[i].value);
+									}
+								}
+							}
+							else if (strcmp(data[i].key, "message") == 0)
+							{
+								if (monster)
+								{
+									// only applicable for ambient_music
+									if (strcmp(data[kvd_index - 1].value, "ambient_music") == 0)
+									{
+										// precache the sound here
+										PRECACHE_GENERIC(data[i].value);
+
+										// the entity will need the keyvalue
 										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
 										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].value, data[i].value);
 									}
@@ -374,36 +406,45 @@ void scan_monster_cfg(FILE *fp)
 bool process_monster_cfg(void)
 {
 	char game_dir[256];
-	char filename[256];
+	char BSPfilename[256];
+	char CFGfilename[256];
 	FILE *fp = NULL;
 
 	monster_spawn_count = 0;
+	node_spawn_count = 0;
 
 	// find the directory name of the currently running MOD...
 	(*g_engfuncs.pfnGetGameDir)(game_dir);
 
-	strcpy(filename, game_dir);
+	strcpy(CFGfilename, game_dir);
 #ifdef __linux__
-	strcat(filename, "/maps/");
+	strcat(CFGfilename, "/maps/");
 #else
-	strcat(filename, "\\maps\\");
+	strcat(CFGfilename, "\\maps\\");
 #endif
-	strcat(filename, STRING(gpGlobals->mapname));
-	strcat(filename, "_monster.cfg");
+	strcat(CFGfilename, STRING(gpGlobals->mapname));
+	strcpy(BSPfilename, CFGfilename);
+	
+	strcat(BSPfilename, ".bsp");
+	strcat(CFGfilename, "_monster.cfg");
+
+	LoadBSPFile(BSPfilename);
+	ParseEntities();
+	LOG_MESSAGE(PLID, "It works! LoadBSPFile: Parsed '%i' entities", num_entities);
 
 	// check if the map specific filename exists...
-	if (access(filename, 0) == 0)
+	if (access(CFGfilename, 0) == 0)
 	{
 		if (dllapi_log->value)
 		{
 			//META_CONS("[MONSTER] Processing config file=%s", filename);
-			LOG_MESSAGE(PLID, "Processing config file=%s", filename);
+			LOG_MESSAGE(PLID, "Processing config file '%s'", CFGfilename);
 		}
 
-		if ((fp = fopen(filename, "r")) == NULL)
+		if ((fp = fopen(CFGfilename, "r")) == NULL)
 		{
 			//META_CONS("[MONSTER] ERROR: Could not open \"%s\"!", filename);
-			LOG_MESSAGE(PLID, "ERROR: Could not open \"%s\" file!", filename);
+			LOG_MESSAGE(PLID, "ERROR: Could not open \"%s\" file!", CFGfilename);
 			return TRUE; // error
 		}
 

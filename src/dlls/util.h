@@ -400,6 +400,9 @@ extern DLL_GLOBAL const Vector g_vecZero;
 #define SVC_ROOMTYPE		37
 #define	SVC_HLTV			50
 
+// Added to stuff text to the clients
+#define SVC_STUFFTEXT		9			// [string] stuffed into client's console buffer
+
 // prxoy director stuff
 #define DRC_EVENT			3	// informs the dircetor about ann important game event
 

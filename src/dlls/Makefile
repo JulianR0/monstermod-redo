@@ -38,9 +38,11 @@ OBJ = \
 	monstermaker.o \
 	monsters.o \
 	monsterstate.o \
+	music.o \
 	nodes.o \
 	otis.o \
 	pitdrone.o \
+	ripent.o \
 	rgrunt.o \
 	scientist.o \
 	shock.o \

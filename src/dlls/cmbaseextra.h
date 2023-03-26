@@ -33,4 +33,18 @@ public:
 	BOOL m_fFadeChildren;// should we make the children fadeout?
 };
 
+//=========================================================
+// Ambient Music - Plays an mp3 music file to players.
+//=========================================================
+class CMAmbientMusic : public CMBaseMonster
+{
+public:
+	void Spawn(void);
+	//void Precache(void); // accessed before entvars are valid, manual precache in monster_config.cpp
+	void KeyValue(KeyValueData* pkvd);
+	void EXPORT MusicUse(edict_t *pActivator, edict_t *pCaller, USE_TYPE useType, float value);
+
+	BOOL m_fPlaying; // music is active
+};
+
 #endif // BASEEXTRA_H
