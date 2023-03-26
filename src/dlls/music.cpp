@@ -34,9 +34,9 @@ void CMAmbientMusic::MusicUse(edict_t *pActivator, edict_t *pCaller, USE_TYPE us
 		return;
 
 	if (pev->spawnflags & SF_MUSIC_ACTIVATOR_ONLY)
-		MESSAGE_BEGIN(MSG_ALL, SVC_STUFFTEXT);
-	else
 		MESSAGE_BEGIN(MSG_ONE, SVC_STUFFTEXT, NULL, pActivator);
+	else
+		MESSAGE_BEGIN(MSG_ALL, SVC_STUFFTEXT);
 
 	// triggering off
 	if (useType == USE_OFF || m_fPlaying && useType != USE_ON)
