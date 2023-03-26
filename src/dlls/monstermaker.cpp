@@ -109,6 +109,7 @@ void CMMonsterMaker :: Spawn( )
 	m_fFadeChildren = TRUE;
 	
 	m_flGround = 0;
+	pev->classname = MAKE_STRING("monstermaker");
 }
 
 void CMMonsterMaker :: Precache( void )
@@ -169,7 +170,7 @@ void CMMonsterMaker::MakeMonster( void )
 	pent = spawn_monster(m_iMonsterIndex, pev->origin, pev->angles, createSF, keyvalue);
 	if ( pent == NULL )
 	{
-		ALERT ( at_console, "NULL Ent in MonsterMaker!\n" );
+		ALERT ( at_console, "[MONSTER] NULL Ent in MonsterMaker!\n" );
 		return;
 	}
 	

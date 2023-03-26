@@ -111,11 +111,7 @@ void CMBaseEntity :: KeyValue( KeyValueData* pkvd )
 	if ( !pev || !pkvd )
 		return;
 
-	if ( pkvd->fHandled )
-	{
-		// only handled data contain readable strings
-		EntvarsKeyvalue( pev, pkvd );
-	}
+	EntvarsKeyvalue( pev, pkvd );
 }
 
 // give health

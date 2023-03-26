@@ -2626,11 +2626,6 @@ void CMBaseMonster :: KeyValue( KeyValueData *pkvd )
 		m_iClassifyOverride = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
-	else if (FStrEq(pkvd->szKeyName, "model"))
-	{
-		pev->model = ALLOC_STRING( pkvd->szValue );
-		pkvd->fHandled = TRUE;
-	}
 	else
 	{
 		CMBaseToggle::KeyValue( pkvd );
