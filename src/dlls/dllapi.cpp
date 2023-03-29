@@ -724,6 +724,9 @@ edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawn
 	monster_pent->v.origin = origin;
 	monster_pent->v.angles = angles;
 	
+	// Pass spawnflags first if no keyvalue data exists for it
+	monster_pent->v.spawnflags = spawnflags;
+	
 	// Keyvalue data
 	if (keyvalue != NULL)
 	{
@@ -737,8 +740,6 @@ edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawn
 			}
 		}
 	}
-	
-	monster_pent->v.spawnflags = spawnflags;
 	
 	monsters[monster_index].pMonster->Spawn();
 	

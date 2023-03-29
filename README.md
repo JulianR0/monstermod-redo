@@ -165,8 +165,6 @@ There are probably more issues that aren't listed here, I'll attempt to fix them
 Attempting to recreate everything in one go is a daunting task.
 Let it be known that the original 2002 source code will NOT compile on today's compilers, and does NOT contain all the necessary files for compilation. The preliminary was to rewrite and provide as many files or lines of code to ensure it can compile again, and be usable on an actual HLDS installation.
 
-The original Visual C++ 6.0 DSP file exists in the repository but neither the file nor the code has been updated to newer formats. Don't expect it to compile on modern Visual Studio versions.
-
 Current milestones are separated by "Tiers", which are as follows:
 
 ### Tier 0
@@ -206,6 +204,7 @@ Current milestones are separated by "Tiers", which are as follows:
 - Add configurations to change AI behaviour.
 - Optimize code and enhance the AI.
 - Create "tool" entities for easier map customization.
+- Do more fixes not covered in Tier 4.
 
 
 What will the future hold after all Tiers has been completed?

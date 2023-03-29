@@ -23,7 +23,6 @@
 
 int			entdatasize;
 char		dentdata[MAX_MAP_ENTSTRING];
-int			dentdata_checksum;
 
 int			num_entities;
 entity_t	entities[MAX_MAP_ENTITIES];
@@ -57,8 +56,14 @@ LoadBSPFile
 */
 void	LoadBSPFile(char *filename)
 {
-	int			i;
-
+	//int			i;
+	
+	// reset these values
+	entdatasize = 0;
+	num_entities = 0;
+	memset(dentdata, 0, sizeof(dentdata));
+	memset(entities, 0, sizeof(entities));
+	
 	//
 	// load the file header
 	//
