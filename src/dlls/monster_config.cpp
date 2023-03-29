@@ -452,7 +452,13 @@ void scan_monster_bsp(void)
 							break;
 						}
 					}
-					UTIL_Remove( existsGAME ); // get rid of the temporary entity
+					
+					// use REMOVE_ENTITY instead of UTIL_Remove!
+					// UTIL_Remove sets FL_KILLME to remove the entity on the next frame, that won't do.
+					// REMOVE_ENTITY instead removes it instantly, which is needed to prevent server crashes
+					// due to "ED_Alloc: no free edicts" error.
+					
+					REMOVE_ENTITY( existsGAME ); // get rid of the temporary entity
 					use_monstermod = false; // use game entity
 				}
 			}
