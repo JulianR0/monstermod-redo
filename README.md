@@ -194,7 +194,7 @@ Current milestones are separated by "Tiers", which are as follows:
 
 ### Tier 4
 
-- Implement reading entities within the BSP itself.
+- Implement reading entities within the BSP itself. **[DONE]**
 - Add build instructions. **[DONE]**
 - Custom sound support, along with sentences.
 - Fix all pending bugs.
