@@ -14,9 +14,9 @@
 #include "extdll.h"
 
 // upper design bounds
-
-#define	MAX_MAP_ENTITIES	1024
-#define	MAX_MAP_ENTSTRING	(128*1024)
+// some ents are info holders for compiler tools (also -num_edicts is customizable)
+#define	MAX_MAP_ENTITIES	2048
+#define	MAX_MAP_ENTSTRING	(128*2048)
 
 // key / value pair sizes
 

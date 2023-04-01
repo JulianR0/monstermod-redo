@@ -104,14 +104,14 @@ epair_t *ParseEpair(void)
 
 	if (strlen(token) >= MAX_KEY - 1)
 	{
-		LOG_MESSAGE(PLID, "ParseEpar: token too long [strlen(token) >= MAX_KEY - 1]");
+		LOG_MESSAGE(PLID, "ParseEpar: token key too long");
 		return NULL;
 	}
 	e->key = copystring(token);
 	GetToken(false);
 	if (strlen(token) >= MAX_VALUE - 1)
 	{
-		LOG_MESSAGE(PLID, "ParseEpar: token too long [strlen(token) >= MAX_VALUE - 1]");
+		LOG_MESSAGE(PLID, "ParseEpar: token value too long");
 		return NULL;
 	}
 	e->value = copystring(token);
@@ -315,7 +315,7 @@ bool EndOfScript(bool crossline)
 {
 	if (!crossline)
 	{
-		LOG_MESSAGE(PLID, "Line %i is incomplete\n", scriptline);
+		LOG_MESSAGE(PLID, "Line %i is incomplete", scriptline);
 		return false;
 	}
 
@@ -382,7 +382,7 @@ skipspace:
 		{
 			if (!crossline)
 			{
-				LOG_MESSAGE(PLID, "Line %i is incomplete\n", scriptline);
+				LOG_MESSAGE(PLID, "Line %i is incomplete", scriptline);
 				return false;
 			}
 			scriptline = script->line++;
@@ -397,7 +397,7 @@ skipspace:
 	{
 		if (!crossline)
 		{
-			LOG_MESSAGE(PLID, "Line %i is incomplete\n", scriptline);
+			LOG_MESSAGE(PLID, "Line %i is incomplete", scriptline);
 			return false;
 		}
 		while (*script->script_p++ != '\n')
@@ -421,7 +421,7 @@ skipspace:
 			if (script->script_p == script->end_p)
 				break;
 			if (token_p == &token[MAXTOKEN])
-				LOG_MESSAGE(PLID, "Token too large on line %i\n", scriptline);
+				LOG_MESSAGE(PLID, "Token too large on line %i", scriptline);
 		}
 		script->script_p++;
 	}
@@ -432,7 +432,7 @@ skipspace:
 			if (script->script_p == script->end_p)
 				break;
 			if (token_p == &token[MAXTOKEN])
-				LOG_MESSAGE(PLID, "Token too large on line %i\n", scriptline);
+				LOG_MESSAGE(PLID, "Token too large on line %i", scriptline);
 		}
 
 	*token_p = 0;
