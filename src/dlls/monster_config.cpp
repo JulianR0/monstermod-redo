@@ -433,6 +433,14 @@ void scan_monster_bsp(void)
 		// examine all keys
 		while (kv_pair != NULL)
 		{
+			// entities cannot be this big!
+			if (kvd_index >= MAX_KEYVALUES)
+			{
+				LOG_MESSAGE(PLID, "WARNING: can't process entity #%i - too many keyvalues", ent);
+				use_monstermod = false;
+				break;
+			}
+
 			if (strcmp(kv_pair->key, "classname") == 0)
 			{
 				// the entity we are trying to spawn could already exist within the game

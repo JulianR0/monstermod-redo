@@ -1,5 +1,9 @@
+Release/
+Debug/
 msgs/
 opt.*/
 debug.*/
 *.o
 *.so
+*.suo
+*.sdf
