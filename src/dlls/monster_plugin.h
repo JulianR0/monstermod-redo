@@ -8,7 +8,7 @@
 typedef struct
 {
 	char key[33];
-	char value[33];
+	char value[481];
 } pKVD;
 
 #define MAX_KEYVALUES 32
