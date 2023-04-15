@@ -831,7 +831,7 @@ int CMBaseMonster :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker
 {
 	float	flTake;
 	Vector	vecDir;
-	
+
 	if (!pev->takedamage)
 		return 0;
 

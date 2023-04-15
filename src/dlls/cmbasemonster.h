@@ -1333,6 +1333,11 @@ public:
 	void DeathSound(void);
 	void PainSound(void);
 	void IdleSound(void);
+
+	void SetActivity(Activity NewActivity);
+	Schedule_t *GetScheduleOfType( int Type );
+
+	CUSTOM_SCHEDULES;
 };
 
 //=========================================================

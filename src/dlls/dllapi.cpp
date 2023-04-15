@@ -306,7 +306,7 @@ void check_monster_hurt(edict_t *pAttacker)
 						pent->v.health = pent->v.fuser4;
 
 						ClearMultiDamage( );
-						monsters[index].pMonster->TraceAttack( VARS(pAttacker), damage, (tr.vecEndPos - vecSrc).Normalize( ), &tr, DMG_BULLET );
+						monsters[index].pMonster->TraceAttack( VARS(pAttacker), damage, (tr.vecEndPos - vecSrc).Normalize( ), &tr, DMG_BULLET|DMG_NEVERGIB );
 						ApplyMultiDamage( VARS(pAttacker), VARS(pAttacker) );
 					}
 

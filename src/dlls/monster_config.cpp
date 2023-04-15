@@ -411,7 +411,7 @@ void scan_monster_bsp(void)
 	pKVD data[MAX_KEYVALUES];
 	
 	int kvd_index;
-	int duplicate_ent;
+	bool use_monstermod_explicit;
 	bool use_monstermod;
 	
 	int classname_kvdI, mIndex;
@@ -424,7 +424,7 @@ void scan_monster_bsp(void)
 		kv_pair = entities[ent].epairs;
 		
 		kvd_index = 0;
-		duplicate_ent = 0;
+		use_monstermod_explicit = false;
 		use_monstermod = true;
 		
 		classname_kvdI = 0;
@@ -438,6 +438,7 @@ void scan_monster_bsp(void)
 			{
 				LOG_MESSAGE(PLID, "WARNING: can't process entity #%i - too many keyvalues", ent);
 				use_monstermod = false;
+				use_monstermod_explicit = false;
 				break;
 			}
 
@@ -450,32 +451,21 @@ void scan_monster_bsp(void)
 				edict_t *existsGAME = CREATE_NAMED_ENTITY( MAKE_STRING( kv_pair->value ) );
 				if ( !FNullEnt( existsGAME ) )
 				{
-					for (mIndex = 0; monster_types[mIndex].name[0]; mIndex++)
-					{
-						if (strcmp(kv_pair->value, monster_types[mIndex].name) == 0)
-						{
-							// the entity exists BOTH in the game and monstermod!
-							// keep track of it
-							duplicate_ent = ent;
-							break;
-						}
-					}
-					
 					// use REMOVE_ENTITY instead of UTIL_Remove!
 					// UTIL_Remove sets FL_KILLME to remove the entity on the next frame, that won't do.
 					// REMOVE_ENTITY instead removes it instantly, which is needed to prevent server crashes
 					// due to "ED_Alloc: no free edicts" error.
 					
 					REMOVE_ENTITY( existsGAME ); // get rid of the temporary entity
-					use_monstermod = false; // use game entity
+					use_monstermod = false; // stick with game entity
 				}
 			}
-			else if (duplicate_ent && strcmp(kv_pair->key, "use_monstermod") == 0)
+			else if (strcmp(kv_pair->key, "use_monstermod") == 0)
 			{
 				if (atoi(kv_pair->value) == 1)
 				{
-					// EXPLICITY requested to use the monstermod entity
-					use_monstermod = true;
+					// EXPLICITY requested to use monstermod for this entity
+					use_monstermod_explicit = true;
 				}
 			}
 			
@@ -487,7 +477,7 @@ void scan_monster_bsp(void)
 		}
 		
 		// spawn a monstermod entity?
-		if (use_monstermod)
+		if (use_monstermod_explicit || use_monstermod)
 		{
 			// find classname keyvalue
 			for (int i = 0; i < kvd_index; i++)

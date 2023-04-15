@@ -351,16 +351,6 @@ int	CMGonome::Classify(void)
 //=========================================================
 int CMGonome::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType)
 {
-	// Take 15% damage from bullets
-	if( bitsDamageType == DMG_BULLET )
-	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
-		vecDir = vecDir.Normalize();
-		float flForce = DamageForce( flDamage );
-		pev->velocity = pev->velocity + vecDir * flForce;
-		flDamage *= 0.15;
-	}
-
 	// HACK HACK -- until we fix this.
 	if( IsAlive() )
 		PainSound();
