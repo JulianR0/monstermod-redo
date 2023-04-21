@@ -648,8 +648,8 @@ void CMBigMomma :: Precache()
 
 	// TEMP: Squid
 	PRECACHE_MODEL("sprites/mommaspit.spr");// spit projectile.
-	gSpitSprite = PRECACHE_MODEL("sprites/mommaspout.spr");// client side spittle.
-	gSpitDebrisSprite = PRECACHE_MODEL("sprites/mommablob.spr" );
+	gSpitSprite = PRECACHE_MODELINDEX("sprites/mommaspout.spr");// client side spittle.
+	gSpitDebrisSprite = PRECACHE_MODELINDEX("sprites/mommablob.spr" );
 
 	PRECACHE_SOUND( "bullchicken/bc_acid1.wav" );
 	PRECACHE_SOUND( "bullchicken/bc_spithit1.wav" );

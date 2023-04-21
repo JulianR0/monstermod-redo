@@ -14,9 +14,13 @@
 
 #include "monster_plugin.h"
 #include "ripent.h"
+#include "globalreplace.h"
 
 extern cvar_t *dllapi_log;
 extern cvar_t *monster_entity_config;
+
+extern cvar_t *globalmodellist;
+extern cvar_t *globalsoundlist;
 
 extern monster_type_t monster_types[];
 extern int monster_spawn_count;
@@ -716,11 +720,107 @@ void scan_monster_bsp(void)
 	}
 }
 
+void scan_extra_cfg(FILE *fp)
+{
+	char input[1024];
+	
+	while (get_input(fp, input))
+	{
+		char *cmd = strtok(input, " ");
+		char *value = strtok(NULL, " ");
+
+		// Remove all quotes from "value"
+		char parse[128] = {0};
+		int skip = 0;
+		for (unsigned i = 0; i < strlen(value); i++)
+		{
+			if (value[i] == '"')
+			{
+				skip++;
+				continue;
+			}
+			parse[i-skip] = value[i];
+		}
+		parse[strlen(parse)] = '\0';
+		strcpy(value, parse);
+
+		if (strcmp(cmd, "globalmodellist") == 0)
+		{
+			// ugh...
+			//globalmodellist->string = value;
+			CVAR_SET_STRING( "monster_gmr", value );
+
+			// Verbose if logging is enabled
+			if (dllapi_log->value)
+				LOG_CONSOLE(PLID, "[DEBUG] Using global model replacement file: %s", value);
+		}
+		else if (strcmp(cmd, "globalsoundlist") == 0)
+		{
+			//globalsoundlist->string = value;
+			CVAR_SET_STRING( "monster_gsr", value );
+
+			// Verbose if logging is enabled
+			if (dllapi_log->value)
+				LOG_CONSOLE(PLID, "[DEBUG] Using global sound replacement file: %s", value);
+		}
+	}
+}
+
+void scan_monster_replace(FILE *fp, bool toGSR )
+{
+	char input[1024];
+	
+	while (get_input(fp, input))
+	{
+		char *source = strtok(input, " ");
+		char *destination = strtok(NULL, " ");
+
+		// Remove all quotes
+		char parse[128] = {0};
+		int skip;
+
+		// source
+		skip = 0;
+		for (unsigned i = 0; i < strlen(source); i++)
+		{
+			if (source[i] == '"')
+			{
+				skip++;
+				continue;
+			}
+			parse[i-skip] = source[i];
+		}
+		parse[strlen(parse)] = '\0';
+		strcpy(source, parse);
+
+		// destination
+		memset(parse, 0, sizeof(parse));
+		skip = 0;
+		for (unsigned i = 0; i < strlen(destination); i++)
+		{
+			if (destination[i] == '"')
+			{
+				skip++;
+				continue;
+			}
+			parse[i-skip] = destination[i];
+		}
+		parse[strlen(parse)] = '\0';
+		strcpy(destination, parse);
+
+		if ( toGSR )
+			REPLACER::AddGlobalSound( source, destination );
+		else
+			REPLACER::AddGlobalModel( source, destination );
+	}
+}
+
 bool process_monster_cfg(void)
 {
 	char game_dir[256];
-	char BSPfilename[256];
-	char CFGfilename[256];
+	char BSPfilename[256]; // to read ents directly from BSP
+	char CFGfilename[256]; // read ents from MAPNAME_monster.cfg file
+	char EXTfilename[256]; // extra map configs from MAPNAME.cfg
 	FILE *fp = NULL;
 
 	monster_spawn_count = 0;
@@ -729,18 +829,17 @@ bool process_monster_cfg(void)
 	// find the directory name of the currently running MOD...
 	(*g_engfuncs.pfnGetGameDir)(game_dir);
 
+	// build route...
 	strcpy(CFGfilename, game_dir);
-#ifdef __linux__
 	strcat(CFGfilename, "/maps/");
-#else
-	strcat(CFGfilename, "\\maps\\");
-#endif
 	strcat(CFGfilename, STRING(gpGlobals->mapname));
 	strcpy(BSPfilename, CFGfilename);
-	
+	strcpy(EXTfilename, CFGfilename);
+
 	strcat(BSPfilename, ".bsp");
 	strcat(CFGfilename, "_monster.cfg");
-	
+	strcat(EXTfilename, ".cfg");
+
 	// process config files?
 	// -1 = don't process monster config, dynamic spawns only
 	// 0 = read entities from BSP file
@@ -783,6 +882,55 @@ bool process_monster_cfg(void)
 		}
 	}
 	
+	/* The code is only getting worse from here, I have to finish T4 quickly
+	* so I can move into making actual clean and optimized code for the final tier...
+	* -Giegue */
+
+	// extra map configs
+	if (access(EXTfilename, 0) == 0)
+	{
+		// first read configs
+		if ((fp = fopen(EXTfilename, "r")) != NULL)
+		{
+			scan_extra_cfg(fp);
+			fclose(fp);
+		}
+		
+		// then process them here
+		if (strlen(globalmodellist->string))
+		{
+			char gmrPath[192];
+
+			// SC globalmodellist path starts from models/MAPNAME
+			sprintf(gmrPath, "%s/models/%s/%s", game_dir, STRING(gpGlobals->mapname), globalmodellist->string);
+
+			if (access(gmrPath, 0) == 0)
+			{
+				if ((fp = fopen(gmrPath, "r")) != NULL)
+				{
+					scan_monster_replace(fp, false);
+					fclose(fp);
+				}
+			}
+		}
+		if (strlen(globalsoundlist->string))
+		{
+			char gsrPath[192];
+
+			// SC globalsoundlist path starts from sound/MAPNAME
+			sprintf(gsrPath, "%s/sound/%s/%s", game_dir, STRING(gpGlobals->mapname), globalsoundlist->string);
+
+			if (access(gsrPath, 0) == 0)
+			{
+				if ((fp = fopen(gsrPath, "r")) != NULL)
+				{
+					scan_monster_replace(fp, true);
+					fclose(fp);
+				}
+			}
+		}
+	}
+
 	return FALSE; // all ok
 }
 

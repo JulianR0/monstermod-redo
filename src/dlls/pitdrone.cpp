@@ -605,7 +605,7 @@ void CMPitdrone::Precache()
 {
 	PRECACHE_MODEL("models/pit_drone.mdl");
 	PRECACHE_MODEL("models/pit_drone_gibs.mdl");
-	iPitdroneSpitSprite = PRECACHE_MODEL("sprites/tinyspit.spr");// client side spittle.
+	iPitdroneSpitSprite = PRECACHE_MODELINDEX("sprites/tinyspit.spr");// client side spittle.
 
 	PRECACHE_SOUND_ARRAY(pAttackMissSounds);
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
@@ -642,7 +642,7 @@ void CMPitdrone::Precache()
 	PRECACHE_SOUND("weapons/xbow_hitbod2.wav");
 	PRECACHE_SOUND("weapons/xbow_hit1.wav");
 #if FEATURE_PITDRONE_SPIKE_TRAIL
-	iSpikeTrail = PRECACHE_MODEL("sprites/spike_trail.spr");
+	iSpikeTrail = PRECACHE_MODELINDEX("sprites/spike_trail.spr");
 #endif
 }
 

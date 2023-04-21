@@ -31,9 +31,9 @@ void CMSporeGrenade::Precache()
 {
 	PRECACHE_MODEL("models/spore.mdl");
 	PRECACHE_MODEL("sprites/glow02.spr");
-	g_sModelIndexTinySpit = PRECACHE_MODEL("sprites/tinyspit.spr");
-	gSporeExplode = PRECACHE_MODEL("sprites/spore_exp_01.spr");
-	gSporeExplodeC = PRECACHE_MODEL("sprites/spore_exp_c_01.spr");
+	g_sModelIndexTinySpit = PRECACHE_MODELINDEX("sprites/tinyspit.spr");
+	gSporeExplode = PRECACHE_MODELINDEX("sprites/spore_exp_01.spr");
+	gSporeExplodeC = PRECACHE_MODELINDEX("sprites/spore_exp_c_01.spr");
 	PRECACHE_SOUND("weapons/splauncher_bounce.wav");
 	PRECACHE_SOUND("weapons/splauncher_impact.wav");
 }

@@ -114,7 +114,7 @@ void CMBeam::BeamInit( const char *pSpriteName, int width )
 	SetFrame( 0 );
 	SetScrollRate( 0 );
 	pev->model = MAKE_STRING( pSpriteName );
-	SetTexture( PRECACHE_MODEL( (char *)pSpriteName ) );
+	SetTexture( PRECACHE_MODELINDEX( (char *)pSpriteName ) );
 	SetWidth( width );
 	pev->skin = 0;
 	pev->sequence = 0;

@@ -436,6 +436,18 @@ extern DLL_GLOBAL const Vector g_vecZero;
 
 #define SF_TRIG_PUSH_ONCE		1
 
+// Override a few engine callbacks for model replacements
+#include "globalreplace.h"
+#define SET_MODEL( entity, model ) \
+	{ SET_MODEL2( entity, REPLACER::FindModelReplacement( entity, model ) ); }
+#define PRECACHE_MODEL( model ) \
+	{ PRECACHE_MODEL2( (char*)REPLACER::FindModelReplacement( model ) ); }
+#define PRECACHE_SOUND( sound ) \
+	{ PRECACHE_SOUND2( (char*)REPLACER::FindSoundReplacement( sound ) ); }
+inline int PRECACHE_MODELINDEX( char* model )
+{
+	return PRECACHE_MODEL2( (char*)REPLACER::FindModelReplacement( model ) );
+}
 
 // Sound Utilities
 
@@ -469,9 +481,7 @@ float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int
 // EMIT_SOUND_DYN with pitch != 100 should be used sparingly, as it's not quite as
 // fast as EMIT_SOUND (the pitchshift mixer is not native coded).
 
-void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation,
-						   int flags, int pitch);
-
+void EMIT_SOUND_DYN(edict_t *entity, int channel, const char *sample, float volume, float attenuation, int flags, int pitch);
 
 inline void EMIT_SOUND(edict_t *entity, int channel, const char *sample, float volume, float attenuation)
 {
@@ -488,7 +498,7 @@ void EMIT_GROUPID_SUIT(edict_t *entity, int isentenceg);
 void EMIT_GROUPNAME_SUIT(edict_t *entity, const char *groupname);
 
 #define PRECACHE_SOUND_ARRAY( a ) \
-	{ for (int i = 0; i < ARRAYSIZE( a ); i++ ) PRECACHE_SOUND((char *) a [i]); }
+	{ for (int i = 0; i < ARRAYSIZE( a ); i++ ) PRECACHE_SOUND2((char *) REPLACER::FindSoundReplacement(a[i])); }
 
 #define EMIT_SOUND_ARRAY_DYN( chan, array ) \
 	EMIT_SOUND_DYN ( ENT(pev), chan , array [ RANDOM_LONG(0,ARRAYSIZE( array )-1) ], 1.0, ATTN_NORM, 0, RANDOM_LONG(95,105) ); 

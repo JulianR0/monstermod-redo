@@ -256,7 +256,7 @@ void CMHAssassin :: Precache()
 
 	PRECACHE_SOUND("debris/beamstart1.wav");
 
-	m_iShell = PRECACHE_MODEL ("models/shell.mdl");// brass shell
+	m_iShell = PRECACHE_MODELINDEX("models/shell.mdl");// brass shell
 }	
 	
 

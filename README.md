@@ -29,7 +29,7 @@ Not anymore...
 
 The first goal of this project aims towards the recreation of the new features of the "obscured and updated" Monster Mod plugin. Taking botman's original 2002 plugin and working from the ground up, the mission is to rebuild it with the new features and monsters that only few were able to see.
 
-The source code is completely free for everyone to use: In the event that the development of this project falls and becomes stagnant again, the plugin will live on, as the project's second goal is its preservation. The original botman's page where you can download the 2002 plugin will not stay up forever.
+The source code is completely free for everyone to use: In the event that the development of this project falls and becomes stagnant again, the plugin will live on, as the project's second goal is its preservation. ~~The original botman's page where you can download the 2002 plugin will not stay up forever.~~ **April 2023 update**: The page is gone, the original 2002 plugin can no longer be found.
 
 Under no circumstances shall we allow this project to fade away and become lost amidst the gears of time.
 
@@ -44,6 +44,8 @@ The plugin -should- be able to be used out-of-the-box by simply downloading the 
 `linux addons/monstermod/monster_mm_i386.so`
 
 Additional configuration files are included in the release files, each explaining it's usage and installation instructions.
+
+Extra MonsterMod features can be unlocked with additional AMX Mod X plugins which are located in the `extra` folder. All these plugins are optional, and only required based on your use-case.
 
 ## Build Instructions
 
@@ -196,15 +198,21 @@ Current milestones are separated by "Tiers", which are as follows:
 
 - Implement reading entities within the BSP itself. **[DONE]**
 - Add build instructions. **[DONE]**
-- Custom sound support, along with sentences.
-- Fix all pending bugs.
+- Global Model Replacement. **[DONE]**
+- Global Sound Replacement. **[DONE]**
+- Miscellaneous customization options, such as blood color.
+- Individual sound replacement: "soundlist" keyvalue for monsters.
+- Sentences support for speakable monsters.
+- Attempt to fix bugs as they appear.
 
 ### Tier 5
 
+- Enhance the AI.
 - Add configurations to change AI behaviour.
-- Optimize code and enhance the AI.
 - Create "tool" entities for easier map customization.
-- Do more fixes not covered in Tier 4.
+- Optimize and clean the code.
+- Add a wiki with full documentation.
+- Fix **ALL** bugs, specially those not covered in Tier 4.
 
 
 What will the future hold after all Tiers has been completed?

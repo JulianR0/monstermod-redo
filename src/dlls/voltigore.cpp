@@ -692,7 +692,7 @@ void CMVoltigore::PrecacheImpl(char *modelName)
 
 	PRECACHE_SOUND("debris/beamstart1.wav");
 
-	m_beamTexture = PRECACHE_MODEL(VOLTIGORE_ZAP_BEAM);
+	m_beamTexture = PRECACHE_MODELINDEX(VOLTIGORE_ZAP_BEAM);
 	PRECACHE_MODEL(VOLTIGORE_GLOW_SPRITE);
 	
 	PRECACHE_MODEL("sprites/lgtning.spr");

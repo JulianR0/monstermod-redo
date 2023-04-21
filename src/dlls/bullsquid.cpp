@@ -642,7 +642,7 @@ void CMBullsquid :: Precache()
 	
 	PRECACHE_MODEL("sprites/bigspit.spr");// spit projectile.
 	
-	iSquidSpitSprite = PRECACHE_MODEL("sprites/tinyspit.spr");// client side spittle.
+	iSquidSpitSprite = PRECACHE_MODELINDEX("sprites/tinyspit.spr");// client side spittle.
 
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
 

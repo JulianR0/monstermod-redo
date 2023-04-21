@@ -105,14 +105,14 @@ void CMApache::Precache( void )
 
 	PRECACHE_SOUND("weapons/mortarhit.wav");
 
-	m_iSpriteTexture = PRECACHE_MODEL( "sprites/white.spr" );
+	m_iSpriteTexture = PRECACHE_MODELINDEX( "sprites/white.spr" );
 
 	PRECACHE_SOUND("turret/tu_fire1.wav");
 
 	PRECACHE_MODEL("sprites/lgtning.spr");
 
-	m_iExplode	= PRECACHE_MODEL( "sprites/fexplo.spr" );
-	m_iBodyGibs = PRECACHE_MODEL( "models/metalplategibs_green.mdl" );
+	m_iExplode	= PRECACHE_MODELINDEX( "sprites/fexplo.spr" );
+	m_iBodyGibs = PRECACHE_MODELINDEX( "models/metalplategibs_green.mdl" );
 
    CMApacheHVR apache_rocket;
    apache_rocket.Precache();
@@ -178,7 +178,7 @@ void CMApache :: DyingThink( void )
 	if (m_flNextRocket > gpGlobals->time )
 	{
 		if (g_sModelIndexFireball == 0)
-			g_sModelIndexFireball = PRECACHE_MODEL ("sprites/zerogxplode.spr"); // fireball
+			g_sModelIndexFireball = PRECACHE_MODELINDEX("sprites/zerogxplode.spr"); // fireball
 
 		// random explosions
 		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
@@ -193,7 +193,7 @@ void CMApache :: DyingThink( void )
 		MESSAGE_END();
 
 		if (g_sModelIndexSmoke == 0)
-			g_sModelIndexSmoke = PRECACHE_MODEL ("sprites/steam1.spr"); // smoke
+			g_sModelIndexSmoke = PRECACHE_MODELINDEX("sprites/steam1.spr"); // smoke
 
 		// lots of smoke
 		MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, pev->origin );
@@ -930,7 +930,7 @@ void CMApacheHVR :: Spawn( void )
 void CMApacheHVR :: Precache( void )
 {
 	PRECACHE_MODEL("models/HVR.mdl");
-	m_iTrail = PRECACHE_MODEL("sprites/smoke.spr");
+	m_iTrail = PRECACHE_MODELINDEX("sprites/smoke.spr");
 	PRECACHE_SOUND ("weapons/rocket1.wav");
 }
 

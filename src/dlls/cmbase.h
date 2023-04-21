@@ -608,3 +608,7 @@ template <class T> T * CreateClassPtr( T *a )
 
 	return a;
 }
+
+#ifndef GLOBALREPLACE_H
+#include "globalreplace.h"
+#endif

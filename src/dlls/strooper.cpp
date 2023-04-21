@@ -443,7 +443,7 @@ void CMStrooper::Precache()
 {
 	PRECACHE_MODEL("models/strooper.mdl");
 	PRECACHE_MODEL("models/strooper_gibs.mdl");
-	iStrooperMuzzleFlash = PRECACHE_MODEL(STROOPER_MUZZLEFLASH);
+	iStrooperMuzzleFlash = PRECACHE_MODELINDEX(STROOPER_MUZZLEFLASH);
 	PRECACHE_SOUND("shocktrooper/shock_trooper_attack.wav");
 
 	PRECACHE_SOUND("shocktrooper/shock_trooper_die1.wav");
@@ -480,7 +480,7 @@ void CMStrooper::Precache()
 	else
 		m_voicePitch = 100;
 
-	m_iBrassShell = PRECACHE_MODEL("models/shell.mdl");// brass shell
+	m_iBrassShell = PRECACHE_MODELINDEX("models/shell.mdl");// brass shell
 }
 
 

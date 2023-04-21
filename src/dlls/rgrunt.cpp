@@ -387,7 +387,7 @@ void CMRGrunt::Precache()
 {
 	PRECACHE_MODEL("models/rgrunt.mdl");
 	
-	m_iBodyGibs = PRECACHE_MODEL( "models/metalplategibs_green.mdl" );
+	m_iBodyGibs = PRECACHE_MODELINDEX( "models/metalplategibs_green.mdl" );
 
 	PRECACHE_SOUND("hgrunt/gr_mgun1.wav");
 	PRECACHE_SOUND("hgrunt/gr_mgun2.wav");
@@ -419,5 +419,5 @@ void CMRGrunt::Precache()
 		m_voicePitch = 100;
 	*/
 
-	m_iBrassShell = PRECACHE_MODEL("models/shell.mdl");// brass shell
+	m_iBrassShell = PRECACHE_MODELINDEX("models/shell.mdl");// brass shell
 }

@@ -809,18 +809,18 @@ DLL_GLOBAL short g_sModelIndexLaserDot;// holds the index for the laser beam dot
 
 void world_precache(void)
 {
-	g_sModelIndexFireball = PRECACHE_MODEL ("sprites/zerogxplode.spr");// fireball
-	g_sModelIndexSmoke = PRECACHE_MODEL ("sprites/steam1.spr");// smoke
-	g_sModelIndexTinySpit = PRECACHE_MODEL ("sprites/tinyspit.spr");// spore
-	g_sModelIndexWExplosion = PRECACHE_MODEL ("sprites/WXplo1.spr");// underwater fireball
-	g_sModelIndexBubbles = PRECACHE_MODEL ("sprites/bubble.spr");//bubbles
-	g_sModelIndexBloodSpray = PRECACHE_MODEL ("sprites/bloodspray.spr"); // initial blood
-	g_sModelIndexBloodDrop = PRECACHE_MODEL ("sprites/blood.spr"); // splattered blood 
+	g_sModelIndexFireball = PRECACHE_MODELINDEX("sprites/zerogxplode.spr");// fireball
+	g_sModelIndexSmoke = PRECACHE_MODELINDEX("sprites/steam1.spr");// smoke
+	g_sModelIndexTinySpit = PRECACHE_MODELINDEX("sprites/tinyspit.spr");// spore
+	g_sModelIndexWExplosion = PRECACHE_MODELINDEX("sprites/WXplo1.spr");// underwater fireball
+	g_sModelIndexBubbles = PRECACHE_MODELINDEX("sprites/bubble.spr");//bubbles
+	g_sModelIndexBloodSpray = PRECACHE_MODELINDEX("sprites/bloodspray.spr"); // initial blood
+	g_sModelIndexBloodDrop = PRECACHE_MODELINDEX("sprites/blood.spr"); // splattered blood 
 
-	g_sModelIndexLaser = PRECACHE_MODEL( (char *)g_pModelNameLaser );
-	g_sModelIndexLaserDot = PRECACHE_MODEL("sprites/laserdot.spr");
+	g_sModelIndexLaser = PRECACHE_MODELINDEX( (char *)g_pModelNameLaser );
+	g_sModelIndexLaserDot = PRECACHE_MODELINDEX("sprites/laserdot.spr");
 
-	PRECACHE_MODEL ("models/w_grenade.mdl");
+	PRECACHE_MODEL("models/w_grenade.mdl");
 }
 
 void MonsterCommand(void)
@@ -1265,7 +1265,9 @@ int mmDispatchSpawn( edict_t *pent )
 		for (index = 0; monster_types[index].name[0]; index++)
 			monster_types[index].need_to_precache = FALSE;
 
-		world_precache();
+		CVAR_SET_STRING("monster_gmr", "");
+		CVAR_SET_STRING("monster_gsr", "");
+		REPLACER::Init();
 
 		monster_spawn_count = 0;
 		node_spawn_count = 0;
@@ -1275,6 +1277,9 @@ int mmDispatchSpawn( edict_t *pent )
 		process_monster_precache_cfg();
 
 		process_monster_cfg();
+
+		// precache last in the event of a GMR being present
+		world_precache();
 
 		// node support. -Giegue
 		// init the WorldGraph.
@@ -1818,7 +1823,7 @@ void mmMessageEnd_Post( void )
 	
 	RETURN_META( MRES_IGNORED );
 }
-
+/*
 enginefuncs_t meta_engfuncs =
 {
 	NULL,			// pfnPrecacheModel()
@@ -2042,7 +2047,7 @@ C_DLLEXPORT int GetEngineFunctions(enginefuncs_t *pengfuncsFromEngine, int *inte
 	memcpy(pengfuncsFromEngine, &meta_engfuncs, sizeof(enginefuncs_t));
 	return TRUE;
 }
-
+*/
 enginefuncs_t meta_engfuncs_post =
 {
 	NULL,			// pfnPrecacheModel()

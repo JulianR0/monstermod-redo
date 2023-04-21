@@ -111,7 +111,7 @@ void CMStukabat :: Spawn()
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	
-	m_pFlapSound = "stukabat/stukabat_flap1.wav";
+	m_pFlapSound = REPLACER::FindSoundReplacement( "stukabat/stukabat_flap1.wav" );
 	
 	MonsterInit();
 
@@ -130,7 +130,7 @@ void CMStukabat :: Precache()
 {
 	PRECACHE_MODEL("models/stukabat.mdl");
 
-	PRECACHE_SOUND("stukabat/stukabat_flap1.wav"); // flying sound
+	PRECACHE_SOUND("stukabat/stukabat_flap1.wav" ); // flying sound
 	PRECACHE_SOUND("headcrab/hc_headbite.wav"); // bite sound
 }	
 

@@ -2141,7 +2141,7 @@ bool UTIL_IsBSPModel( edict_t *pent )
 
 void UTIL_TakeDamageExternal( edict_t *pEdict, entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
-	// Tell AMXX to call TakeDamage for us.
+	// Tell AMXX to call TakeDamage for us if it can.
 	char extCmd[64];
 	sprintf( extCmd, "monster_hurt_entity %i %i %i %f %i\n", ENTINDEX( pEdict ), ENTINDEX( ENT( pevInflictor ) ), ENTINDEX( ENT( pevAttacker ) ), flDamage, bitsDamageType );
 	SERVER_COMMAND( extCmd );

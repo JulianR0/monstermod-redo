@@ -104,8 +104,8 @@ void CMHornet :: Precache()
 	PRECACHE_SOUND( "hornet/ag_hornethit2.wav" );
 	PRECACHE_SOUND( "hornet/ag_hornethit3.wav" );
 
-	iHornetPuff = PRECACHE_MODEL( "sprites/muz1.spr" );
-	iHornetTrail = PRECACHE_MODEL("sprites/laserbeam.spr");
+	iHornetPuff = PRECACHE_MODELINDEX( "sprites/muz1.spr" );
+	iHornetTrail = PRECACHE_MODELINDEX("sprites/laserbeam.spr");
 }	
 
 //=========================================================

@@ -54,7 +54,7 @@ void CMShower::Spawn( void )
 	pev->speed = RANDOM_FLOAT( 0.5, 1.5 );
 
 	pev->angles = g_vecZero;
-    pev->classname = MAKE_STRING( "_spark_shower" );
+    pev->classname = MAKE_STRING( "spark_shower" );
 }
 
 
@@ -172,7 +172,7 @@ void CMEnvExplosion::Spawn( void )
 	}
 
 	m_spriteScale = (int)flSpriteScale;
-    pev->classname = MAKE_STRING( "_env_explosion" );
+    pev->classname = MAKE_STRING( "env_explosion" );
 }
 
 void CMEnvExplosion::DelayUse( void )

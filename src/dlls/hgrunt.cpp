@@ -937,8 +937,8 @@ void CMHGrunt :: Precache()
 	else
 		m_voicePitch = 100;
 
-	m_iBrassShell = PRECACHE_MODEL ("models/shell.mdl");// brass shell
-	m_iShotgunShell = PRECACHE_MODEL ("models/shotgunshell.mdl");
+	m_iBrassShell = PRECACHE_MODELINDEX("models/shell.mdl");// brass shell
+	m_iShotgunShell = PRECACHE_MODELINDEX("models/shotgunshell.mdl");
 }	
 
 //=========================================================
