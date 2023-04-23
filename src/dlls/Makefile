@@ -22,11 +22,12 @@ OBJ = \
 	flyingmonster.o \
 	gargantua.o \
 	ggrenade.o \
+	globalreplace.o \
 	gonome.o \
 	h_ai.o \
+	h_export.o \
 	hassassin.o \
 	headcrab.o \
-	h_export.o \
 	hgrunt.o \
 	hornet.o \
 	houndeye.o \
@@ -42,8 +43,8 @@ OBJ = \
 	nodes.o \
 	otis.o \
 	pitdrone.o \
-	ripent.o \
 	rgrunt.o \
+	ripent.o \
 	scientist.o \
 	shock.o \
 	shockroach.o \

@@ -148,6 +148,7 @@
     <ClCompile Include="flyingmonster.cpp" />
     <ClCompile Include="gargantua.cpp" />
     <ClCompile Include="ggrenade.cpp" />
+    <ClCompile Include="globalreplace.cpp" />
     <ClCompile Include="gonome.cpp" />
     <ClCompile Include="h_ai.cpp" />
     <ClCompile Include="h_export.cpp" />
@@ -164,10 +165,12 @@
     <ClCompile Include="monstermaker.cpp" />
     <ClCompile Include="monsters.cpp" />
     <ClCompile Include="monsterstate.cpp" />
+    <ClCompile Include="music.cpp" />
     <ClCompile Include="nodes.cpp" />
     <ClCompile Include="otis.cpp" />
     <ClCompile Include="pitdrone.cpp" />
     <ClCompile Include="rgrunt.cpp" />
+    <ClCompile Include="ripent.cpp" />
     <ClCompile Include="scientist.cpp" />
     <ClCompile Include="shock.cpp" />
     <ClCompile Include="shockroach.cpp" />
@@ -203,12 +206,14 @@
     <ClInclude Include="explode.h" />
     <ClInclude Include="extdll.h" />
     <ClInclude Include="func_break.h" />
+    <ClInclude Include="globalreplace.h" />
     <ClInclude Include="hornet.h" />
     <ClInclude Include="monster_plugin.h" />
     <ClInclude Include="monsterevent.h" />
     <ClInclude Include="monsters.h" />
     <ClInclude Include="nodes.h" />
     <ClInclude Include="plane.h" />
+    <ClInclude Include="ripent.h" />
     <ClInclude Include="schedule.h" />
     <ClInclude Include="shock.h" />
     <ClInclude Include="skill.h" />

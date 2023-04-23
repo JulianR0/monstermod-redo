@@ -183,6 +183,9 @@
     <ClCompile Include="music.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="globalreplace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="activity.h">
@@ -273,6 +276,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ripent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="globalreplace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
