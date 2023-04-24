@@ -298,7 +298,7 @@ void check_monster_hurt(edict_t *pAttacker)
 						vecSpot = vecSrc + gpGlobals->v_forward * distance;
 
 						// trace a line ignoring enemies body...
-						UTIL_TraceLine ( vecSrc, vecSpot, dont_ignore_monsters, pent, &tr );
+						UTIL_TraceLine ( vecSrc, vecSpot, dont_ignore_monsters, pAttacker, &tr );
 
 						damage = pent->v.fuser4 - pent->v.health;
 
@@ -795,7 +795,6 @@ void check_respawn(void)
 	}
 }
 
-
 DLL_GLOBAL short g_sModelIndexFireball;// holds the index for the fireball
 DLL_GLOBAL short g_sModelIndexSmoke;// holds the index for the smoke cloud
 DLL_GLOBAL short g_sModelIndexTinySpit;// holds the index for the spore grenade explosion
@@ -806,6 +805,11 @@ DLL_GLOBAL short g_sModelIndexBloodSpray;// holds the sprite index for splattere
 DLL_GLOBAL short g_sModelIndexLaser;// holds the index for the laser beam
 DLL_GLOBAL const char *g_pModelNameLaser = "sprites/laserbeam.spr";
 DLL_GLOBAL short g_sModelIndexLaserDot;// holds the index for the laser beam dot
+
+// globals.cpp
+DLL_GLOBAL const Vector g_vecZero = Vector(0, 0, 0); // null vector
+DLL_GLOBAL Vector g_vecAttackDir; // attack direction
+
 
 void world_precache(void)
 {
@@ -1254,10 +1258,11 @@ int mmDispatchSpawn( edict_t *pent )
 		}
 		
 		// free any allocated keyvalue memory
-		for (index = 0; index < monster_spawn_count; index++)
+		for (index = 0; index < MAX_MONSTERS; index++)
 		{
-			if (monster_spawnpoint[index].keyvalue)
+			if (monster_spawnpoint[index].keyvalue != NULL)
 				free(monster_spawnpoint[index].keyvalue);
+			monster_spawnpoint[index].keyvalue = NULL;
 		}
 		
 		// do level initialization stuff here...
