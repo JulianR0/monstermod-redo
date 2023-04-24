@@ -65,6 +65,11 @@ void CMMonsterMaker :: KeyValue( KeyValueData *pkvd )
 		m_iszCustomModel = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if ( FStrEq(pkvd->szKeyName, "bloodcolor") )
+	{
+		m_iMonsterBlood = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CMBaseMonster::KeyValue( pkvd );
 }
@@ -124,7 +129,7 @@ void CMMonsterMaker :: Precache( void )
 void CMMonsterMaker::MakeMonster( void )
 {
 	edict_t *pent;
-	pKVD keyvalue[1]; // sometimes, i don't know what am i doing. -Giegue
+	pKVD keyvalue[MAX_KEYVALUES]; // sometimes, i don't know what am i doing. -Giegue
 	int createSF = SF_MONSTER_FALL_TO_GROUND;
 
 	if ( m_iMaxLiveChildren > 0 && m_cLiveChildren >= m_iMaxLiveChildren )
@@ -164,6 +169,13 @@ void CMMonsterMaker::MakeMonster( void )
 		// setup model keyvalue
 		strcpy(keyvalue[0].key, "model");
 		strcpy(keyvalue[0].value, STRING( m_iszCustomModel ));
+	}
+	// Override monster blood color?
+	if ( m_iMonsterBlood )
+	{
+		// setup blood keyvalue
+		strcpy(keyvalue[1].key, "bloodcolor");
+		sprintf(keyvalue[1].value, "%i", m_iMonsterBlood );
 	}
 
 	// Attempt to spawn monster

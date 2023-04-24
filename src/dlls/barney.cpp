@@ -350,7 +350,7 @@ void CMBarney :: Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_RED;
+	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_RED : m_bloodColor;
 	pev->health			= gSkillData.barneyHealth;
 	pev->view_ofs		= Vector ( 0, 0, 50 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= VIEW_FIELD_FULL;

@@ -728,6 +728,8 @@ void scan_extra_cfg(FILE *fp)
 	{
 		char *cmd = strtok(input, " ");
 		char *value = strtok(NULL, " ");
+		if (value == NULL)
+			continue; // command with no value, skip
 
 		// Remove all quotes from "value"
 		char parse[128] = {0};

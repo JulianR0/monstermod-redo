@@ -21,6 +21,7 @@ public:
 	
 	int m_iMonsterIndex;// index of the monster(s) that will be created.
 	string_t m_iszCustomModel;// custom model that the monster will use.
+	int m_iMonsterBlood;//blood color of spawned monsters.
 
 	int	 m_cNumMonsters;// max number of monsters this ent can create
 	int	 m_iMaxLiveChildren;// max number of monsters that this maker may have out at one time.
