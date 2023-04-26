@@ -163,6 +163,7 @@ monster_type_t monster_types[]=
 	"info_node_air", FALSE,
 	"monstermaker", FALSE, // Extra entities
 	"ambient_music", FALSE,
+	"squadmaker", FALSE, // Aliases
 	"", FALSE
 };
 
@@ -1370,7 +1371,7 @@ void mmDispatchUse( void )
 				if ( FNullEnt( caller ) ) caller = NULL;
 				if ( FNullEnt( activator ) ) activator = NULL;
 
-				monsters[index].pMonster->Use( caller, activator, useType, flValue );
+				monsters[index].pMonster->Use( activator, caller, useType, flValue );
 				return;
 			}
 		}

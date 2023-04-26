@@ -156,6 +156,11 @@ void CMApache :: Killed( entvars_t *pevAttacker, int iGib )
 	pev->nextthink = gpGlobals->time + 0.1;
 	pev->health = 0;
 	pev->takedamage = DAMAGE_NO;
+	
+	pev->deadflag = DEAD_DYING;
+	FCheckAITrigger(); // trigger death condition
+	if ( UTIL_IsPlayer( ENT( pevAttacker ) ) ) // If a player killed this monster, add score
+		pevAttacker->frags += 1.0;
 
 	if (pev->spawnflags & SF_NOWRECKAGE)
 	{

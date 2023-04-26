@@ -222,7 +222,7 @@ public:
 			pent = ENT(0);
 		if ( pent->v.euser4 == NULL )
 			return (CMBaseEntity *)NULL;
-      CMBaseEntity *pEnt = GetClassPtr((CMBaseEntity *)VARS(pent));
+		CMBaseEntity *pEnt = GetClassPtr((CMBaseEntity *)VARS(pent));
 		return pEnt; 
 	}
 

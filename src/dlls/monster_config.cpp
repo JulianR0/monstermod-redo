@@ -116,7 +116,7 @@ void scan_monster_cfg(FILE *fp)
 										monster = TRUE;
 									}
 								}
-								else if (strcmp(monster_types[mIndex].name, "monstermaker") == 0)
+								else if (strcmp(monster_types[mIndex].name, "monstermaker") == 0 || strcmp(monster_types[mIndex].name, "squadmaker") == 0)
 								{
 									// A monster spawner, add it to the list
 									if (monster_spawn_count == MAX_MONSTERS)
@@ -127,8 +127,8 @@ void scan_monster_cfg(FILE *fp)
 									}
 									else
 									{
-										monster_spawnpoint[monster_spawn_count].monster = mIndex;
-										monster_types[mIndex].need_to_precache = TRUE;
+										monster_spawnpoint[monster_spawn_count].monster = 32; // monstermaker index is fixed at 32
+										monster_types[32].need_to_precache = TRUE;
 										monster = TRUE;
 									}
 								}
@@ -266,7 +266,7 @@ void scan_monster_cfg(FILE *fp)
 								if (monster)
 								{
 									// only applicable for normal monsters
-									if (strcmp(data[kvd_index-1].value, "monstermaker") != 0)
+									if (strcmp(data[kvd_index-1].value, "monstermaker") != 0 && strcmp(data[kvd_index-1].value, "squadmaker") != 0)
 									{
 										// precache the custom model here
 										PRECACHE_MODEL( data[i].value );
@@ -282,7 +282,7 @@ void scan_monster_cfg(FILE *fp)
 								if (monster)
 								{
 									// only applicable for monstermaker entity
-									if (strcmp(data[kvd_index-1].value, "monstermaker") == 0)
+									if (strcmp(data[kvd_index-1].value, "monstermaker") == 0 || strcmp(data[kvd_index-1].value, "squadmaker") == 0)
 									{
 										// precache the custom model
 										PRECACHE_MODEL( data[i].value );
@@ -298,7 +298,7 @@ void scan_monster_cfg(FILE *fp)
 								if (monster)
 								{
 									// this keyvalue is only valid for monstermaker entity
-									if (strcmp(data[kvd_index-1].value, "monstermaker") == 0)
+									if (strcmp(data[kvd_index-1].value, "monstermaker") == 0 || strcmp(data[kvd_index-1].value, "squadmaker") == 0)
 									{
 										// process the entity precache here
 										int mIndex;
@@ -529,6 +529,10 @@ void scan_monster_bsp(void)
 								}
 								else
 								{
+									// Aliases
+									if (strcmp(monster_types[mIndex].name, "squadmaker") == 0)
+										mIndex = 32; // monstermaker
+
 									monster_spawnpoint[monster_spawn_count].monster = mIndex;
 									monster_types[mIndex].need_to_precache = true;
 									monster = true;
@@ -619,7 +623,7 @@ void scan_monster_bsp(void)
 						if (monster)
 						{
 							// only applicable for normal monsters
-							if (strcmp(data[classname_kvdI].value, "monstermaker") != 0)
+							if (strcmp(data[classname_kvdI].value, "monstermaker") != 0 && strcmp(data[classname_kvdI].value, "squadmaker") != 0)
 							{
 								// precache the custom model here
 								PRECACHE_MODEL( data[i].value );
@@ -635,7 +639,7 @@ void scan_monster_bsp(void)
 						if (monster)
 						{
 							// only applicable for monstermaker entity
-							if (strcmp(data[classname_kvdI].value, "monstermaker") == 0)
+							if (strcmp(data[classname_kvdI].value, "monstermaker") == 0 || strcmp(data[classname_kvdI].value, "squadmaker") == 0)
 							{
 								// precache the custom model
 								PRECACHE_MODEL( data[i].value );
@@ -651,7 +655,7 @@ void scan_monster_bsp(void)
 						if (monster)
 						{
 							// this keyvalue is only valid for monstermaker entity
-							if (strcmp(data[classname_kvdI].value, "monstermaker") == 0)
+							if (strcmp(data[classname_kvdI].value, "monstermaker") == 0 || strcmp(data[classname_kvdI].value, "squadmaker") == 0)
 							{
 								// process the entity precache here
 								for (mIndex = 0; monster_types[mIndex].name[0]; mIndex++)

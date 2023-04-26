@@ -801,6 +801,7 @@ void CMBaseTurret :: TurretDeath( void )
 	if (pev->deadflag != DEAD_DEAD)
 	{
 		pev->deadflag = DEAD_DEAD;
+		FCheckAITrigger(); // trigger death condition
 
 		float flRndSound = RANDOM_FLOAT ( 0 , 1 );
 
@@ -1105,6 +1106,7 @@ void CMSentry::SentryDeath( void )
 	if (pev->deadflag != DEAD_DEAD)
 	{
 		pev->deadflag = DEAD_DEAD;
+		FCheckAITrigger(); // trigger death condition
 
 		float flRndSound = RANDOM_FLOAT ( 0 , 1 );
 

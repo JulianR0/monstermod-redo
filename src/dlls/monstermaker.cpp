@@ -70,6 +70,19 @@ void CMMonsterMaker :: KeyValue( KeyValueData *pkvd )
 		m_iMonsterBlood = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	// These are to keep consistency with Sven Co-op's squadmaker entity.
+	// CMBaseMonster::KeyValue will process TriggerCondition/TriggerTarget
+	// keyvalues in the same way.
+	else if ( FStrEq(pkvd->szKeyName, "trigger_condition") )
+	{
+		m_iTriggerCondition = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if ( FStrEq(pkvd->szKeyName, "trigger_target") )
+	{
+		m_iszTriggerTarget = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CMBaseMonster::KeyValue( pkvd );
 }
@@ -163,6 +176,7 @@ void CMMonsterMaker::MakeMonster( void )
 	if ( pev->spawnflags & SF_MONSTERMAKER_MONSTERCLIP )
 		createSF |= SF_MONSTER_HITMONSTERCLIP;
 
+	/* KEYVALUES */
 	// Monster is to have a custom model?
 	if ( !FStringNull( m_iszCustomModel ) )
 	{
@@ -175,7 +189,34 @@ void CMMonsterMaker::MakeMonster( void )
 	{
 		// setup blood keyvalue
 		strcpy(keyvalue[1].key, "bloodcolor");
-		sprintf(keyvalue[1].value, "%i", m_iMonsterBlood );
+		sprintf(keyvalue[1].value, "%i", m_iMonsterBlood);
+	}
+	// Trigger conditions set?
+	if ( !FStringNull( m_iszTriggerTarget ) )
+	{
+		// setup trigger keyvalues
+		strcpy(keyvalue[2].key, "TriggerCondition");
+		sprintf(keyvalue[2].value, "%i", m_iTriggerCondition);
+		strcpy(keyvalue[3].key, "TriggerTarget");
+		strcpy(keyvalue[3].value, STRING( m_iszTriggerTarget ));
+	}
+	// Weapons (For hgrunt/massn/rgrunt/etc...)
+	if ( pev->weapons )
+	{
+		strcpy(keyvalue[4].key, "weapons");
+		sprintf(keyvalue[4].value, "%i", pev->weapons);
+	}
+	// Monster's Name
+	if ( !FStringNull( m_szMonsterName ) )
+	{
+		strcpy(keyvalue[5].key, "displayname");
+		strcpy(keyvalue[5].value, STRING( m_szMonsterName ));
+	}
+	// Classify override
+	if ( m_iClassifyOverride )
+	{
+		strcpy(keyvalue[6].key, "classify");
+		sprintf(keyvalue[6].value, "%i", m_iClassifyOverride);
 	}
 
 	// Attempt to spawn monster
@@ -201,6 +242,12 @@ void CMMonsterMaker::MakeMonster( void )
 		pent->v.targetname = pev->netname;
 	}
 	
+	// Pass parent's rendering effects to child
+	pent->v.rendermode = pev->rendermode;
+	pent->v.renderfx = pev->renderfx;
+	pent->v.renderamt = pev->renderamt;
+	pent->v.rendercolor = pev->rendercolor;
+
 	m_cLiveChildren++;// count this monster
 	m_cNumMonsters--;
 
