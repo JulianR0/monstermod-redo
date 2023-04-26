@@ -105,7 +105,7 @@ void CMStukabat :: Spawn()
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_FLY;
 	pev->flags			|= FL_FLY;
-	m_bloodColor		= BLOOD_COLOR_YELLOW;
+	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->health			= gSkillData.stukabatHealth;
 	pev->view_ofs		= Vector ( 0, 0, 22 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.5;// indicates the width of this monster's forward view cone ( as a dotproduct result )

@@ -2626,6 +2626,23 @@ void CMBaseMonster :: KeyValue( KeyValueData *pkvd )
 		m_iClassifyOverride = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "bloodcolor"))
+	{
+		switch ( atoi( pkvd->szValue ) )
+		{
+		case -1: m_bloodColor = DONT_BLEED; break;
+		case 1: m_bloodColor = BLOOD_COLOR_RED; break;
+		case 2: m_bloodColor = BLOOD_COLOR_YELLOW; break;
+		case 3: m_bloodColor = BLOOD_COLOR_BLUE; break;
+		case 4: m_bloodColor = BLOOD_COLOR_PINK; break;
+		case 5: m_bloodColor = BLOOD_COLOR_WHITE; break;
+		case 6: m_bloodColor = BLOOD_COLOR_ORANGE; break;
+		case 7: m_bloodColor = BLOOD_COLOR_BLACK; break;
+		case 8: m_bloodColor = BLOOD_COLOR_GREEN; break;
+		default: m_bloodColor = 0; break; // Invalid, set default
+		}
+		pkvd->fHandled = TRUE;
+	}
 	else
 	{
 		CMBaseToggle::KeyValue( pkvd );
