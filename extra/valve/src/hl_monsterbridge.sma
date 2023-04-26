@@ -14,9 +14,11 @@ const R_HT = 2; // (HATE) will attack this character instead of any visible DISL
 
 new Trie:g_HLDefaultNames;
 
+const bits_MEMORY_NAMED = ( 1 << 2 );
+
 public plugin_init()
 {
-	register_plugin( "HL-MONSTER Bridge", "1.1", "Giegue" );
+	register_plugin( "HL-MONSTER Bridge", "1.2", "Giegue" );
 	
 	RegisterHam( Ham_IRelationship, "monster_alien_controller", "mmIRelationship" );
 	RegisterHam( Ham_IRelationship, "monster_alien_grunt", "mmIRelationship" );
@@ -69,8 +71,32 @@ public plugin_init()
 	TrieSetString( g_HLDefaultNames, "monster_nihilanth", "Nihilanth" );
 	TrieSetString( g_HLDefaultNames, "monster_tentacle", "Tentacle" );
 	
-	set_task( 0.3, "hlScan", 0, "", 0, "b" );
-	register_srvcmd( "monster_hurt_entity", "hlTakeDamage" );
+	// HACK: since Ham_Spawn won't work, this should do as an alternative
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_headcrab", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_babycrab", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_bullchicken", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_barnacle", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_bigmomma", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_houndeye", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_alien_slave", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_alien_controller", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_alien_grunt", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_zombie", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_ichthyosaur", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_human_grunt", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_human_assassin", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_barney", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_gman", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_scientist", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_sentry", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_snark", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_miniturret", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_turret", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_apache", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_osprey", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_gargantua", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_nihilanth", "hlSpawn", 1 );
+	RegisterHam( Ham_SetObjectCollisionBox, "monster_tentacle", "hlSpawn", 1 );
 	
 	RegisterHam( Ham_Killed, "player", "PlayerKilled", 1 );
 }
@@ -94,43 +120,40 @@ public mmIRelationship( entity, other )
 	return HAM_OVERRIDE;
 }
 
-public hlScan()
+public hlSpawn( entity )
 {
-	new entity, szClassname[ 33 ], szDisplayname[ 129 ], bool:found;
-	for ( entity = 0; entity < get_global_int( GL_maxEntities ); entity++ )
+	// Why is it called 3 times? Restrict this to only once
+	if ( !( entity_get_int( entity, EV_INT_impulse ) & bits_MEMORY_NAMED ) )
 	{
-		// Nothing deleted me?
-		if ( is_valid_ent( entity ) )
+		// Classify not overriden?
+		if ( !entity_get_int( entity, EV_INT_iuser4 ) )
 		{
-			entity_get_string( entity, EV_SZ_classname, szClassname, charsmax( szClassname ) );
-			if ( equal( szClassname, "monster_", 8 ) )
-			{
-				// Classify not overriden?
-				if ( !entity_get_int( entity, EV_INT_iuser4 ) )
-				{
-					// Set default
-					entity_set_int( entity, EV_INT_iuser4, ExecuteHam( Ham_Classify, entity ) );
-				}
-				
-				// Blood color not overriden?
-				if ( !entity_get_int( entity, EV_INT_iuser3 ) )
-				{
-					// Set default
-					entity_set_int( entity, EV_INT_iuser3, ExecuteHam( Ham_BloodColor, entity ) );
-				}
-				
-				// No name set?
-				entity_get_string( entity, EV_SZ_netname, szDisplayname, charsmax( szDisplayname ) );
-				if ( !strlen( szDisplayname ) )
-				{
-					// Find a default name
-					found = TrieGetString( g_HLDefaultNames, szClassname, szDisplayname, charsmax( szDisplayname ) );
-					
-					// Use this name
-					entity_set_string( entity, EV_SZ_netname, ( found ? szDisplayname : "Monster" ) );
-				}
-			}
+			// Set default
+			entity_set_int( entity, EV_INT_iuser4, ExecuteHam( Ham_Classify, entity ) );
 		}
+		
+		// Blood color not overriden?
+		if ( !entity_get_int( entity, EV_INT_iuser3 ) )
+		{
+			// Set default
+			entity_set_int( entity, EV_INT_iuser3, ExecuteHam( Ham_BloodColor, entity ) );
+		}
+		
+		// No name set?
+		new szDisplayname[ 129 ];
+		entity_get_string( entity, EV_SZ_netname, szDisplayname, charsmax( szDisplayname ) );
+		if ( !strlen( szDisplayname ) )
+		{
+			// Find a default name
+			new szClassname[ 33 ], bool:found;
+			entity_get_string( entity, EV_SZ_classname, szClassname, charsmax( szClassname ) );
+			found = TrieGetString( g_HLDefaultNames, szClassname, szDisplayname, charsmax( szDisplayname ) );
+			
+			// Use this name
+			entity_set_string( entity, EV_SZ_netname, ( found ? szDisplayname : "Monster" ) );
+		}
+		
+		entity_set_int( entity, EV_INT_impulse, entity_get_int( entity, EV_INT_impulse ) | bits_MEMORY_NAMED );
 	}
 }
 
@@ -160,33 +183,6 @@ stock IRelationshipByClass( classEntity, classOther )
 	};
 	
 	return iEnemy[ classEntity ][ classOther ];
-}
-
-public hlTakeDamage()
-{
-	if ( read_argc() == 6 )
-	{
-		new victim, inflictor, attacker;
-		new Float:damage;
-		new damageBits;
-		
-		victim = read_argv_int( 1 );
-		inflictor = read_argv_int( 2 );
-		attacker = read_argv_int( 3 );
-		damage = read_argv_float( 4 );
-		damageBits = read_argv_int( 5 );
-		
-		// attacker and inflictor can be null, but never allow victim to be null
-		if ( !is_valid_ent( victim ) )
-			return;
-		
-		if ( !is_valid_ent( inflictor ) )
-			inflictor = 0;
-		if ( !is_valid_ent( attacker ) )
-			attacker = 0;
-		
-		ExecuteHamB( Ham_TakeDamage, victim, inflictor, attacker, damage, damageBits );
-	}
 }
 
 public PlayerKilled( victim, attacker, shouldgib )
