@@ -70,6 +70,12 @@ void CMMonsterMaker :: KeyValue( KeyValueData *pkvd )
 		m_iMonsterBlood = atoi(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
+	else if ( FStrEq(pkvd->szKeyName, "respawn_as_playerally") )
+	{
+		if (atoi(pkvd->szValue))
+			m_iClassifyOverride = CLASS_PLAYER_ALLY;
+		pkvd->fHandled = TRUE;
+	}
 	// These are to keep consistency with Sven Co-op's squadmaker entity.
 	// CMBaseMonster::KeyValue will process TriggerCondition/TriggerTarget
 	// keyvalues in the same way.

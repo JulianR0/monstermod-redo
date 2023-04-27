@@ -450,11 +450,11 @@ void scan_monster_bsp(void)
 			{
 				// the entity we are trying to spawn could already exist within the game
 				// use the engine's CREATE_NAMED_ENTITY to see if it's valid or not
-				// 
-				// if it is valid, this entity already exists and we should ignore it
 				edict_t *existsGAME = CREATE_NAMED_ENTITY( MAKE_STRING( kv_pair->value ) );
 				if ( !FNullEnt( existsGAME ) )
 				{
+					// this entity already exists and we should ignore it
+					
 					// use REMOVE_ENTITY instead of UTIL_Remove!
 					// UTIL_Remove sets FL_KILLME to remove the entity on the next frame, that won't do.
 					// REMOVE_ENTITY instead removes it instantly, which is needed to prevent server crashes
@@ -468,8 +468,14 @@ void scan_monster_bsp(void)
 			{
 				if (atoi(kv_pair->value) == 1)
 				{
-					// EXPLICITY requested to use monstermod for this entity
-					use_monstermod_explicit = true;
+					// The extra plugin must be available to handle the old entity!
+					if (CVAR_GET_FLOAT("_hl_explicit"))
+					{
+						// EXPLICITY requested to use monstermod for this entity
+						use_monstermod_explicit = true;
+					}
+					else
+						LOG_MESSAGE(PLID, "WARNING: can't explicity add entity #%i - add-on plugin unavailable", ent);
 				}
 			}
 			
