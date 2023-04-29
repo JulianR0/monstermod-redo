@@ -1255,7 +1255,13 @@ int mmDispatchSpawn( edict_t *pent )
 		for (index = 0; index < MAX_MONSTER_ENTS; index++)
 		{
 			if (monsters[index].pMonster != NULL)
+			{
+				// free the soundlists first!
+				if (monsters[index].pMonster->m_srSoundList != NULL)
+					free(monsters[index].pMonster->m_srSoundList);
+
 				delete monsters[index].pMonster;
+			}
 		}
 		
 		// free any allocated keyvalue memory

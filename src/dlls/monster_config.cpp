@@ -68,6 +68,80 @@ bool get_input(FILE *fp, char *input)
 	return FALSE;  // no input found
 }
 
+void scan_monster_sound(FILE *fp, edict_t *pMonster )
+{
+	char input[1024];
+	
+	while (get_input(fp, input))
+	{
+		char *source = strtok(input, " ");
+		char *destination = strtok(NULL, " ");
+
+		// Remove all quotes
+		char parse[128] = {0};
+		int skip;
+
+		// source
+		skip = 0;
+		for (unsigned i = 0; i < strlen(source); i++)
+		{
+			if (source[i] == '"')
+			{
+				skip++;
+				continue;
+			}
+			parse[i-skip] = source[i];
+		}
+		parse[strlen(parse)] = '\0';
+		strcpy(source, parse);
+
+		// destination
+		memset(parse, 0, sizeof(parse));
+		skip = 0;
+		for (unsigned i = 0; i < strlen(destination); i++)
+		{
+			if (destination[i] == '"')
+			{
+				skip++;
+				continue;
+			}
+			parse[i-skip] = destination[i];
+		}
+		parse[strlen(parse)] = '\0';
+		strcpy(destination, parse);
+
+		if ( pMonster )
+			REPLACER::AddIndividualSound( pMonster, source, destination );
+		else
+			PRECACHE_SOUND2(destination);
+	}
+}
+
+void process_monster_sound(edict_t *pMonster, char *fileName)
+{
+	char game_dir[256];
+	FILE *fp = NULL;
+
+	// find the directory name of the currently running MOD...
+	(*g_engfuncs.pfnGetGameDir)(game_dir);
+
+	char srPath[192];
+
+	// SC soundlist path starts from sound/MAPNAME
+	sprintf(srPath, "%s/sound/%s/%s", game_dir, STRING(gpGlobals->mapname), fileName);
+
+	if (access(srPath, 0) == 0)
+	{
+		if ((fp = fopen(srPath, "r")) != NULL)
+		{
+			scan_monster_sound(fp, pMonster);
+			fclose(fp);
+		}
+	}
+
+	return;
+}
+
 void scan_monster_cfg(FILE *fp)
 {
 	// Let's make a full rework of this. -Giegue
@@ -270,6 +344,22 @@ void scan_monster_cfg(FILE *fp)
 									{
 										// precache the custom model here
 										PRECACHE_MODEL( data[i].value );
+
+										// the entity will need the keyvalue
+										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
+										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].value, data[i].value);
+									}
+								}
+							}
+							else if (strcmp(data[i].key, "soundlist") == 0)
+							{
+								if (monster)
+								{
+									// file handling, string must not be empty
+									if (strlen(data[i].value))
+									{
+										// process and precache the replacement sounds
+										process_monster_sound( NULL, data[i].value );
 
 										// the entity will need the keyvalue
 										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
@@ -640,6 +730,22 @@ void scan_monster_bsp(void)
 							}
 						}
 					}
+					else if (strcmp(data[i].key, "soundlist") == 0)
+					{
+						if (monster)
+						{
+							// file handling, string must not be empty
+							if (strlen(data[i].value))
+							{
+								// process and precache the replacement sounds
+								process_monster_sound( NULL, data[i].value );
+
+								// the entity will need the keyvalue
+								strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
+								strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].value, data[i].value);
+							}
+						}
+					}
 					else if (strcmp(data[i].key, "new_model") == 0)
 					{
 						if (monster)
@@ -945,7 +1051,6 @@ bool process_monster_cfg(void)
 
 	return FALSE; // all ok
 }
-
 
 bool scan_monster_precache_cfg(FILE *fp)
 {

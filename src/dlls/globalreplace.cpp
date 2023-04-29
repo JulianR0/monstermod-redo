@@ -12,12 +12,6 @@
 
 namespace REPLACER
 {
-typedef struct
-{
-	char source[128];
-	char destination[128];
-} REPLACER;
-
 REPLACER *GMR;
 REPLACER *GSR;
 int numModels;
@@ -77,6 +71,32 @@ bool AddGlobalSound(const char *from, const char *to)
 	return false;
 }
 
+bool AddIndividualSound(edict_t *pMonster, const char *from, const char *to)
+{
+	CMBaseMonster *castMonster = GetClassPtr((CMBaseMonster *)VARS(pMonster));
+
+	if ( castMonster == NULL )
+		return false;
+
+	int m_iSounds = castMonster->m_isrSounds;
+
+	if (m_iSounds < MAX_REPLACEMENTS)
+	{
+		// allocate for the first time
+		if (!m_iSounds)
+			castMonster->m_srSoundList = (REPLACER*)calloc(MAX_REPLACEMENTS, sizeof(*castMonster->m_srSoundList));
+		
+		strcpy(castMonster->m_srSoundList[m_iSounds].source, from);
+		strcpy(castMonster->m_srSoundList[m_iSounds].destination, to);
+
+		castMonster->m_isrSounds++;
+		return true;
+	}
+
+	LOG_MESSAGE(PLID, "Can't replace sound '%s', too many sounds in list.", from);
+	return false;
+}
+
 const char* FindModelReplacement( edict_t *pMonster, const char *from )
 {
 	// Individually set models takes priority!
@@ -103,14 +123,26 @@ const char* FindSoundReplacement( edict_t *pMonster, const char *from )
 	if ( pMonster )
 	{
 		CMBaseMonster *castMonster = GetClassPtr((CMBaseMonster *)VARS(pMonster));
-		//placeholder for soundlist keyvalue;
+		if (castMonster->m_isrSounds)
+		{
+			for (int sound = 0; sound < castMonster->m_isrSounds; sound++)
+			{
+				if (strcmp(castMonster->m_srSoundList[sound].source, from) == 0)
+				{
+					// If found, use it
+					return castMonster->m_srSoundList[sound].destination;
+				}
+			}
+
+			// If nothing is found stick to GSR if available
+		}
 	}
 
 	for (int sound = 0; sound < numSounds; sound++)
 	{
 		if (strcmp(GSR[sound].source, from) == 0)
 		{
-			// If found, use that model instead
+			// If found, use that sound instead
 			return GSR[sound].destination;
 		}
 	}

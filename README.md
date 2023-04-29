@@ -103,8 +103,8 @@ Current milestones are separated by "Tiers", which are as follows:
 - Add build instructions. **[DONE]**
 - Global Model Replacement. **[DONE]**
 - Global Sound Replacement. **[DONE]**
-- Miscellaneous customization options, such as blood color.
-- Individual sound replacement: "soundlist" keyvalue for monsters.
+- Miscellaneous customization options, such as blood color. **[DONE]**
+- Individual sound replacement: "soundlist" keyvalue for monsters. **[DONE]**
 - Sentences support for speakable monsters.
 - Attempt to fix bugs as they appear.
 

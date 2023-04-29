@@ -41,7 +41,7 @@ extern CGraph WorldGraph;// the world node graph
 
 extern cvar_t *monster_turn_coeficient;
 
-
+extern void process_monster_sound(edict_t *pMonster, char *fileName);
 
 //=========================================================
 // Eat - makes a monster full for a little while.
@@ -2640,6 +2640,14 @@ void CMBaseMonster :: KeyValue( KeyValueData *pkvd )
 		case 7: m_bloodColor = BLOOD_COLOR_BLACK; break;
 		case 8: m_bloodColor = BLOOD_COLOR_GREEN; break;
 		default: m_bloodColor = 0; break; // Invalid, set default
+		}
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "soundlist"))
+	{
+		if (strlen( pkvd->szValue ))
+		{
+			process_monster_sound(edict(), pkvd->szValue);
 		}
 		pkvd->fHandled = TRUE;
 	}

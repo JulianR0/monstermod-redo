@@ -254,6 +254,17 @@ void CMMonsterMaker::MakeMonster( void )
 	pent->v.renderamt = pev->renderamt;
 	pent->v.rendercolor = pev->rendercolor;
 
+	// Soundlist isn't "exactly" a keyvalue so pass it here
+	if ( m_srSoundList != NULL )
+	{
+		// it needs to be allocated first
+		CMBaseMonster *pChild = GetClassPtr((CMBaseMonster *)VARS(pent));
+		pChild->m_srSoundList = (REPLACER::REPLACER*)calloc(MAX_REPLACEMENTS, sizeof(*pChild->m_srSoundList));
+
+		memcpy(pChild->m_srSoundList, m_srSoundList, sizeof(REPLACER::REPLACER));
+		pChild->m_isrSounds = m_isrSounds;
+	}
+
 	m_cLiveChildren++;// count this monster
 	m_cNumMonsters--;
 
