@@ -1259,6 +1259,7 @@ int mmDispatchSpawn( edict_t *pent )
 				// free the soundlists first!
 				if (monsters[index].pMonster->m_srSoundList != NULL)
 					free(monsters[index].pMonster->m_srSoundList);
+				monsters[index].pMonster->m_srSoundList = NULL;
 
 				delete monsters[index].pMonster;
 			}
