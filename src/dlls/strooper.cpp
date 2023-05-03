@@ -792,9 +792,9 @@ Schedule_t *CMStrooper::GetSchedule(void)
 				//!!!KELLY - this grunt was hit and is going to run to cover.
 				if (FOkToSpeak()) // && RANDOM_LONG(0,1))
 				{
-					//SENTENCEG_PlayRndSz( ENT(pev), "HG_COVER", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					SENTENCEG_PlayRndSz( ENT(pev), "ST_COVER", STROOPER_SENTENCE_VOLUME, STROOPER_ATTN, 0, m_voicePitch);
 					m_iSentence = STROOPER_SENT_COVER;
-					//JustSpoke();
+					JustSpoke();
 				}
 				return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
 			}

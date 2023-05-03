@@ -62,6 +62,9 @@ extern cvar_t *monster_spawn;
 extern cvar_t *monster_show_deaths;
 extern cvar_t *monster_show_info;
 
+// compiler does not like util.h being included here so i'll just extern the function
+extern void SENTENCEG_Init();
+
 // Player TakeDamage and Killed
 int g_DamageMsg;
 bool g_DamageActive;
@@ -1293,6 +1296,7 @@ int mmDispatchSpawn( edict_t *pent )
 
 		// precache last in the event of a GMR being present
 		world_precache();
+		SENTENCEG_Init();
 
 		// node support. -Giegue
 		// init the WorldGraph.

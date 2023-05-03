@@ -105,7 +105,7 @@ Current milestones are separated by "Tiers", which are as follows:
 - Global Sound Replacement. **[DONE]**
 - Miscellaneous customization options, such as blood color. **[DONE]**
 - Individual sound replacement: "soundlist" keyvalue for monsters. **[DONE]**
-- Sentences support for speakable monsters.
+- Sentences support for speakable monsters. **[DONE]**
 - Attempt to fix bugs as they appear.
 
 ### Tier 5

@@ -53,20 +53,25 @@
 #define RGRUNT_MAX_SPARKS			5
 
 //=========================================================
-// These sounds are muted for Robo Grunts
+// This sound is muted for Robo Grunts
 //=========================================================
-BOOL CMRGrunt::FOkToSpeak(void)
-{
-	return FALSE;
-}
-
-void CMRGrunt::IdleSound(void)
-{
-}
-
 void CMRGrunt::PainSound(void)
 {
 }
+
+// This is a gross hack: RGRUNT inherits from HGRUNT, so...
+// to avoid duplicating code, I'm going to define it here
+// then use it in hgrunt whenever speech is needed. -Giegue
+const char *CMRGrunt::pRobotSentences[] = 
+{
+	"RB_GREN", // Sven Co-op uses "RB_" for rgrunt sentences
+	"RB_ALERT",
+	"RB_MONSTER",
+	"RB_COVER",
+	"RB_THROW",
+	"RB_CHARGE",
+	"RB_TAUNT",
+};
 
 //=========================================================
 // DeathSound
@@ -411,13 +416,8 @@ void CMRGrunt::Precache()
 
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
 	
-	/*
 	// get voice pitch
-	if (RANDOM_LONG(0, 1))
-		m_voicePitch = 109 + RANDOM_LONG(0, 7);
-	else
-		m_voicePitch = 100;
-	*/
+	m_voicePitch = 115; // always the same
 
 	m_iBrassShell = PRECACHE_MODELINDEX("models/shell.mdl");// brass shell
 }

@@ -163,7 +163,7 @@ void CMHGrunt :: SpeakSentence( void )
 
 	if (FOkToSpeak())
 	{
-		SENTENCEG_PlayRndSz( ENT(pev), pGruntSentences[ m_iSentence ], HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+		SENTENCEG_PlayRndSz( ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? pGruntSentences[ m_iSentence ] : CMRGrunt::pRobotSentences[ m_iSentence ], HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 		JustSpoke();
 	}
 }
@@ -546,21 +546,22 @@ void CMHGrunt :: IdleSound( void )
 {
 	if (FOkToSpeak() && (g_fGruntQuestion || RANDOM_LONG(0,1)))
 	{
+		// there has to be a better way than spamming ternary operators... -Giegue
 		if (!g_fGruntQuestion)
 		{
 			// ask question or make statement
 			switch (RANDOM_LONG(0,2))
 			{
 			case 0: // check in
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_CHECK", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_CHECK" : "RB_CHECK", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				g_fGruntQuestion = 1;
 				break;
 			case 1: // question
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_QUEST", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_QUEST" : "RB_QUEST", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				g_fGruntQuestion = 2;
 				break;
 			case 2: // statement
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_IDLE", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_IDLE" : "RB_IDLE", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			}
 		}
@@ -569,10 +570,10 @@ void CMHGrunt :: IdleSound( void )
 			switch (g_fGruntQuestion)
 			{
 			case 1: // check in
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_CLEAR", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_CLEAR" : "RB_CLEAR", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			case 2: // question 
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_ANSWER", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_ANSWER" : "RB_ANSWER", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			}
 			g_fGruntQuestion = 0;
@@ -808,8 +809,8 @@ void CMHGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			if ( FOkToSpeak() )
 			{
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-				 JustSpoke();
+				SENTENCEG_PlayRndSz(ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_ALERT" : "RB_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+				JustSpoke();
 			}
 
 		}
@@ -1948,9 +1949,9 @@ Schedule_t *CMHGrunt :: GetSchedule( void )
 					//!!!KELLY - this grunt was hit and is going to run to cover.
 					if (FOkToSpeak()) // && RANDOM_LONG(0,1))
 					{
-						//SENTENCEG_PlayRndSz( ENT(pev), "HG_COVER", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+						SENTENCEG_PlayRndSz( ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_COVER" : "RB_COVER", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 						m_iSentence = HGRUNT_SENT_COVER;
-						//JustSpoke();
+						JustSpoke();
 					}
 					return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
 				}
@@ -1995,14 +1996,14 @@ Schedule_t *CMHGrunt :: GetSchedule( void )
 			else if ( HasConditions( bits_COND_ENEMY_OCCLUDED ) )
 			{
 				// missing CSquadMonster functions means that the monster will stand still if its enemy is out of sight
-				// and if it is impossible to throw a grenade. force it to chase the enemy if attack isn't possible
+				// AND if it is impossible to throw a grenade. force it to chase the enemy if attack isn't possible
 				// -Giegue
 				if ( HasConditions( bits_COND_CAN_RANGE_ATTACK2 ) )
 				{
 					//!!!KELLY - this grunt is about to throw or fire a grenade at the player. Great place for "fire in the hole"  "frag out" etc
 					if (FOkToSpeak())
 					{
-						SENTENCEG_PlayRndSz( ENT(pev), "HG_THROW", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+						SENTENCEG_PlayRndSz( ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_THROW" : "RB_THROW", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 						JustSpoke();
 					}
 					return GetScheduleOfType( SCHED_RANGE_ATTACK2 );

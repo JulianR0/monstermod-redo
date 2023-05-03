@@ -872,7 +872,7 @@ void scan_extra_cfg(FILE *fp)
 			if (dllapi_log->value)
 				LOG_CONSOLE(PLID, "[DEBUG] Using global model replacement file: %s", value);
 		}
-		else if (strcmp(cmd, "globalsoundlist") == 0)
+		if (strcmp(cmd, "globalsoundlist") == 0)
 		{
 			//globalsoundlist->string = value;
 			CVAR_SET_STRING( "monster_gsr", value );

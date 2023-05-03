@@ -253,10 +253,7 @@ void CMHWGrunt::Precache()
 	PRECACHE_SOUND("hassault/hw_spindown.wav");
 
 	// get voice pitch
-	if (RANDOM_LONG(0, 1))
-		m_voicePitch = 102 + RANDOM_LONG(0, 7);
-	else
-		m_voicePitch = 93; // slight voice change for hwgrunt
+	m_voicePitch = 95 + RANDOM_LONG(0, 3); // slighly lower than normal grunt
 
 	CMHGrunt hgrunt;
 	hgrunt.Precache();

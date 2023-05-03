@@ -1687,14 +1687,11 @@ class CMRGrunt : public CMHGrunt
 public:
 	int  Classify(void);
 
-	BOOL FOkToSpeak(void);
-
 	void Spawn( void );
 	void Precache( void );
 
 	void DeathSound(void);
 	void PainSound(void);
-	void IdleSound(void);
 	
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
@@ -1712,6 +1709,8 @@ public:
 	float m_flActiveDischarge;
 
 	int m_iBodyGibs;
+
+	static const char *pRobotSentences[];
 };
 
 //=========================================================
