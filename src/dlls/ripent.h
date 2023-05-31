@@ -90,7 +90,7 @@ void	SafeRead(FILE *f, void *buffer, int count);
 char	*ExpandPath(char *path);	// from scripts
 
 // -- scriplib.h --
-#define	MAXTOKEN	512
+#define	MAXTOKEN	4096
 
 extern	char	token[MAXTOKEN];
 bool			GetToken(bool crossline);

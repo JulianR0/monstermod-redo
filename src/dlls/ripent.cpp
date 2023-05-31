@@ -421,7 +421,11 @@ skipspace:
 			if (script->script_p == script->end_p)
 				break;
 			if (token_p == &token[MAXTOKEN])
-				LOG_MESSAGE(PLID, "Token too large on line %i", scriptline);
+			{
+				// if the server does not crash before this happens, then monstermod will.
+				// simulate a fatal error and be verbose on why it happens.
+				ALERT(at_logged, "FATAL ERROR (shutting down): ReadEntsFromBSP: Line %i is too long (length > %i).", scriptline, MAXTOKEN);
+			}
 		}
 		script->script_p++;
 	}
@@ -432,7 +436,10 @@ skipspace:
 			if (script->script_p == script->end_p)
 				break;
 			if (token_p == &token[MAXTOKEN])
-				LOG_MESSAGE(PLID, "Token too large on line %i", scriptline);
+			{
+				// ditto
+				ALERT(at_logged, "FATAL ERROR (shutting down): ReadEntsFromBSP: Line %i is too long (length > %i).", scriptline, MAXTOKEN);
+			}
 		}
 
 	*token_p = 0;
