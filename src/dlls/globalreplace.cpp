@@ -122,8 +122,20 @@ const char* FindSoundReplacement( edict_t *pMonster, const char *from )
 	// Individually set sounds takes priority!
 	if ( pMonster )
 	{
-		CMBaseMonster *castMonster = GetClassPtr((CMBaseMonster *)VARS(pMonster));
-		if (castMonster->m_isrSounds)
+		CMBaseMonster *castMonster = NULL;
+		
+		// Check if this is really a monster or not
+		if (pMonster->v.flags & FL_MONSTER)
+			castMonster = GetClassPtr((CMBaseMonster *)VARS(pMonster));
+		else
+		{
+			// This is probably a monster-owned projectile of sorts
+			if (!FNullEnt(pMonster->v.owner))
+				castMonster = GetClassPtr((CMBaseMonster *)VARS(pMonster->v.owner));
+		}
+
+		// If still no valid BaseMonster pointer, full stop, use GSR.
+		if (castMonster && castMonster->m_isrSounds)
 		{
 			for (int sound = 0; sound < castMonster->m_isrSounds; sound++)
 			{
