@@ -58,6 +58,11 @@ void CMMonsterMaker :: KeyValue( KeyValueData *pkvd )
 				break; // grab the first entry we find
 			}
 		}
+		if (monster_types[mIndex].name[0] == 0)
+		{
+			ALERT ( at_logged, "[MONSTER] MonsterMaker - %s is not a valid monster type!\n", pkvd->szValue );
+			m_iMonsterIndex = -1;
+		}
 		pkvd->fHandled = TRUE;
 	}
 	else if ( FStrEq(pkvd->szKeyName, "new_model") )
@@ -96,6 +101,17 @@ void CMMonsterMaker :: KeyValue( KeyValueData *pkvd )
 
 void CMMonsterMaker :: Spawn( )
 {
+	// likely omitted keyvalue, but it could truly be an alien grunt spawn
+	if ( m_iMonsterIndex == 0 )
+	{
+		if ( !monster_types[0].need_to_precache )
+		{
+			// monstertype was not defined
+			ALERT ( at_logged, "[MONSTER] Spawned a monstermaker entity without a monstertype! targetname: \"%s\"\n", STRING(pev->targetname) );
+			m_iMonsterIndex = -1;
+		}
+	}
+
 	pev->solid = SOLID_NOT;
 	
 	m_cLiveChildren = 0;
@@ -147,6 +163,13 @@ void CMMonsterMaker :: Precache( void )
 //=========================================================
 void CMMonsterMaker::MakeMonster( void )
 {
+	// monstermaker incorrectly setup or intentionally empty
+	if ( m_iMonsterIndex == -1 )
+	{
+		ALERT ( at_console, "[MONSTER] NULL Ent in MonsterMaker!\n" );
+		return;
+	}
+
 	edict_t *pent;
 	pKVD keyvalue[MAX_KEYVALUES]; // sometimes, i don't know what am i doing. -Giegue
 	int createSF = SF_MONSTER_FALL_TO_GROUND;
@@ -229,7 +252,7 @@ void CMMonsterMaker::MakeMonster( void )
 	pent = spawn_monster(m_iMonsterIndex, pev->origin, pev->angles, createSF, keyvalue);
 	if ( pent == NULL )
 	{
-		ALERT ( at_console, "[MONSTER] NULL Ent in MonsterMaker!\n" );
+		ALERT ( at_console, "[MONSTER] MonsterMaker - failed to spawn monster! targetname: \"%s\"\n", STRING(pev->targetname) );
 		return;
 	}
 	
