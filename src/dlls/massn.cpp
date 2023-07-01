@@ -31,6 +31,8 @@
 #include	"effects.h"
 #include	"customentity.h"
 
+extern cvar_t *monster_default_maxrange;
+
 //=========================================================
 // monster-specific DEFINE's
 //=========================================================
@@ -265,6 +267,10 @@ void CMMassn::Spawn()
 	{
 		SetBodygroup(GUN_GROUP, GUN_SNIPERRIFLE);
 		m_cClipSize = 5;
+
+		// if no attack range set, set 2x default
+		if (!m_flDistLook)
+			m_flDistLook = monster_default_maxrange->value * 2;
 	}
 	else
 	{
@@ -280,7 +286,12 @@ void CMMassn::Spawn()
 	CMTalkMonster::g_talkWaitTime = 0;
 
 	MonsterInit();
-	
+	if (FBitSet(pev->weapons, MASSN_SNIPERRIFLE))
+	{
+		// override for snipers
+		m_flDistTooFar = m_flDistLook / 1.33;
+	}
+
 	pev->classname = MAKE_STRING( "monster_male_assassin" );
 	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
 	{

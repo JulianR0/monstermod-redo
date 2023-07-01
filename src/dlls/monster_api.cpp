@@ -95,6 +95,8 @@ cvar_t init_globalmodellist = {"monster_gmr", "", FCVAR_EXTDLL, 0, NULL};
 cvar_t *globalmodellist = NULL;
 cvar_t init_globalsoundlist = {"monster_gsr", "", FCVAR_EXTDLL, 0, NULL};
 cvar_t *globalsoundlist = NULL;
+cvar_t init_monster_default_maxrange = {"monster_default_maxrange", "2048", FCVAR_EXTDLL, 0, NULL};
+cvar_t *monster_default_maxrange = NULL;
 
 
 // Metamod requesting info about this plugin:
@@ -164,6 +166,9 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS *pFunctionTable, m
 	globalmodellist = CVAR_GET_POINTER("monster_gmr");
 	CVAR_REGISTER(&init_globalsoundlist);
 	globalsoundlist = CVAR_GET_POINTER("monster_gsr");
+
+	CVAR_REGISTER(&init_monster_default_maxrange);
+	monster_default_maxrange = CVAR_GET_POINTER("monster_default_maxrange");
 
 	return(TRUE);
 }

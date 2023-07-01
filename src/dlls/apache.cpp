@@ -424,7 +424,7 @@ void CMApache :: HuntThink( void )
 
 	// if (m_hEnemy == NULL)
 	{
-		Look( 4092 );
+		Look( 4096 );
 		m_hEnemy = BestVisibleEnemy( );
 	}
 

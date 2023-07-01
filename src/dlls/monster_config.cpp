@@ -890,6 +890,10 @@ void scan_monster_replace(FILE *fp, bool toGSR )
 	
 	while (get_input(fp, input))
 	{
+		// might slip through
+		if (strlen(input) == 0)
+			continue;
+
 		char *source = strtok(input, " ");
 		char *destination = strtok(NULL, " ");
 

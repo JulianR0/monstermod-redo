@@ -92,6 +92,9 @@ void CMBaseTurret::Spawn()
 		m_iAutoStart = TRUE;
 	}
 
+	if (!m_flDistLook)
+		m_flDistLook = TURRET_RANGE;
+
 	ResetSequenceInfo( );
 	SetBoneController( 0, 0 );
 	SetBoneController( 1, 0 );
@@ -348,7 +351,7 @@ void CMBaseTurret::ActiveThink(void)
 	Vector vec = UTIL_VecToAngles(vecMidEnemy - vecMid);	
 
 	// Current enemy is not visible.
-	if (!fEnemyVisible || (flDistToEnemy > TURRET_RANGE))
+	if (!fEnemyVisible || (flDistToEnemy > m_flDistLook))
 	{
 		if (!m_flLastSight)
 			m_flLastSight = gpGlobals->time + 0.5;
@@ -459,7 +462,7 @@ void CMBaseTurret::ActiveThink(void)
 
 void CMTurret::Shoot(Vector &vecSrc, Vector &vecDirToEnemy)
 {
-	FireBullets( 1, vecSrc, vecDirToEnemy, TURRET_SPREAD, TURRET_RANGE, BULLET_MONSTER_12MM, 1 );
+	FireBullets( 1, vecSrc, vecDirToEnemy, TURRET_SPREAD, m_flDistLook, BULLET_MONSTER_12MM, 1 );
 	EMIT_SOUND(ENT(pev), CHAN_WEAPON, "turret/tu_fire1.wav", 1, 0.6);
 	pev->effects = pev->effects | EF_MUZZLEFLASH;
 }
@@ -467,7 +470,7 @@ void CMTurret::Shoot(Vector &vecSrc, Vector &vecDirToEnemy)
 
 void CMMiniTurret::Shoot(Vector &vecSrc, Vector &vecDirToEnemy)
 {
-	FireBullets( 1, vecSrc, vecDirToEnemy, TURRET_SPREAD, TURRET_RANGE, BULLET_MONSTER_9MM, 1 );
+	FireBullets( 1, vecSrc, vecDirToEnemy, TURRET_SPREAD, m_flDistLook, BULLET_MONSTER_9MM, 1 );
 
 	switch(RANDOM_LONG(0,2))
 	{
@@ -721,7 +724,7 @@ void CMBaseTurret::SearchThink(void)
 	// Acquire Target
 	if (m_hEnemy == NULL)
 	{
-		Look(TURRET_RANGE);
+		Look(m_flDistLook);
 		m_hEnemy = BestVisibleEnemy();
 	}
 
@@ -779,7 +782,7 @@ void CMBaseTurret::AutoSearchThink(void)
 
 	if (m_hEnemy == NULL)
 	{
-		Look( TURRET_RANGE );
+		Look( m_flDistLook );
 		m_hEnemy = BestVisibleEnemy();
 	}
 
@@ -1042,7 +1045,7 @@ void CMSentry::Spawn()
 
 void CMSentry::Shoot(Vector &vecSrc, Vector &vecDirToEnemy)
 {
-	FireBullets( 1, vecSrc, vecDirToEnemy, TURRET_SPREAD, TURRET_RANGE, BULLET_MONSTER_MP5, 1 );
+	FireBullets( 1, vecSrc, vecDirToEnemy, TURRET_SPREAD, m_flDistLook, BULLET_MONSTER_MP5, 1 );
 	
 	switch(RANDOM_LONG(0,2))
 	{
