@@ -136,7 +136,7 @@ monster_type_t monster_types[]=
 	"monster_apache", FALSE,
 	"monster_barney", FALSE,
 	"monster_bigmomma", FALSE,
-	"monster_bullsquid", FALSE,
+	"monster_bullchicken", FALSE,
 	"monster_alien_controller", FALSE,
 	"monster_human_assassin", FALSE,
 	"monster_headcrab", FALSE,
@@ -211,6 +211,11 @@ int GetMonsterIndex(void)
 
 void FreeMonsterIndex(int index)
 {
+	/*
+	if (monsters[index].pMonster->m_srSoundList != NULL)
+		free(monsters[index].pMonster->m_srSoundList);
+	monsters[index].pMonster->m_srSoundList = NULL;
+	*/
 	delete monsters[index].pMonster;
 	
 	monsters[index].monster_index = 0;
@@ -256,6 +261,11 @@ void monster_unload(void)
 		{
 			monsters[index].monster_pent->v.flags |= FL_KILLME;
 			
+			/*
+			if (monsters[index].pMonster->m_srSoundList != NULL)
+				free(monsters[index].pMonster->m_srSoundList);
+			monsters[index].pMonster->m_srSoundList = NULL;
+			*/
 			delete monsters[index].pMonster;
 			
 			monsters[index].monster_index = 0;
@@ -1260,10 +1270,10 @@ int mmDispatchSpawn( edict_t *pent )
 			if (monsters[index].pMonster != NULL)
 			{
 				// free the soundlists first!
-				if (monsters[index].pMonster->m_srSoundList != NULL)
+				/*if (monsters[index].pMonster->m_srSoundList != NULL)
 					free(monsters[index].pMonster->m_srSoundList);
 				monsters[index].pMonster->m_srSoundList = NULL;
-
+				*/
 				delete monsters[index].pMonster;
 			}
 		}
@@ -1604,6 +1614,16 @@ void mmClientKill_Post( edict_t *pPlayer )
 	RETURN_META(MRES_IGNORED);
 }
 
+BOOL mmClientConnect( edict_t *pPlayer, const char *pszName, const char *pszAddress, char *szRejectReason )
+{
+	// stop any ambient_music that is playing
+	MESSAGE_BEGIN(MSG_ONE, SVC_STUFFTEXT, NULL, pPlayer);
+	WRITE_STRING("mp3 stop\n");
+	MESSAGE_END();
+
+	RETURN_META_VALUE( MRES_IGNORED, TRUE );
+}
+
 static DLL_FUNCTIONS gFunctionTable = 
 {
 	mmGameDLLInit,	//! pfnGameInit()	Initialize the game (one-time call after loading of game .dll)
@@ -1624,7 +1644,7 @@ static DLL_FUNCTIONS gFunctionTable =
 	NULL,			// pfnRestoreGlobalState
 	NULL,			// pfnResetGlobalState
 
-	NULL,			// pfnClientConnect
+	mmClientConnect,			//! pfnClientConnect
 	NULL,			// pfnClientDisconnect
 	NULL,			// pfnClientKill
 	NULL,			// pfnClientPutInServer

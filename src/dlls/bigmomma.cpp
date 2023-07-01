@@ -1147,7 +1147,7 @@ CMBMortar *CMBMortar::Shoot( edict_t *pOwner, Vector vecStart, Vector vecVelocit
 {
 	CMBMortar *pSpit = CreateClassPtr( (CMBMortar *)NULL );
 	if (pSpit)
-   {
+	{
 		pSpit->Spawn();
 	
 		UTIL_SetOrigin( pSpit->pev, vecStart );

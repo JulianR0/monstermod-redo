@@ -130,7 +130,7 @@ public:
 	int				FIdleStare( void );
 	int				FIdleHello( void );
 	void			IdleHeadTurn( Vector &vecFriend );
-	int				FOkToSpeak( void );
+	virtual int		FOkToSpeak( void );
 	void			TrySmellTalk( void );
 	edict_t		*EnumFriends( edict_t *pentPrevious, int listNumber, BOOL bTrace );
 	void			AlertFriends( void );

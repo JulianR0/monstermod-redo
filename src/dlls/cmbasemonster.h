@@ -1444,6 +1444,7 @@ public:
 	void AlertSound(void);
 	void MonsterThink(void);
 	void StartTask(Task_t* pTask);
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 
 	static const char *pIdleSounds[];

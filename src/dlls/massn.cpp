@@ -345,7 +345,7 @@ DEFINE_CUSTOM_SCHEDULES( CMMassn )
 	slMassnSniperAttack,
 };
 
-IMPLEMENT_CUSTOM_SCHEDULES( CMMassn, CMBaseMonster );
+IMPLEMENT_CUSTOM_SCHEDULES( CMMassn, CMHGrunt );
 
 //=========================================================
 // SetActivity 

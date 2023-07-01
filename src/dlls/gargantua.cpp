@@ -815,9 +815,12 @@ void CMGargantua::DeathEffect( void )
 
 void CMGargantua::Killed( entvars_t *pevAttacker, int iGib )
 {
-	EyeOff();
-	UTIL_Remove( m_pEyeGlow->edict() );
-	m_pEyeGlow = NULL;
+	if ( m_pEyeGlow )
+	{
+		EyeOff();
+		UTIL_Remove( m_pEyeGlow->edict() );
+		m_pEyeGlow = NULL;
+	}
 	CMBaseMonster::Killed( pevAttacker, GIB_NEVER );
 }
 

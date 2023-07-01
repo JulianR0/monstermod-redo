@@ -26,6 +26,8 @@
 #include	"schedule.h"
 #include	"weapons.h"
 
+#define		SR_AE_JUMPATTACK	( 2 )
+
 const char *CMShockRoach::pIdleSounds[] =
 {
 	"shockroach/shock_idle1.wav",
@@ -219,7 +221,26 @@ int CMShockRoach::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 	return CMBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
+//=========================================================
+// HandleAnimEvent - catches the monster-specific messages
+// that occur when tagged animation frames are played.
+//=========================================================
+void CMShockRoach::HandleAnimEvent(MonsterEvent_t *pEvent)
+{
+	CMHeadCrab::HandleAnimEvent(pEvent);
+
+	switch (pEvent->event)
+	{
+	case SR_AE_JUMPATTACK:
+	{
+		// Overwrite attack noise
+		AttackSound();
+	}
+	break;
+	}
+}
+
 void CMShockRoach::AttackSound()
 {
-	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackSounds), GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch());
+	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch());
 }

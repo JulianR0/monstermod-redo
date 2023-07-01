@@ -100,7 +100,7 @@ bool AddIndividualSound(edict_t *pMonster, const char *from, const char *to)
 const char* FindModelReplacement( edict_t *pMonster, const char *from )
 {
 	// Individually set models takes priority!
-	if ( pMonster && !FStringNull(pMonster->v.model))
+	if (UTIL_IsValidEntity(pMonster) && !FStringNull(pMonster->v.model))
 		return STRING(pMonster->v.model);
 
 	// Find the model
@@ -120,7 +120,7 @@ const char* FindModelReplacement( edict_t *pMonster, const char *from )
 const char* FindSoundReplacement( edict_t *pMonster, const char *from )
 {
 	// Individually set sounds takes priority!
-	if ( pMonster )
+	if (UTIL_IsValidEntity(pMonster))
 	{
 		CMBaseMonster *castMonster = NULL;
 		
@@ -133,7 +133,7 @@ const char* FindSoundReplacement( edict_t *pMonster, const char *from )
 			if (!FNullEnt(pMonster->v.owner))
 				castMonster = GetClassPtr((CMBaseMonster *)VARS(pMonster->v.owner));
 		}
-
+		
 		// If still no valid BaseMonster pointer, full stop, use GSR.
 		if (castMonster && castMonster->m_isrSounds)
 		{

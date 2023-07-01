@@ -799,8 +799,10 @@ void CMHGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				else if (pHurt->v.euser4 != NULL)
 				{
 					CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pHurt));
-					pMonster->TakeDamage( pev, pev, gSkillData.hgruntDmgKick, DMG_CLUB );
+					pMonster->TakeDamage(pev, pev, gSkillData.hgruntDmgKick, DMG_CLUB);
 				}
+				else
+					UTIL_TakeDamageExternal(pHurt, pev, pev, gSkillData.hgruntDmgKick, DMG_CLUB);
 			}
 		}
 		break;

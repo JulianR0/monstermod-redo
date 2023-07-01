@@ -212,6 +212,10 @@ entvars_t* CGraph :: LinkEntForLink ( CLink *pLink, CNode *pNode )
 //=========================================================
 int	CGraph :: HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODEQUERY queryType )
 {
+	// NULL pointers are becoming a nightmare... -Giegue
+	return FALSE;
+
+#if 0
 	edict_t  *pentWorld;
 	CMBaseEntity	*pDoor;
 	TraceResult	tr;
@@ -232,9 +236,7 @@ int	CGraph :: HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, N
 // func_door
 	if ( FClassnameIs( pevLinkEnt, "func_door" ) || FClassnameIs( pevLinkEnt, "func_door_rotating" ) )
 	{// ent is a door.
-		// Can't retrieve door info right now, assume it's a hard wall and don't let the monster go through
-		return FALSE;
-		/*
+
 		pDoor = ( CMBaseEntity::Instance( pevLinkEnt ) );
 
 		if ( ( pevLinkEnt->spawnflags & SF_DOOR_USE_ONLY ) ) 
@@ -271,7 +273,6 @@ int	CGraph :: HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, N
 
 			return FALSE;
 		}
-		*/
 	}
 // func_breakable	
 	else if ( FClassnameIs( pevLinkEnt, "func_breakable" ) && queryType == NODEGRAPH_STATIC )
@@ -285,6 +286,7 @@ int	CGraph :: HandleLinkEnt ( int iNode, entvars_t *pevLinkEnt, int afCapMask, N
 	}
 
 	return FALSE;
+#endif
 }
 
 #if 0
