@@ -172,7 +172,7 @@ void CMBaseMonster :: Look ( int iDistance )
 				{
 					/* MonsterMod monster looking at another MonsterMod monster */
 					CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pSightEnt));
-
+					
 					// the looker will want to consider this entity
 					// don't check anything else about an entity that can't be seen, or an entity that you don't care about.
 					if ( IRelationship( pMonster ) != R_NO && UTIL_FInViewCone( pSightEnt, ENT(pev), m_flFieldOfView ) && !FBitSet( pSightEnt->v.flags, FL_NOTARGET ) && UTIL_FVisible( pSightEnt, ENT(pev) ) )

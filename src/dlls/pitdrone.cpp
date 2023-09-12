@@ -60,6 +60,9 @@ void CPitdroneSpike::Spawn(void)
 
 void CPitdroneSpike::SpikeTouch(edict_t *pOther)
 {
+	if (m_hOwner == NULL)
+		pev->owner = NULL;
+
 	int iPitch;
 	
 	// splat sound
@@ -89,7 +92,9 @@ void CPitdroneSpike::SpikeTouch(edict_t *pOther)
 	else
 	{
 		entvars_t *pevOwner = VARS(pev->owner);
-		
+		if (pevOwner == NULL)
+			pevOwner = pev;
+
 		if ( UTIL_IsPlayer( pOther ) )
 			UTIL_TakeDamage( pOther, pev, pevOwner, gSkillData.pitdroneDmgSpit, DMG_GENERIC | DMG_NEVERGIB );
 		else if ( pOther->v.euser4 != NULL )
@@ -141,6 +146,7 @@ edict_t *CPitdroneSpike::Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecV
 	pSpit->pev->velocity = vecVelocity;
 	pSpit->pev->angles = vecAngles;
 	pSpit->pev->owner = ENT( pevOwner );
+	pSpit->m_hOwner = ENT( pevOwner );
 
 	pSpit->SetThink(&CPitdroneSpike::StartTrail);
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;

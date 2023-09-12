@@ -211,11 +211,6 @@ int GetMonsterIndex(void)
 
 void FreeMonsterIndex(int index)
 {
-	/*
-	if (monsters[index].pMonster->m_srSoundList != NULL)
-		free(monsters[index].pMonster->m_srSoundList);
-	monsters[index].pMonster->m_srSoundList = NULL;
-	*/
 	delete monsters[index].pMonster;
 	
 	monsters[index].monster_index = 0;
@@ -261,11 +256,6 @@ void monster_unload(void)
 		{
 			monsters[index].monster_pent->v.flags |= FL_KILLME;
 			
-			/*
-			if (monsters[index].pMonster->m_srSoundList != NULL)
-				free(monsters[index].pMonster->m_srSoundList);
-			monsters[index].pMonster->m_srSoundList = NULL;
-			*/
 			delete monsters[index].pMonster;
 			
 			monsters[index].monster_index = 0;
@@ -1268,14 +1258,7 @@ int mmDispatchSpawn( edict_t *pent )
 		for (index = 0; index < MAX_MONSTER_ENTS; index++)
 		{
 			if (monsters[index].pMonster != NULL)
-			{
-				// free the soundlists first!
-				/*if (monsters[index].pMonster->m_srSoundList != NULL)
-					free(monsters[index].pMonster->m_srSoundList);
-				monsters[index].pMonster->m_srSoundList = NULL;
-				*/
 				delete monsters[index].pMonster;
-			}
 		}
 		
 		// free any allocated keyvalue memory

@@ -449,6 +449,13 @@ void CMVoltigore::GibMonster()
 	pev->nextthink = gpGlobals->time;
 }
 
+void CMVoltigore::UpdateOnRemove()
+{
+	CMBaseMonster::UpdateOnRemove();
+	DestroyBeams();
+	DestroyGlow();
+}
+
 //=========================================================
 // CheckMeleeAttack1 - voltigore is a big guy, so has a longer
 // melee range than most monsters. This is the tailwhip attack

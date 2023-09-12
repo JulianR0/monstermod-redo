@@ -48,6 +48,10 @@ void CMGrenade::Explode( Vector vecSrc, Vector vecAim )
 // UNDONE: temporary scorching for PreAlpha - find a less sleazy permenant solution.
 void CMGrenade::Explode( TraceResult *pTrace, int bitsDamageType )
 {
+	// CRITICAL - always ensure owner of grenade is valid
+	if (m_hOwner == NULL)
+		pev->owner = NULL;
+	
 	float		flRndSound;// sound randomizer
 
 	pev->model = iStringNull;//invisible
@@ -309,6 +313,10 @@ void CMGrenade::SlideTouch( edict_t *pOther )
 
 void CMGrenade :: BounceSound( void )
 {
+	// CRITICAL - always ensure owner of grenade is valid
+	if (m_hOwner == NULL)
+		pev->owner = NULL;
+	
 	switch ( RANDOM_LONG( 0, 2 ) )
 	{
 	case 0:	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/grenade_hit1.wav", 0.25, ATTN_NORM);	break;
@@ -369,7 +377,8 @@ CMGrenade *CMGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector
 	pGrenade->pev->velocity = vecVelocity;
 	pGrenade->pev->angles = UTIL_VecToAngles (pGrenade->pev->velocity);
 	pGrenade->pev->owner = ENT(pevOwner);
-	
+	pGrenade->m_hOwner = ENT(pevOwner);
+
 	// make monsters afaid of it while in the air
 	pGrenade->SetThink( &CMGrenade::DangerSoundThink );
 	pGrenade->pev->nextthink = gpGlobals->time;
@@ -398,7 +407,8 @@ CMGrenade * CMGrenade:: ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector
 	pGrenade->pev->velocity = vecVelocity;
 	pGrenade->pev->angles = UTIL_VecToAngles(pGrenade->pev->velocity);
 	pGrenade->pev->owner = ENT(pevOwner);
-	
+	pGrenade->m_hOwner = ENT(pevOwner);
+
 	pGrenade->SetTouch( &CMGrenade::BounceTouch );	// Bounce if touched
 	
 	// Take one second off of the desired detonation time and set the think to PreDetonate. PreDetonate
@@ -451,7 +461,8 @@ CMGrenade * CMGrenade :: ShootSatchelCharge( entvars_t *pevOwner, Vector vecStar
 	pGrenade->pev->velocity = vecVelocity;
 	pGrenade->pev->angles = g_vecZero;
 	pGrenade->pev->owner = ENT(pevOwner);
-	
+	pGrenade->m_hOwner = ENT(pevOwner);
+
 	// Detonate in "time" seconds
 	pGrenade->SetThink( &CMGrenade::SUB_DoNothing );
 	pGrenade->SetUse( &CMGrenade::DetonateUse );

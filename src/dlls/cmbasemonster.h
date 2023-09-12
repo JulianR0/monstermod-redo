@@ -734,6 +734,7 @@ public:
 	static const char *pAttackHitSounds[];
 	static const char *pAttackMissSounds[];
 	static const char *pAttackSounds[];
+	static const char *pFireSounds[];
 	static const char *pDieSounds[];
 	static const char *pPainSounds[];
 	static const char *pIdleSounds[];
@@ -1381,6 +1382,8 @@ public:
 	void EXPORT SpikeTouch(edict_t *pOther);
 	void EXPORT StartTrail();
 	static edict_t *Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, Vector vecAngles);
+
+	EHANDLE m_hOwner;
 };
 
 //=========================================================
@@ -1557,6 +1560,7 @@ public:
 	Schedule_t *GetScheduleOfType(int Type);
 	virtual int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
 	virtual void Killed(entvars_t *pevAttacker, int iGib);
+	void UpdateOnRemove();
 
 	CUSTOM_SCHEDULES
 

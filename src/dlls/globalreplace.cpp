@@ -123,19 +123,19 @@ const char* FindSoundReplacement( edict_t *pMonster, const char *from )
 	if (UTIL_IsValidEntity(pMonster))
 	{
 		CMBaseMonster *castMonster = NULL;
-		
+
 		// Check if this is really a monster or not
 		if (pMonster->v.flags & FL_MONSTER)
 			castMonster = GetClassPtr((CMBaseMonster *)VARS(pMonster));
 		else
 		{
 			// This is probably a monster-owned projectile of sorts
-			if (!FNullEnt(pMonster->v.owner))
+			if (UTIL_IsValidEntity(pMonster->v.owner))
 				castMonster = GetClassPtr((CMBaseMonster *)VARS(pMonster->v.owner));
 		}
-		
+
 		// If still no valid BaseMonster pointer, full stop, use GSR.
-		if (castMonster && castMonster->m_isrSounds)
+		if (castMonster != NULL && castMonster->m_srSoundList != NULL && castMonster->m_isrSounds > 0)
 		{
 			for (int sound = 0; sound < castMonster->m_isrSounds; sound++)
 			{
@@ -145,7 +145,6 @@ const char* FindSoundReplacement( edict_t *pMonster, const char *from )
 					return castMonster->m_srSoundList[sound].destination;
 				}
 			}
-
 			// If nothing is found stick to GSR if available
 		}
 	}

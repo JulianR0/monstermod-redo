@@ -40,6 +40,9 @@ void CMSporeGrenade::Precache()
 
 void CMSporeGrenade::Explode(TraceResult *pTrace)
 {
+	if (m_hOwner == NULL)
+		pev->owner = NULL;
+
 	pev->solid = SOLID_NOT;// intangible
 	pev->takedamage = DAMAGE_NO;
 
@@ -125,6 +128,9 @@ void CMSporeGrenade::Detonate()
 
 void CMSporeGrenade::BounceSound()
 {
+	if (m_hOwner == NULL)
+		pev->owner = NULL;
+
 	EMIT_SOUND(ENT(pev), CHAN_VOICE, "weapons/splauncher_bounce.wav", 0.25, ATTN_NORM);
 }
 
@@ -252,6 +258,7 @@ CMSporeGrenade* CMSporeGrenade::ShootTimed(entvars_t *pevOwner, Vector vecStart,
 	pGrenade->pev->velocity = vecVelocity;
 	pGrenade->pev->angles = UTIL_VecToAngles(pGrenade->pev->velocity);
 	pGrenade->pev->owner = ENT(pevOwner);
+	pGrenade->m_hOwner = ENT(pevOwner);
 
 	pGrenade->SetTouch(&CMSporeGrenade::BounceTouch);	// Bounce if touched
 
@@ -286,6 +293,7 @@ CMSporeGrenade *CMSporeGrenade::ShootContact(entvars_t *pevOwner, Vector vecStar
 	pGrenade->pev->velocity = vecVelocity;
 	pGrenade->pev->angles = UTIL_VecToAngles(pGrenade->pev->velocity);
 	pGrenade->pev->owner = ENT(pevOwner);
+	pGrenade->m_hOwner = ENT(pevOwner);
 
 	// make monsters afraid of it while in the air
 	pGrenade->SetThink(&CMSporeGrenade::DangerSoundThink);

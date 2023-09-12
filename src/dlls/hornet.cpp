@@ -126,23 +126,14 @@ int CMHornet::IRelationship ( CMBaseEntity *pTarget )
 //=========================================================
 int CMHornet::Classify ( void )
 {
-	/*
-	if ( pev->owner && pev->owner->v.flags & FL_CLIENT)
-	{
-		return CLASS_PLAYER_BIOWEAPON;
-	}
-
-	return	CLASS_ALIEN_BIOWEAPON;
-	*/
-	
 	// Ensure classify is consistent with the owner, in the event
 	// it's classification was overriden.
-	if ( pev->owner == NULL )
-		return CLASS_ALIEN_BIOWEAPON;
-	
-	// Ain't this going to make the hornets code "slow"?
-	CMBaseMonster *pOwner = GetClassPtr((CMBaseMonster *)VARS(pev->owner));
-	return pOwner->Classify();
+	if (UTIL_IsValidEntity(pev->owner))
+	{
+		CMBaseMonster *pOwner = GetClassPtr((CMBaseMonster *)VARS(pev->owner));
+		return pOwner->Classify();
+	}
+	return CLASS_ALIEN_BIOWEAPON;
 }
 
 //=========================================================

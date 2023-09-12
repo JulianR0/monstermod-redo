@@ -87,6 +87,13 @@ const char *CMAGrunt::pAttackSounds[] =
 	"agrunt/ag_attack3.wav",
 };
 
+const char *CMAGrunt::pFireSounds[] =
+{
+	"agrunt/ag_fire1.wav",
+	"agrunt/ag_fire2.wav",
+	"agrunt/ag_fire3.wav",
+};
+
 const char *CMAGrunt::pDieSounds[] =
 {
 	"agrunt/ag_die1.wav",
@@ -412,6 +419,8 @@ void CMAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 
 				UTIL_MakeVectors ( pHornet->pev->angles );
 				pHornet->pev->velocity = gpGlobals->v_forward * 300;
+
+				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, pFireSounds[RANDOM_LONG(0, ARRAYSIZE(pFireSounds) - 1)], 1.0, ATTN_NORM, 0, 100);
 
 				CMBaseMonster *pHornetMonster = pHornet->MyMonsterPointer();
 
