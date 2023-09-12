@@ -23,7 +23,7 @@ A small light is seen at the distance...
 
 MonsterMod is a MetaMod plugin. Its purpose was to allow multiplayer games to add monsters, where it wasn't possible to do so by normal means. The updates of the project became incredibly obscure: Getting the "up-to-date" versions containing the new additions (opposing force monsters, for example) were very difficult. And the only one who managed to bring the plugin even futher kept the progress of the plugin private.
 
-After 20 years (and a half) since botman's original plugin was released, the future of the project became nothing but a forgotten, ancient relic of the past.
+After 21 years since botman's original plugin was released, the future of the project became nothing but a forgotten, ancient relic of the past.
 
 Not anymore...
 
@@ -43,13 +43,13 @@ The plugin -should- be able to be used out-of-the-box by simply downloading the 
 **Linux:**
 `linux addons/monstermod/monster_mm_i386.so`
 
-Additional configuration files are included in the release files, each explaining it's usage and installation instructions.
+To start adding monsters onto your maps, additional configuration files are included in the release files, each explaining its usage and installation instructions. Nevertheless, if you are felling lost, the [wiki](https://github.com/JulianR0/monstermod-redo/wiki) contains usage instructions, and how to configure MonsterMod to your liking.
 
 Extra MonsterMod features can be unlocked with additional AMX Mod X plugins which are located in the `extra` folder. All these plugins are optional, and only required based on your use-case.
 
 ## Build Instructions
 
-The [wiki](https://github.com/JulianR0/monstermod-redo/wiki) contains instructions on how to compile MonsterMod by yourself.
+The [Building](https://github.com/JulianR0/monstermod-redo/wiki) section of the wiki contains instructions on how to compile MonsterMod by yourself.
 
 ## MonsterMod and ReHLDS
 
@@ -57,11 +57,13 @@ Usage of ReHLDS is highly recommended, as you can use the command `rescount` whi
 
 Keeping track of the number of precached content will allow you to maximize the number of monsters you can use without risking going over the limits.
 
-## Known Bugs
+## Known Bugs and Issues
 
 I'm aware that the plugin is far from perfect, and there are a few things that need polishing *-especially the AI-*. I'll try to fix/will be fixing as the project evolves:
 
-- Rarely, Stukabats will become unable to fly towards their target, standing in air doing seemingly nothing. Cause of bug unknown.
+- Rarely, Stukabats will become unable to fly towards their target, standing in air doing seemingly nothing.
+
+- Monsters are very prone to gibbing when hurt during death animations.
 
 There are probably more issues that aren't listed here, I'll attempt to fix them as I find them. Of course, any bug report is welcome. If reporting a bug, try to explain step by step how the bug ocurred. The easier it is to replicate a bug, the easier it is to locate it and fix it.
 
@@ -106,7 +108,7 @@ Current milestones are separated by "Tiers", which are as follows:
 - Miscellaneous customization options, such as blood color. **[DONE]**
 - Individual sound replacement: "soundlist" keyvalue for monsters. **[DONE]**
 - Sentences support for speakable monsters. **[DONE]**
-- Attempt to fix bugs as they appear.
+- Attempt to fix bugs as they appear. **[DONE]**
 
 ### Tier 5
 
