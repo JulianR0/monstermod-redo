@@ -74,14 +74,17 @@
 	#endif //defined WIN32
 #endif
 
-#if defined (_WIN32) && defined (_MSC_VER)
+// VS2015 and newer already has va_copy defined
+#if defined (_WIN32) && defined (_MSC_VER) && _MSC_VER < 1900
 	// On x86 va_list is just a pointer.
 	#define va_copy(dst,src) ((dst)=(src))
 #else
-	// Some systems that do not supply va_copy have __va_copy instead, since 
-	// that was the name used in the draft proposal.
-	#if !defined(__GNUC__) || __GNUC__ < 3
-		#define va_copy __va_copy
+	#if (linux)
+		// Some systems that do not supply va_copy have __va_copy instead, since 
+		// that was the name used in the draft proposal.
+		#if !defined(__GNUC__) || __GNUC__ < 3
+			#define va_copy __va_copy
+		#endif
 	#endif
 #endif
 

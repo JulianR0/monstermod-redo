@@ -609,7 +609,7 @@ void CMBigMomma :: Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->health			= 150 * gSkillData.bigmommaHealthFactor;
 	pev->view_ofs		= Vector ( 0, 0, 128 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.3;// indicates the width of this monster's forward view cone ( as a dotproduct result )
@@ -648,8 +648,8 @@ void CMBigMomma :: Precache()
 
 	// TEMP: Squid
 	PRECACHE_MODEL("sprites/mommaspit.spr");// spit projectile.
-	gSpitSprite = PRECACHE_MODEL("sprites/mommaspout.spr");// client side spittle.
-	gSpitDebrisSprite = PRECACHE_MODEL("sprites/mommablob.spr" );
+	gSpitSprite = PRECACHE_MODELINDEX("sprites/mommaspout.spr");// client side spittle.
+	gSpitDebrisSprite = PRECACHE_MODELINDEX("sprites/mommablob.spr" );
 
 	PRECACHE_SOUND( "bullchicken/bc_acid1.wav" );
 	PRECACHE_SOUND( "bullchicken/bc_spithit1.wav" );
@@ -1147,7 +1147,7 @@ CMBMortar *CMBMortar::Shoot( edict_t *pOwner, Vector vecStart, Vector vecVelocit
 {
 	CMBMortar *pSpit = CreateClassPtr( (CMBMortar *)NULL );
 	if (pSpit)
-   {
+	{
 		pSpit->Spawn();
 	
 		UTIL_SetOrigin( pSpit->pev, vecStart );

@@ -47,6 +47,7 @@ public:
 	virtual void Killed( entvars_t *pevAttacker, int iGib );
 
 	BOOL m_fRegisteredSound;// whether or not this grenade has issued its DANGER sound to the world sound list yet.
+	EHANDLE m_hOwner;
 };
 
 // Contact/Timed spore grenade
@@ -75,6 +76,7 @@ public:
 	void UpdateOnRemove();
 
 	CMSprite* m_pSporeGlow;
+	EHANDLE m_hOwner;
 };
 
 // constant items

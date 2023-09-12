@@ -31,6 +31,8 @@
 #include	"effects.h"
 #include	"customentity.h"
 
+extern cvar_t *monster_default_maxrange;
+
 //=========================================================
 // monster-specific DEFINE's
 //=========================================================
@@ -61,6 +63,8 @@
 //=========================================================
 #define		MASSN_AE_KICK			( 3 )
 #define		MASSN_AE_BURST1			( 4 )
+#define		MASSN_AE_BURST2			( 5 )
+#define		MASSN_AE_BURST3			( 6 )
 #define		MASSN_AE_CAUGHT_ENEMY	( 10 ) // grunt established sight with an enemy (player only) that had previously eluded the squad.
 #define		MASSN_AE_DROP_GUN		( 11 ) // grunt (probably dead) is dropping his mp5.
 
@@ -120,9 +124,7 @@ void CMMassn::Sniperrifle(void)
 
 	pev->effects |= EF_MUZZLEFLASH;
 	
-	// BUG - For some reason that still eludes me, grunts are completely unable to reload their weapons.
-	// As a temporary fix, give them infinite ammo. It will look bad I know... I gotta find a solution. -Giegue
-	//m_cAmmoLoaded--;// take away a bullet!
+	m_cAmmoLoaded--;// take away a bullet!
 
 	Vector angDir = UTIL_VecToAngles(vecShootDir);
 	SetBlending(0, angDir.x);
@@ -178,6 +180,11 @@ void CMMassn::HandleAnimEvent(MonsterEvent_t *pEvent)
 	}
 	break;
 
+	case MASSN_AE_BURST2:
+	case MASSN_AE_BURST3:
+		Shoot();
+		break;
+
 	case MASSN_AE_KICK:
 	{
 		edict_t *pHurt = Kick();
@@ -195,6 +202,8 @@ void CMMassn::HandleAnimEvent(MonsterEvent_t *pEvent)
 				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pHurt));
 				pMonster->TakeDamage( pev, pev, gSkillData.massnDmgKick, DMG_CLUB );
 			}
+			else
+				UTIL_TakeDamageExternal( pHurt, pev, pev, gSkillData.massnDmgKick, DMG_CLUB );
 		}
 	}
 	break;
@@ -220,7 +229,7 @@ void CMMassn::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_RED;
+	m_bloodColor = !m_bloodColor ? BLOOD_COLOR_RED : m_bloodColor;
 	pev->effects = 0;
 	pev->health = gSkillData.massnHealth;
 	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
@@ -258,6 +267,10 @@ void CMMassn::Spawn()
 	{
 		SetBodygroup(GUN_GROUP, GUN_SNIPERRIFLE);
 		m_cClipSize = 5;
+
+		// if no attack range set, set 2x default
+		if (!m_flDistLook)
+			m_flDistLook = monster_default_maxrange->value * 2;
 	}
 	else
 	{
@@ -273,7 +286,12 @@ void CMMassn::Spawn()
 	CMTalkMonster::g_talkWaitTime = 0;
 
 	MonsterInit();
-	
+	if (FBitSet(pev->weapons, MASSN_SNIPERRIFLE))
+	{
+		// override for snipers
+		m_flDistTooFar = m_flDistLook / 1.33;
+	}
+
 	pev->classname = MAKE_STRING( "monster_male_assassin" );
 	if ( strlen( STRING( m_szMonsterName ) ) == 0 )
 	{
@@ -307,5 +325,118 @@ void CMMassn::Precache()
 	else
 		m_voicePitch = 100;
 
-	m_iBrassShell = PRECACHE_MODEL("models/shell.mdl");// brass shell
+	m_iBrassShell = PRECACHE_MODELINDEX("models/shell.mdl");// brass shell
+}
+
+//=========================================================
+// Chase enemy failure schedule
+//=========================================================
+Task_t	tlMassnSniperAttack[] =
+{
+	{ TASK_STOP_MOVING,				(float)0					},
+	{ TASK_SET_ACTIVITY,			(float)ACT_IDLE_ANGRY 		},
+	{ TASK_WAIT_FACE_ENEMY ,		(float)1					},
+	{ TASK_SET_ACTIVITY,			(float)ACT_RANGE_ATTACK1	},
+	{ TASK_WAIT_FACE_ENEMY,			(float)1					},
+};
+
+Schedule_t	slMassnSniperAttack[] =
+{
+	{ 
+		tlMassnSniperAttack,
+		ARRAYSIZE ( tlMassnSniperAttack ), 
+		bits_COND_HEAR_SOUND,
+		0,
+		"MassnSniperAttack"
+	},
+};
+
+DEFINE_CUSTOM_SCHEDULES( CMMassn )
+{
+	slMassnSniperAttack,
+};
+
+IMPLEMENT_CUSTOM_SCHEDULES( CMMassn, CMHGrunt );
+
+//=========================================================
+// SetActivity 
+//=========================================================
+void CMMassn :: SetActivity ( Activity NewActivity )
+{
+	int	iSequence = ACTIVITY_NOT_AVAILABLE;
+	void *pmodel = GET_MODEL_PTR( ENT(pev) );
+
+	switch ( NewActivity )
+	{
+	case ACT_RANGE_ATTACK1:
+		// shooting standing or shooting crouched
+		if (FBitSet( pev->weapons, MASSN_SNIPERRIFLE))
+		{
+			// Always standing
+			iSequence = LookupSequence( "standing_m40a1" );
+		}
+		else
+		{
+			if ( m_fStanding )
+			{
+				// get aimable sequence
+				iSequence = LookupSequence( "standing_mp5" );
+			}
+			else
+			{
+				// get crouching shoot
+				iSequence = LookupSequence( "crouching_mp5" );
+			}
+		}
+		break;
+	default:
+		CMHGrunt::SetActivity(NewActivity);
+		return;
+	}
+	
+	m_Activity = NewActivity; // Go ahead and set this so it doesn't keep trying when the anim is not present
+
+	// Set to the desired anim, or default anim if the desired is not present
+	if ( iSequence > ACTIVITY_NOT_AVAILABLE )
+	{
+		if ( pev->sequence != iSequence || !m_fSequenceLoops )
+		{
+			pev->frame = 0;
+		}
+
+		pev->sequence		= iSequence;	// Set to the reset anim (if it's there)
+		ResetSequenceInfo( );
+		SetYawSpeed();
+	}
+	else
+	{
+		// Not available try to get default anim
+		ALERT ( at_console, "%s has no sequence for act:%d\n", STRING(pev->classname), NewActivity );
+		pev->sequence		= 0;	// Set to the reset anim (if it's there)
+	}
+}
+
+//=========================================================
+// GetScheduleOfType - Override schedule for sniper attack
+//=========================================================
+Schedule_t* CMMassn :: GetScheduleOfType ( int Type ) 
+{
+	switch	( Type )
+	{
+	case SCHED_RANGE_ATTACK1:
+		{
+			if (FBitSet(pev->weapons, MASSN_SNIPERRIFLE))
+			{
+				// sniper attack is always standing
+				m_fStanding = TRUE;
+				return &slMassnSniperAttack[ 0 ];
+			}
+			
+			return CMHGrunt :: GetScheduleOfType ( Type );
+		}
+	default:
+		{
+			return CMHGrunt :: GetScheduleOfType ( Type );
+		}
+	}
 }

@@ -134,7 +134,7 @@ public:
 	// initialization functions
 	virtual void	Spawn( void ) { return; }
 	virtual void	Precache( void ) { return; }
-	virtual void	KeyValue( KeyValueData* pkvd) { pkvd->fHandled = FALSE; }
+	virtual void	KeyValue( KeyValueData* pkvd );
 	virtual int		ObjectCaps( void ) { return FCAP_ACROSS_TRANSITION; }
 	virtual void	Activate( void ) {}
 	
@@ -222,7 +222,7 @@ public:
 			pent = ENT(0);
 		if ( pent->v.euser4 == NULL )
 			return (CMBaseEntity *)NULL;
-      CMBaseEntity *pEnt = GetClassPtr((CMBaseEntity *)VARS(pent));
+		CMBaseEntity *pEnt = GetClassPtr((CMBaseEntity *)VARS(pent));
 		return pEnt; 
 	}
 
@@ -608,3 +608,7 @@ template <class T> T * CreateClassPtr( T *a )
 
 	return a;
 }
+
+#ifndef GLOBALREPLACE_H
+#include "globalreplace.h"
+#endif

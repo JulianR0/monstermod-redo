@@ -105,6 +105,11 @@ public:
 	string_t			m_szMonsterName; // Monster name to display on HUD
 	int					m_iClassifyOverride; // Overriden classification for this monster
 	
+	REPLACER::REPLACER	*m_srSoundList; // individual sound replacements for this monster
+	int					m_isrSounds; // number of replaced sounds
+
+	float				m_flLastYawTime;
+
 	void KeyValue( KeyValueData *pkvd );
 
 // monster use function
@@ -729,6 +734,7 @@ public:
 	static const char *pAttackHitSounds[];
 	static const char *pAttackMissSounds[];
 	static const char *pAttackSounds[];
+	static const char *pFireSounds[];
 	static const char *pDieSounds[];
 	static const char *pPainSounds[];
 	static const char *pIdleSounds[];
@@ -1332,6 +1338,11 @@ public:
 	void DeathSound(void);
 	void PainSound(void);
 	void IdleSound(void);
+
+	void SetActivity(Activity NewActivity);
+	Schedule_t *GetScheduleOfType( int Type );
+
+	CUSTOM_SCHEDULES;
 };
 
 //=========================================================
@@ -1371,6 +1382,8 @@ public:
 	void EXPORT SpikeTouch(edict_t *pOther);
 	void EXPORT StartTrail();
 	static edict_t *Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, Vector vecAngles);
+
+	EHANDLE m_hOwner;
 };
 
 //=========================================================
@@ -1434,6 +1447,7 @@ public:
 	void AlertSound(void);
 	void MonsterThink(void);
 	void StartTask(Task_t* pTask);
+	void HandleAnimEvent(MonsterEvent_t *pEvent);
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 
 	static const char *pIdleSounds[];
@@ -1546,6 +1560,7 @@ public:
 	Schedule_t *GetScheduleOfType(int Type);
 	virtual int TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType);
 	virtual void Killed(entvars_t *pevAttacker, int iGib);
+	void UpdateOnRemove();
 
 	CUSTOM_SCHEDULES
 
@@ -1667,8 +1682,6 @@ public:
 	void Minigun(void);
 	
 	CUSTOM_SCHEDULES
-
-	float m_flMinigunSpinTime;
 };
 
 //=========================================================
@@ -1679,14 +1692,11 @@ class CMRGrunt : public CMHGrunt
 public:
 	int  Classify(void);
 
-	BOOL FOkToSpeak(void);
-
 	void Spawn( void );
 	void Precache( void );
 
 	void DeathSound(void);
 	void PainSound(void);
-	void IdleSound(void);
 	
 	int TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType );
 	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
@@ -1704,6 +1714,8 @@ public:
 	float m_flActiveDischarge;
 
 	int m_iBodyGibs;
+
+	static const char *pRobotSentences[];
 };
 
 //=========================================================

@@ -163,7 +163,7 @@ void CMHGrunt :: SpeakSentence( void )
 
 	if (FOkToSpeak())
 	{
-		SENTENCEG_PlayRndSz( ENT(pev), pGruntSentences[ m_iSentence ], HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+		SENTENCEG_PlayRndSz( ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? pGruntSentences[ m_iSentence ] : CMRGrunt::pRobotSentences[ m_iSentence ], HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 		JustSpoke();
 	}
 }
@@ -546,21 +546,22 @@ void CMHGrunt :: IdleSound( void )
 {
 	if (FOkToSpeak() && (g_fGruntQuestion || RANDOM_LONG(0,1)))
 	{
+		// there has to be a better way than spamming ternary operators... -Giegue
 		if (!g_fGruntQuestion)
 		{
 			// ask question or make statement
 			switch (RANDOM_LONG(0,2))
 			{
 			case 0: // check in
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_CHECK", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_CHECK" : "RB_CHECK", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				g_fGruntQuestion = 1;
 				break;
 			case 1: // question
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_QUEST", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_QUEST" : "RB_QUEST", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				g_fGruntQuestion = 2;
 				break;
 			case 2: // statement
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_IDLE", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_IDLE" : "RB_IDLE", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			}
 		}
@@ -569,10 +570,10 @@ void CMHGrunt :: IdleSound( void )
 			switch (g_fGruntQuestion)
 			{
 			case 1: // check in
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_CLEAR", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_CLEAR" : "RB_CLEAR", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			case 2: // question 
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_ANSWER", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
+				SENTENCEG_PlayRndSz(ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_ANSWER" : "RB_ANSWER", HGRUNT_SENTENCE_VOLUME, ATTN_NORM, 0, m_voicePitch);
 				break;
 			}
 			g_fGruntQuestion = 0;
@@ -663,9 +664,7 @@ void CMHGrunt :: Shoot ( void )
 
 	pev->effects |= EF_MUZZLEFLASH;
 	
-	// BUG - For some reason that still eludes me, grunts are completely unable to reload their weapons.
-	// As a temporary fix, give them infinite ammo. It will look bad I know... I gotta find a solution. -Giegue
-	//m_cAmmoLoaded--;// take away a bullet!
+	m_cAmmoLoaded--;// take away a bullet!
 
 	Vector angDir = UTIL_VecToAngles( vecShootDir );
 	SetBlending( 0, angDir.x );
@@ -692,9 +691,7 @@ void CMHGrunt :: Shotgun ( void )
 
 	pev->effects |= EF_MUZZLEFLASH;
 	
-	// BUG - For some reason that still eludes me, grunts are completely unable to reload their weapons.
-	// As a temporary fix, give them infinite ammo. It will look bad I know... I gotta find a solution. -Giegue
-	//m_cAmmoLoaded--;// take away a bullet!
+	m_cAmmoLoaded--;// take away a bullet!
 
 	Vector angDir = UTIL_VecToAngles( vecShootDir );
 	SetBlending( 0, angDir.x );
@@ -802,8 +799,10 @@ void CMHGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				else if (pHurt->v.euser4 != NULL)
 				{
 					CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pHurt));
-					pMonster->TakeDamage( pev, pev, gSkillData.hgruntDmgKick, DMG_CLUB );
+					pMonster->TakeDamage(pev, pev, gSkillData.hgruntDmgKick, DMG_CLUB);
 				}
+				else
+					UTIL_TakeDamageExternal(pHurt, pev, pev, gSkillData.hgruntDmgKick, DMG_CLUB);
 			}
 		}
 		break;
@@ -812,8 +811,8 @@ void CMHGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 		{
 			if ( FOkToSpeak() )
 			{
-				SENTENCEG_PlayRndSz(ENT(pev), "HG_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-				 JustSpoke();
+				SENTENCEG_PlayRndSz(ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_ALERT" : "RB_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+				JustSpoke();
 			}
 
 		}
@@ -836,7 +835,7 @@ void CMHGrunt :: Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_RED;
+	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_RED : m_bloodColor;
 	pev->effects		= 0;
 	pev->health			= gSkillData.hgruntHealth;
 	m_flFieldOfView		= VIEW_FIELD_FULL; // indicates the width of this monster's forward view cone ( as a dotproduct result )
@@ -941,8 +940,8 @@ void CMHGrunt :: Precache()
 	else
 		m_voicePitch = 100;
 
-	m_iBrassShell = PRECACHE_MODEL ("models/shell.mdl");// brass shell
-	m_iShotgunShell = PRECACHE_MODEL ("models/shotgunshell.mdl");
+	m_iBrassShell = PRECACHE_MODELINDEX("models/shell.mdl");// brass shell
+	m_iShotgunShell = PRECACHE_MODELINDEX("models/shotgunshell.mdl");
 }	
 
 //=========================================================
@@ -1677,6 +1676,37 @@ Schedule_t	slGruntRepelLand[] =
 	},
 };
 
+//=========================================================
+// Chase enemy failure schedule
+//=========================================================
+Task_t	tlGruntChaseEnemyFailed[] =
+{
+	{ TASK_STOP_MOVING,				(float)0					},
+	{ TASK_WAIT,					(float)0.2					},
+	{ TASK_FIND_COVER_FROM_ENEMY,	(float)0					},
+	{ TASK_RUN_PATH,				(float)0					},
+	{ TASK_WAIT_FOR_MOVEMENT,		(float)0					},
+	{ TASK_REMEMBER,				(float)bits_MEMORY_INCOVER	},
+//	{ TASK_TURN_LEFT,				(float)179					},
+	{ TASK_FACE_ENEMY,				(float)0					},
+	{ TASK_WAIT,					(float)1					},
+};
+
+Schedule_t	slGruntChaseEnemyFailed[] =
+{
+	{ 
+		tlGruntChaseEnemyFailed,
+		ARRAYSIZE ( tlGruntChaseEnemyFailed ), 
+		bits_COND_NEW_ENEMY			|
+		bits_COND_CAN_RANGE_ATTACK1	|
+		bits_COND_CAN_MELEE_ATTACK1	|
+		bits_COND_CAN_RANGE_ATTACK2	|
+		bits_COND_CAN_MELEE_ATTACK2	|
+		bits_COND_HEAR_SOUND,
+		0,
+		"GruntChaseEnemyFailed"
+	},
+};
 
 DEFINE_CUSTOM_SCHEDULES( CMHGrunt )
 {
@@ -1701,6 +1731,7 @@ DEFINE_CUSTOM_SCHEDULES( CMHGrunt )
 	slGruntRepel,
 	slGruntRepelAttack,
 	slGruntRepelLand,
+	slGruntChaseEnemyFailed,
 };
 
 IMPLEMENT_CUSTOM_SCHEDULES( CMHGrunt, CMBaseMonster );
@@ -1856,6 +1887,8 @@ Schedule_t *CMHGrunt :: GetSchedule( void )
 // new enemy
 			if ( HasConditions(bits_COND_NEW_ENEMY) )
 			{
+				// none of this should take place as CSquadMonster functions were completely stripped. -Giegue
+				/*
 				{
 					{
 						//!!!KELLY - the leader of a squad of grunts has just seen the player or a 
@@ -1871,14 +1904,14 @@ Schedule_t *CMHGrunt :: GetSchedule( void )
 							if ((m_hEnemy != NULL) && UTIL_IsPlayer(m_hEnemy))
 								// player
 								SENTENCEG_PlayRndSz( ENT(pev), "HG_ALERT", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-/*jlb
+
 							else if ((m_hEnemy != NULL) &&
 									(m_hEnemy->Classify() != CLASS_PLAYER_ALLY) && 
 									(m_hEnemy->Classify() != CLASS_HUMAN_PASSIVE) && 
 									(m_hEnemy->Classify() != CLASS_MACHINE))
 								// monster
 								SENTENCEG_PlayRndSz( ENT(pev), "HG_MONST", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
-jlb*/
+
 							JustSpoke();
 						}
 						
@@ -1892,6 +1925,7 @@ jlb*/
 						}
 					}
 				}
+				*/
 			}
 // no ammo
 			else if ( HasConditions ( bits_COND_NO_AMMO_LOADED ) )
@@ -1917,9 +1951,9 @@ jlb*/
 					//!!!KELLY - this grunt was hit and is going to run to cover.
 					if (FOkToSpeak()) // && RANDOM_LONG(0,1))
 					{
-						//SENTENCEG_PlayRndSz( ENT(pev), "HG_COVER", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+						SENTENCEG_PlayRndSz( ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_COVER" : "RB_COVER", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 						m_iSentence = HGRUNT_SENT_COVER;
-						//JustSpoke();
+						JustSpoke();
 					}
 					return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
 				}
@@ -1943,6 +1977,10 @@ jlb*/
 // can shoot
 			else if ( HasConditions ( bits_COND_CAN_RANGE_ATTACK1 ) )
 			{
+				// lack of CSquadMonster functionality makes hgrunt behave erraticaly as is removes
+				// core conditions to make them attack (OccupySlot). -Giegue
+				
+				// check if a grenade can be thrown, otherwise force weapon fire.
 				if ( HasConditions ( bits_COND_CAN_RANGE_ATTACK2 ) )
 				{
 					// throw a grenade if can and no engage slots are available
@@ -1950,23 +1988,33 @@ jlb*/
 				}
 				else
 				{
+					return GetScheduleOfType( SCHED_RANGE_ATTACK1 );
+					
 					// hide!
-					return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
+					//return GetScheduleOfType( SCHED_TAKE_COVER_FROM_ENEMY );
 				}
 			}
 // can't see enemy
 			else if ( HasConditions( bits_COND_ENEMY_OCCLUDED ) )
 			{
+				// missing CSquadMonster functions means that the monster will stand still if its enemy is out of sight
+				// AND if it is impossible to throw a grenade. force it to chase the enemy if attack isn't possible
+				// -Giegue
 				if ( HasConditions( bits_COND_CAN_RANGE_ATTACK2 ) )
 				{
 					//!!!KELLY - this grunt is about to throw or fire a grenade at the player. Great place for "fire in the hole"  "frag out" etc
 					if (FOkToSpeak())
 					{
-						SENTENCEG_PlayRndSz( ENT(pev), "HG_THROW", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+						SENTENCEG_PlayRndSz( ENT(pev), !FClassnameIs(pev, "monster_robogrunt") ? "HG_THROW" : "RB_THROW", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
 						JustSpoke();
 					}
 					return GetScheduleOfType( SCHED_RANGE_ATTACK2 );
 				}
+				else
+				{
+					return GetScheduleOfType( SCHED_GRUNT_ESTABLISH_LINE_OF_FIRE );
+				}
+				/*
 				else
 				{
 					//!!!KELLY - grunt is going to stay put for a couple seconds to see if
@@ -1979,6 +2027,7 @@ jlb*/
 					}
 					return GetScheduleOfType( SCHED_STANDOFF );
 				}
+				*/
 			}
 			
 			if ( HasConditions( bits_COND_SEE_ENEMY ) && !HasConditions ( bits_COND_CAN_RANGE_ATTACK1 ) )
@@ -2112,6 +2161,11 @@ Schedule_t* CMHGrunt :: GetScheduleOfType ( int Type )
 	case SCHED_GRUNT_REPEL_LAND:
 		{
 			return &slGruntRepelLand[ 0 ];
+		}
+	case SCHED_CHASE_ENEMY_FAILED:
+		{
+			// add missing schedule from squadmonster.cpp
+			return &slGruntChaseEnemyFailed[ 0 ];
 		}
 	default:
 		{

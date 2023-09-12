@@ -272,7 +272,7 @@ void CMHoundeye :: Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_YELLOW;
+	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->effects		= 0;
 	pev->health			= gSkillData.houndeyeHealth;
 	pev->yaw_speed		= 5;//!!! should we put this in the monster's changeanim function since turn rates may vary with state/anim?
@@ -326,7 +326,7 @@ void CMHoundeye :: Precache()
 	PRECACHE_SOUND("houndeye/he_blast2.wav");
 	PRECACHE_SOUND("houndeye/he_blast3.wav");
 
-	m_iSpriteTexture = PRECACHE_MODEL( "sprites/shockwave.spr" );
+	m_iSpriteTexture = PRECACHE_MODELINDEX( "sprites/shockwave.spr" );
 }	
 
 //=========================================================
@@ -524,7 +524,8 @@ void CMHoundeye :: SonicAttack ( void )
 	{
 		if ( pEntity->v.takedamage != DAMAGE_NO )
 		{
-			if ( strcmp(STRING(pEntity->v.model), "models/houndeye.mdl") != 0 )
+			// don't compare by model because a mapper might change it
+			if ( strcmp(STRING(pEntity->v.classname), "monster_houndeye") != 0 )
 			{// houndeyes don't hurt other houndeyes with their attack
 
 				// houndeyes do FULL damage if the ent in question is visible. Half damage otherwise.
@@ -565,6 +566,8 @@ void CMHoundeye :: SonicAttack ( void )
 						CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 						pMonster->TakeDamage( pev, pev, flAdjustedDamage, DMG_SONIC | DMG_ALWAYSGIB );
 					}
+					else
+						UTIL_TakeDamageExternal( pEntity, pev, pev, flAdjustedDamage, DMG_SONIC | DMG_ALWAYSGIB );
 				}
 			}
 		}

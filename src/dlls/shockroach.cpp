@@ -26,6 +26,8 @@
 #include	"schedule.h"
 #include	"weapons.h"
 
+#define		SR_AE_JUMPATTACK	( 2 )
+
 const char *CMShockRoach::pIdleSounds[] =
 {
 	"shockroach/shock_idle1.wav",
@@ -69,7 +71,7 @@ void CMShockRoach::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_FLY;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	m_bloodColor = BLOOD_COLOR_YELLOW;
 
 	pev->effects = 0;
 	pev->health = gSkillData.roachHealth;
@@ -131,6 +133,8 @@ void CMShockRoach::LeapTouch(edict_t *pOther)
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 			pMonster->TakeDamage( pev, pev, GetDamageAmount(), DMG_SLASH );
 		}
+		else
+			UTIL_TakeDamageExternal( pOther, pev, pev, GetDamageAmount(), DMG_SLASH );
 	}
 	
 	SetTouch(NULL);
@@ -153,7 +157,7 @@ void CMShockRoach::MonsterThink(void)
 	{
 		pev->health = -1;
 		Killed(pev, 0);
-		return;
+		//return; // it still needs to think
 	}
 
 	CMHeadCrab::MonsterThink();
@@ -217,7 +221,26 @@ int CMShockRoach::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, f
 	return CMBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage, bitsDamageType );
 }
 
+//=========================================================
+// HandleAnimEvent - catches the monster-specific messages
+// that occur when tagged animation frames are played.
+//=========================================================
+void CMShockRoach::HandleAnimEvent(MonsterEvent_t *pEvent)
+{
+	CMHeadCrab::HandleAnimEvent(pEvent);
+
+	switch (pEvent->event)
+	{
+	case SR_AE_JUMPATTACK:
+	{
+		// Overwrite attack noise
+		AttackSound();
+	}
+	break;
+	}
+}
+
 void CMShockRoach::AttackSound()
 {
-	EMIT_SOUND_DYN(edict(), CHAN_WEAPON, RANDOM_SOUND_ARRAY(pAttackSounds), GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch());
+	EMIT_SOUND_DYN(edict(), CHAN_VOICE, RANDOM_SOUND_ARRAY(pAttackSounds), GetSoundVolume(), ATTN_IDLE, 0, GetVoicePitch());
 }

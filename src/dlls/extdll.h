@@ -26,12 +26,15 @@
 #endif
 
 // Silence certain warnings
+// PS: All warnings to be silenced until T5 milestone. -Giegue
 #pragma warning(disable : 4244)		// int or float down-conversion
 #pragma warning(disable : 4305)		// int or float data truncation
 #pragma warning(disable : 4201)		// nameless struct/union
 #pragma warning(disable : 4514)		// unreferenced inline function removed
 #pragma warning(disable : 4100)		// unreferenced formal parameter
 #pragma warning(disable : 4390)		// empty controlled statement (seems to work fine? monster_api.cpp[101/115])
+#pragma warning(disable : 4091)		// nameless typedef
+#pragma warning(disable : 4996)		// unsafe string operations
 
 // Prevent tons of unused windows definitions
 #ifdef _WIN32

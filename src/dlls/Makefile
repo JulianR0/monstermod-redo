@@ -1,5 +1,5 @@
 CPP = g++
-BASEFLAGS = -Dstricmp=strcasecmp -Dstrcmpi=strcasecmp -m32
+BASEFLAGS = -Dstricmp=strcasecmp -Dstrcmpi=strcasecmp -m32 -fPIC
 OPTFLAGS = -O2
 CPPFLAGS = ${BASEFLAGS} ${OPTFLAGS} -w -I. -I../engine -I../common -I../pm_shared -I../metamod
 
@@ -22,11 +22,12 @@ OBJ = \
 	flyingmonster.o \
 	gargantua.o \
 	ggrenade.o \
+	globalreplace.o \
 	gonome.o \
 	h_ai.o \
+	h_export.o \
 	hassassin.o \
 	headcrab.o \
-	h_export.o \
 	hgrunt.o \
 	hornet.o \
 	houndeye.o \
@@ -35,12 +36,15 @@ OBJ = \
 	massn.o \
 	monster_api.o \
 	monster_config.o \
+	monstermaker.o \
 	monsters.o \
 	monsterstate.o \
+	music.o \
 	nodes.o \
 	otis.o \
 	pitdrone.o \
 	rgrunt.o \
+	ripent.o \
 	scientist.o \
 	shock.o \
 	shockroach.o \

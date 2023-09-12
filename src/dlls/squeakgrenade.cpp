@@ -295,13 +295,15 @@ void CMSqueakGrenade::SuperBounceTouch( edict_t *pOther )
 				// ALERT( at_console, "hit enemy\n");
 				ClearMultiDamage( );
 
-            if (UTIL_IsPlayer(pOther))
+				if (UTIL_IsPlayer(pOther))
 					UTIL_TraceAttack(pOther, pev, gSkillData.snarkDmgBite, gpGlobals->v_forward, &tr, DMG_SLASH );
-            else if (pOther->v.euser4 != NULL)
-            {
+				else if (pOther->v.euser4 != NULL)
+				{
 					CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 					pMonster->TraceAttack(pev, gSkillData.snarkDmgBite, gpGlobals->v_forward, &tr, DMG_SLASH );
-            }
+				}
+				else
+					UTIL_TraceAttack(pOther, pev, gSkillData.snarkDmgBite, gpGlobals->v_forward, &tr, DMG_SLASH );
 
 				ApplyMultiDamage( pev, pev );
 

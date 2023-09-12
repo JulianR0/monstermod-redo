@@ -130,13 +130,23 @@ void CStomp::Think( void )
 	
 	if ( tr.pHit && tr.pHit != pev->owner )
 	{
-		CMBaseEntity *pEntity = CMBaseEntity::Instance( tr.pHit );
+		edict_t *pEntity = tr.pHit;
 		entvars_t *pevOwner = pev;
 		if ( pev->owner )
 			pevOwner = VARS(pev->owner);
 
-		if ( pEntity )
-			pEntity->TakeDamage( pev, pevOwner, pev->dmg, DMG_SONIC );
+		if (pEntity->v.takedamage)
+		{
+			if (UTIL_IsPlayer(pEntity))
+				UTIL_TakeDamage(pEntity, pev, pevOwner, pev->dmg, DMG_SONIC);
+			else if (pEntity->v.euser4 != NULL)
+			{
+				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
+				pMonster->TakeDamage(pev, pevOwner, pev->dmg, DMG_SONIC);
+			}
+			else
+				UTIL_TakeDamageExternal(pEntity, pev, pevOwner, pev->dmg, DMG_SONIC);
+		}
 	}
 	
 	// Accelerate the effect
@@ -564,6 +574,8 @@ void CMGargantua :: FlameDamage( Vector vecStart, Vector vecEnd, entvars_t *pevI
 						CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 						pMonster->TraceAttack( pevInflictor, flAdjustedDamage, (tr.vecEndPos - vecSrc).Normalize(), &tr, bitsDamageType );
 					}
+					else
+						UTIL_TraceAttack( pEntity, pevInflictor, flAdjustedDamage, (tr.vecEndPos - vecSrc).Normalize(), &tr, bitsDamageType );
 					ApplyMultiDamage( pevInflictor, pevAttacker );
 				}
 				else
@@ -575,6 +587,8 @@ void CMGargantua :: FlameDamage( Vector vecStart, Vector vecEnd, entvars_t *pevI
 						CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 						pMonster->TakeDamage( pevInflictor, pevAttacker, flAdjustedDamage, bitsDamageType );
 					}
+					else
+						UTIL_TakeDamageExternal( pEntity, pevInflictor, pevAttacker, flAdjustedDamage, bitsDamageType );
 				}
 			}
 		}
@@ -669,7 +683,7 @@ void CMGargantua :: Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->health			= gSkillData.gargantuaHealth;
 	//pev->view_ofs		= Vector ( 0, 0, 96 );// taken from mdl file
 	m_flFieldOfView		= -0.2;// width of forward view cone ( as a dotproduct result )
@@ -698,48 +712,25 @@ void CMGargantua :: Spawn()
 //=========================================================
 void CMGargantua :: Precache()
 {
-	int i;
-
 	PRECACHE_MODEL("models/garg.mdl");
 	PRECACHE_MODEL( GARG_EYE_SPRITE_NAME );
 	PRECACHE_MODEL( GARG_BEAM_SPRITE_NAME );
 	PRECACHE_MODEL( GARG_BEAM_SPRITE2 );
-	gStompSprite = PRECACHE_MODEL( GARG_STOMP_SPRITE_NAME );
-	gGargGibModel = PRECACHE_MODEL( GARG_GIB_MODEL );
+	gStompSprite = PRECACHE_MODELINDEX( GARG_STOMP_SPRITE_NAME );
+	gGargGibModel = PRECACHE_MODELINDEX( GARG_GIB_MODEL );
 	PRECACHE_SOUND( GARG_STOMP_BUZZ_SOUND );
 
-	for ( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackHitSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pBeamAttackSounds ); i++ )
-		PRECACHE_SOUND((char *)pBeamAttackSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackMissSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pRicSounds ); i++ )
-		PRECACHE_SOUND((char *)pRicSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pFootSounds ); i++ )
-		PRECACHE_SOUND((char *)pFootSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND((char *)pIdleSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND((char *)pAlertSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND((char *)pPainSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pStompSounds ); i++ )
-		PRECACHE_SOUND((char *)pStompSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pBreatheSounds ); i++ )
-		PRECACHE_SOUND((char *)pBreatheSounds[i]);
+	PRECACHE_SOUND_ARRAY(pAttackHitSounds);
+	PRECACHE_SOUND_ARRAY(pBeamAttackSounds);
+	PRECACHE_SOUND_ARRAY(pAttackMissSounds);
+	PRECACHE_SOUND_ARRAY(pRicSounds);
+	PRECACHE_SOUND_ARRAY(pFootSounds);
+	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pAlertSounds);
+	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pAttackSounds);
+	PRECACHE_SOUND_ARRAY(pStompSounds);
+	PRECACHE_SOUND_ARRAY(pBreatheSounds);
 }	
 
 
@@ -824,9 +815,12 @@ void CMGargantua::DeathEffect( void )
 
 void CMGargantua::Killed( entvars_t *pevAttacker, int iGib )
 {
-	EyeOff();
-	UTIL_Remove( m_pEyeGlow->edict() );
-	m_pEyeGlow = NULL;
+	if ( m_pEyeGlow )
+	{
+		EyeOff();
+		UTIL_Remove( m_pEyeGlow->edict() );
+		m_pEyeGlow = NULL;
+	}
 	CMBaseMonster::Killed( pevAttacker, GIB_NEVER );
 }
 
@@ -976,6 +970,8 @@ edict_t *CMGargantua::GargantuaCheckTraceHullAttack(float flDist, int iDamage, i
 				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(tr.pHit));
 				pMonster->TakeDamage( pev, pev, iDamage, iDmgType );
 			}
+			else
+				UTIL_TakeDamageExternal( tr.pHit, pev, pev, iDamage, iDmgType );
 		}
 
 		return tr.pHit;
@@ -1332,7 +1328,7 @@ void CMBabyGargantua::Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->health			= gSkillData.babygargHealth;
 	//pev->view_ofs		= Vector ( 0, 0, 96 );// taken from mdl file
 	m_flFieldOfView		= -0.2;// width of forward view cone ( as a dotproduct result )
@@ -1363,51 +1359,26 @@ void CMBabyGargantua::Spawn()
 //=========================================================
 void CMBabyGargantua::Precache()
 {
-	int i;
-
 	PRECACHE_MODEL("models/babygarg.mdl");
 	PRECACHE_MODEL( GARG_EYE_SPRITE_NAME );
 	PRECACHE_MODEL( GARG_BEAM_SPRITE_NAME );
 	PRECACHE_MODEL( GARG_BEAM_SPRITE2 );
-	gStompSprite = PRECACHE_MODEL( GARG_STOMP_SPRITE_NAME );
-	gGargGibModel = PRECACHE_MODEL( GARG_GIB_MODEL );
+	gStompSprite = PRECACHE_MODELINDEX( GARG_STOMP_SPRITE_NAME );
+	gGargGibModel = PRECACHE_MODELINDEX( GARG_GIB_MODEL );
 	PRECACHE_SOUND( GARG_STOMP_BUZZ_SOUND );
 
-	for ( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackHitSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pBeamAttackSounds ); i++ )
-		PRECACHE_SOUND((char *)pBeamAttackSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackMissSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pRicSounds ); i++ )
-		PRECACHE_SOUND((char *)pRicSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pFootSounds ); i++ )
-		PRECACHE_SOUND((char *)pFootSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND((char *)pIdleSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND((char *)pAlertSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND((char *)pPainSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pStompSounds ); i++ )
-		PRECACHE_SOUND((char *)pStompSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pBreatheSounds ); i++ )
-		PRECACHE_SOUND((char *)pBreatheSounds[i]);
-	
-	for ( i = 0; i < ARRAYSIZE( pDieSounds ); i++ )
-		PRECACHE_SOUND((char *)pDieSounds[i]);
+	PRECACHE_SOUND_ARRAY(pAttackHitSounds);
+	PRECACHE_SOUND_ARRAY(pBeamAttackSounds);
+	PRECACHE_SOUND_ARRAY(pAttackMissSounds);
+	PRECACHE_SOUND_ARRAY(pRicSounds);
+	PRECACHE_SOUND_ARRAY(pFootSounds);
+	PRECACHE_SOUND_ARRAY(pIdleSounds);
+	PRECACHE_SOUND_ARRAY(pAlertSounds);
+	PRECACHE_SOUND_ARRAY(pPainSounds);
+	PRECACHE_SOUND_ARRAY(pAttackSounds);
+	PRECACHE_SOUND_ARRAY(pStompSounds);
+	PRECACHE_SOUND_ARRAY(pBreatheSounds);
+	PRECACHE_SOUND_ARRAY(pDieSounds);
 }
 
 void CMBabyGargantua::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
@@ -1791,6 +1762,8 @@ edict_t *CMBabyGargantua::BabyGargCheckTraceHullAttack(float flDist, int iDamage
 				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(tr.pHit));
 				pMonster->TakeDamage( pev, pev, iDamage, iDmgType );
 			}
+			else
+				UTIL_TakeDamageExternal( tr.pHit, pev, pev, iDamage, iDmgType );
 		}
 	
 		return tr.pHit;

@@ -62,6 +62,9 @@ extern cvar_t *monster_spawn;
 extern cvar_t *monster_show_deaths;
 extern cvar_t *monster_show_info;
 
+// compiler does not like util.h being included here so i'll just extern the function
+extern void SENTENCEG_Init();
+
 // Player TakeDamage and Killed
 int g_DamageMsg;
 bool g_DamageActive;
@@ -133,7 +136,7 @@ monster_type_t monster_types[]=
 	"monster_apache", FALSE,
 	"monster_barney", FALSE,
 	"monster_bigmomma", FALSE,
-	"monster_bullsquid", FALSE,
+	"monster_bullchicken", FALSE,
 	"monster_alien_controller", FALSE,
 	"monster_human_assassin", FALSE,
 	"monster_headcrab", FALSE,
@@ -162,6 +165,8 @@ monster_type_t monster_types[]=
 	"info_node", FALSE, // Nodes
 	"info_node_air", FALSE,
 	"monstermaker", FALSE, // Extra entities
+	"ambient_music", FALSE,
+	"squadmaker", FALSE, // Aliases
 	"", FALSE
 };
 
@@ -297,7 +302,7 @@ void check_monster_hurt(edict_t *pAttacker)
 						vecSpot = vecSrc + gpGlobals->v_forward * distance;
 
 						// trace a line ignoring enemies body...
-						UTIL_TraceLine ( vecSrc, vecSpot, dont_ignore_monsters, pent, &tr );
+						UTIL_TraceLine ( vecSrc, vecSpot, dont_ignore_monsters, pAttacker, &tr );
 
 						damage = pent->v.fuser4 - pent->v.health;
 
@@ -305,7 +310,7 @@ void check_monster_hurt(edict_t *pAttacker)
 						pent->v.health = pent->v.fuser4;
 
 						ClearMultiDamage( );
-						monsters[index].pMonster->TraceAttack( VARS(pAttacker), damage, (tr.vecEndPos - vecSrc).Normalize( ), &tr, DMG_BULLET );
+						monsters[index].pMonster->TraceAttack( VARS(pAttacker), damage, (tr.vecEndPos - vecSrc).Normalize( ), &tr, DMG_BULLET|DMG_NEVERGIB );
 						ApplyMultiDamage( VARS(pAttacker), VARS(pAttacker) );
 					}
 
@@ -399,12 +404,12 @@ void check_player_dead( edict_t *pPlayer )
 			}
 			else
 			{
-				// SOMETHING that is a monster
+				// Does this monster have a name?
 				if ( !FStringNull( pAttacker->v.netname ) )
 					strcpy(szName, STRING( pAttacker->v.netname ));
 				else
 				{
-					// No netname, use classname
+					// No name, use class
 					strcpy(szName, STRING( pAttacker->v.classname ));
 				}
 			}
@@ -424,6 +429,16 @@ void check_player_dead( edict_t *pPlayer )
 			// Suicide?
 			if ( pAttacker == pPlayer )
 				sprintf( szMessage, "* %s commited suicide.\n", szPlayerName );
+			// Player killed by another player
+			else if ( UTIL_IsPlayer( pAttacker ) )
+			{
+				// Get attacker name
+				char szAttackerName[33];
+				strcpy(szAttackerName, STRING(pAttacker->v.netname));
+
+				// Print a very basic death message until we can detect teamkills
+				sprintf( szMessage, "* %s was killed by %s.\n", szPlayerName, szAttackerName );
+			}
 			// An entity killed this player.
 			else if ( ENTINDEX( pAttacker ) > 0 )
 			{
@@ -537,8 +552,8 @@ void check_monster_info( edict_t *pPlayer )
 			// It should be alive
 			if ( UTIL_IsAlive( tr.pHit ) )
 			{
-				// Must be a monster
-				if (tr.pHit->v.flags & FL_MONSTER)
+				// Must be a monster (and strictly a monster!)
+				if (strncmp( STRING( tr.pHit->v.classname ), "monster_", 8 ) == 0 && tr.pHit->v.flags & FL_MONSTER)
 				{
 					char szName[129];
 					float monsterHealth, monsterFrags;
@@ -695,6 +710,7 @@ edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawn
 		case 29: monsters[monster_index].pMonster = CreateClassPtr((CMStukabat *)NULL); break;
 		// Extra entities
 		case 32: monsters[monster_index].pMonster = CreateClassPtr((CMMonsterMaker *)NULL); break;
+		case 33: monsters[monster_index].pMonster = CreateClassPtr((CMAmbientMusic *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -712,6 +728,9 @@ edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawn
 	monster_pent->v.origin = origin;
 	monster_pent->v.angles = angles;
 	
+	// Pass spawnflags first if no keyvalue data exists for it
+	monster_pent->v.spawnflags = spawnflags;
+	
 	// Keyvalue data
 	if (keyvalue != NULL)
 	{
@@ -725,8 +744,6 @@ edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawn
 			}
 		}
 	}
-	
-	monster_pent->v.spawnflags = spawnflags;
 	
 	monsters[monster_index].pMonster->Spawn();
 	
@@ -776,12 +793,11 @@ void check_respawn(void)
 			if (spawn_monster(monster_type, origin, angles, spawnflags, keyvalue) == NULL)
 			{
 				// spawn_monster failed
-				ALERT( at_error, "Failed to spawn %s at origin %f %f %f\n", monster_types[monster_type].name, origin.x, origin.y, origin.z );
+				ALERT( at_error, "[MONSTER] Failed to spawn %s at origin %f %f %f\n", monster_types[monster_type].name, origin.x, origin.y, origin.z );
 			}
 		}
 	}
 }
-
 
 DLL_GLOBAL short g_sModelIndexFireball;// holds the index for the fireball
 DLL_GLOBAL short g_sModelIndexSmoke;// holds the index for the smoke cloud
@@ -794,20 +810,25 @@ DLL_GLOBAL short g_sModelIndexLaser;// holds the index for the laser beam
 DLL_GLOBAL const char *g_pModelNameLaser = "sprites/laserbeam.spr";
 DLL_GLOBAL short g_sModelIndexLaserDot;// holds the index for the laser beam dot
 
+// globals.cpp
+DLL_GLOBAL const Vector g_vecZero = Vector(0, 0, 0); // null vector
+DLL_GLOBAL Vector g_vecAttackDir; // attack direction
+
+
 void world_precache(void)
 {
-	g_sModelIndexFireball = PRECACHE_MODEL ("sprites/zerogxplode.spr");// fireball
-	g_sModelIndexSmoke = PRECACHE_MODEL ("sprites/steam1.spr");// smoke
-	g_sModelIndexTinySpit = PRECACHE_MODEL ("sprites/tinyspit.spr");// spore
-	g_sModelIndexWExplosion = PRECACHE_MODEL ("sprites/WXplo1.spr");// underwater fireball
-	g_sModelIndexBubbles = PRECACHE_MODEL ("sprites/bubble.spr");//bubbles
-	g_sModelIndexBloodSpray = PRECACHE_MODEL ("sprites/bloodspray.spr"); // initial blood
-	g_sModelIndexBloodDrop = PRECACHE_MODEL ("sprites/blood.spr"); // splattered blood 
+	g_sModelIndexFireball = PRECACHE_MODELINDEX("sprites/zerogxplode.spr");// fireball
+	g_sModelIndexSmoke = PRECACHE_MODELINDEX("sprites/steam1.spr");// smoke
+	g_sModelIndexTinySpit = PRECACHE_MODELINDEX("sprites/tinyspit.spr");// spore
+	g_sModelIndexWExplosion = PRECACHE_MODELINDEX("sprites/WXplo1.spr");// underwater fireball
+	g_sModelIndexBubbles = PRECACHE_MODELINDEX("sprites/bubble.spr");//bubbles
+	g_sModelIndexBloodSpray = PRECACHE_MODELINDEX("sprites/bloodspray.spr"); // initial blood
+	g_sModelIndexBloodDrop = PRECACHE_MODELINDEX("sprites/blood.spr"); // splattered blood 
 
-	g_sModelIndexLaser = PRECACHE_MODEL( (char *)g_pModelNameLaser );
-	g_sModelIndexLaserDot = PRECACHE_MODEL("sprites/laserdot.spr");
+	g_sModelIndexLaser = PRECACHE_MODELINDEX( (char *)g_pModelNameLaser );
+	g_sModelIndexLaserDot = PRECACHE_MODELINDEX("sprites/laserdot.spr");
 
-	PRECACHE_MODEL ("models/w_grenade.mdl");
+	PRECACHE_MODEL("models/w_grenade.mdl");
 }
 
 void MonsterCommand(void)
@@ -1241,10 +1262,11 @@ int mmDispatchSpawn( edict_t *pent )
 		}
 		
 		// free any allocated keyvalue memory
-		for (index = 0; index < monster_spawn_count; index++)
+		for (index = 0; index < MAX_MONSTERS; index++)
 		{
-			if (monster_spawnpoint[index].keyvalue)
+			if (monster_spawnpoint[index].keyvalue != NULL)
 				free(monster_spawnpoint[index].keyvalue);
+			monster_spawnpoint[index].keyvalue = NULL;
 		}
 		
 		// do level initialization stuff here...
@@ -1252,7 +1274,9 @@ int mmDispatchSpawn( edict_t *pent )
 		for (index = 0; monster_types[index].name[0]; index++)
 			monster_types[index].need_to_precache = FALSE;
 
-		world_precache();
+		CVAR_SET_STRING("monster_gmr", "");
+		CVAR_SET_STRING("monster_gsr", "");
+		REPLACER::Init();
 
 		monster_spawn_count = 0;
 		node_spawn_count = 0;
@@ -1262,6 +1286,10 @@ int mmDispatchSpawn( edict_t *pent )
 		process_monster_precache_cfg();
 
 		process_monster_cfg();
+
+		// precache last in the event of a GMR being present
+		world_precache();
+		SENTENCEG_Init();
 
 		// node support. -Giegue
 		// init the WorldGraph.
@@ -1327,6 +1355,46 @@ void mmDispatchTouch( edict_t *pentTouched, edict_t *pentOther )
 	RETURN_META(MRES_IGNORED);
 }
 
+// pfnUse has been deprecated so the only way to trigger a monstermod
+// entity from the outside is to do it manually. ARRGHH! -Giegue
+void mmDispatchUse( void )
+{
+	if ( CMD_ARGC() >= 6 ) // the command itself is an argument, we need 5. so argc == 6
+	{
+		edict_t *entity = INDEXENT( atoi( CMD_ARGV( 1 ) ) );
+		edict_t *caller = INDEXENT( atoi( CMD_ARGV( 2 ) ) );
+		edict_t *activator = INDEXENT( atoi( CMD_ARGV( 3 ) ) );
+		USE_TYPE useType = USE_TYPE( atoi( CMD_ARGV( 4 ) ) );
+		float flValue = atof( CMD_ARGV( 5 ) );
+		
+		// nevermind the unoptimization that this brings... >C
+		for (int index=0; index < monster_ents_used; index++)
+		{
+			if ((entity != NULL) && (entity == monsters[index].monster_pent))
+			{
+				if ( FNullEnt( caller ) ) caller = NULL;
+				if ( FNullEnt( activator ) ) activator = NULL;
+
+				monsters[index].pMonster->Use( activator, caller, useType, flValue );
+				return;
+			}
+		}
+	}
+}
+
+void mmDispatchKeyValue( edict_t *pentKeyvalue, KeyValueData *pkvd )
+{
+	for (int index=0; index < monster_ents_used; index++)
+	{
+		if ((pentKeyvalue != NULL) && (pentKeyvalue == monsters[index].monster_pent))
+		{
+			monsters[index].pMonster->KeyValue( pkvd );
+			RETURN_META(MRES_SUPERCEDE);
+		}
+	}
+	
+	RETURN_META(MRES_IGNORED);
+}
 
 void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 {
@@ -1366,11 +1434,13 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	
 	// Extra entities
 	CMMonsterMaker monstermaker; // 32
+	CMAmbientMusic ambientmusic;
 	
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
 	(g_engfuncs.pfnAddServerCommand)("monster", MonsterCommand);
 	(g_engfuncs.pfnAddServerCommand)("node_viewer", SpawnViewerCommand);
+	(g_engfuncs.pfnAddServerCommand)("_use", mmDispatchUse);
 
 	for (index = 0; monster_types[index].name[0]; index++)
 	{
@@ -1414,6 +1484,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 28: rgrunt.Precache(); break;
 				case 29: stukabat.Precache(); break;
 				case 32: monstermaker.Precache(); break;
+				//case 33: ambientmusic.Precache(); break;
 			}
 		}
 	}
@@ -1526,15 +1597,25 @@ void mmClientKill_Post( edict_t *pPlayer )
 	RETURN_META(MRES_IGNORED);
 }
 
+BOOL mmClientConnect( edict_t *pPlayer, const char *pszName, const char *pszAddress, char *szRejectReason )
+{
+	// stop any ambient_music that is playing
+	MESSAGE_BEGIN(MSG_ONE, SVC_STUFFTEXT, NULL, pPlayer);
+	WRITE_STRING("mp3 stop\n");
+	MESSAGE_END();
+
+	RETURN_META_VALUE( MRES_IGNORED, TRUE );
+}
+
 static DLL_FUNCTIONS gFunctionTable = 
 {
 	mmGameDLLInit,	//! pfnGameInit()	Initialize the game (one-time call after loading of game .dll)
 	mmDispatchSpawn, //! pfnSpawn()
 	mmDispatchThink, //! pfnThink
-	NULL,			// pfnUse
+	NULL,			// pfnUse [DEPRECATED]
 	mmDispatchTouch, //! pfnTouch
 	NULL,			// pfnBlocked
-	NULL,			// pfnKeyValue
+	mmDispatchKeyValue,	//! pfnKeyValue
 	NULL,			// pfnSave
 	NULL,			// pfnRestore
 	NULL,			// pfnSetAbsBox
@@ -1546,7 +1627,7 @@ static DLL_FUNCTIONS gFunctionTable =
 	NULL,			// pfnRestoreGlobalState
 	NULL,			// pfnResetGlobalState
 
-	NULL,			// pfnClientConnect
+	mmClientConnect,			//! pfnClientConnect
 	NULL,			// pfnClientDisconnect
 	NULL,			// pfnClientKill
 	NULL,			// pfnClientPutInServer
@@ -1631,7 +1712,7 @@ static DLL_FUNCTIONS gFunctionTable_Post =
 	NULL,			// pfnGameInit()   Initialize the game (one-time call after loading of game .dll)
 	NULL,			// pfnSpawn()
 	mmDispatchThink_Post, //! pfnThink
-	NULL,			// pfnUse
+	NULL,			// pfnUse [DEPRECATED]
 	NULL,			// pfnTouch
 	NULL,			// pfnBlocked
 	NULL,			// pfnKeyValue
@@ -1762,7 +1843,7 @@ void mmMessageEnd_Post( void )
 	
 	RETURN_META( MRES_IGNORED );
 }
-
+/*
 enginefuncs_t meta_engfuncs =
 {
 	NULL,			// pfnPrecacheModel()
@@ -1986,7 +2067,7 @@ C_DLLEXPORT int GetEngineFunctions(enginefuncs_t *pengfuncsFromEngine, int *inte
 	memcpy(pengfuncsFromEngine, &meta_engfuncs, sizeof(enginefuncs_t));
 	return TRUE;
 }
-
+*/
 enginefuncs_t meta_engfuncs_post =
 {
 	NULL,			// pfnPrecacheModel()

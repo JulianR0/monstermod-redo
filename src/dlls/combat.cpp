@@ -30,8 +30,7 @@
 #include "weapons.h"
 #include "func_break.h"
 
-const Vector	g_vecZero = Vector(0,0,0);
-Vector		g_vecAttackDir;
+extern DLL_GLOBAL Vector		g_vecAttackDir;
 entvars_t *g_pevLastInflictor;
 
 #define HUMAN_GIB_COUNT			6
@@ -831,7 +830,7 @@ int CMBaseMonster :: TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker
 {
 	float	flTake;
 	Vector	vecDir;
-	
+
 	if (!pev->takedamage)
 		return 0;
 
@@ -1322,33 +1321,33 @@ void CMBaseMonster :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vecto
 	if ( pev->takedamage )
 	{
 		m_LastHitGroup = ptr->iHitgroup;
-
-/*jlb
+		
+		// do we need the hitboxes to be customizable? use vanilla HL skill.cfg for now
 		switch ( ptr->iHitgroup )
 		{
 		case HITGROUP_GENERIC:
 			break;
 		case HITGROUP_HEAD:
-			flDamage *= gSkillData.monHead;
+			flDamage *= 3; //gSkillData.monHead;
 			break;
 		case HITGROUP_CHEST:
-			flDamage *= gSkillData.monChest;
+			flDamage *= 1; //gSkillData.monChest;
 			break;
 		case HITGROUP_STOMACH:
-			flDamage *= gSkillData.monStomach;
+			flDamage *= 1; //gSkillData.monStomach;
 			break;
 		case HITGROUP_LEFTARM:
 		case HITGROUP_RIGHTARM:
-			flDamage *= gSkillData.monArm;
+			flDamage *= 1; //gSkillData.monArm;
 			break;
 		case HITGROUP_LEFTLEG:
 		case HITGROUP_RIGHTLEG:
-			flDamage *= gSkillData.monLeg;
+			flDamage *= 1; //gSkillData.monLeg;
 			break;
 		default:
 			break;
 		}
-jlb*/
+
 		SpawnBlood(ptr->vecEndPos, BloodColor(), flDamage);// a little surface blood.
 		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
 		AddMultiDamage( pevAttacker, this->edict(), flDamage, bitsDamageType );

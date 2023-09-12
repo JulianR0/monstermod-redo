@@ -58,11 +58,40 @@ void CMMonsterMaker :: KeyValue( KeyValueData *pkvd )
 				break; // grab the first entry we find
 			}
 		}
+		if (monster_types[mIndex].name[0] == 0)
+		{
+			ALERT ( at_logged, "[MONSTER] MonsterMaker - %s is not a valid monster type!\n", pkvd->szValue );
+			m_iMonsterIndex = -1;
+		}
 		pkvd->fHandled = TRUE;
 	}
 	else if ( FStrEq(pkvd->szKeyName, "new_model") )
 	{
 		m_iszCustomModel = ALLOC_STRING(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if ( FStrEq(pkvd->szKeyName, "bloodcolor") )
+	{
+		m_iMonsterBlood = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if ( FStrEq(pkvd->szKeyName, "respawn_as_playerally") )
+	{
+		if (atoi(pkvd->szValue))
+			m_iClassifyOverride = CLASS_PLAYER_ALLY;
+		pkvd->fHandled = TRUE;
+	}
+	// These are to keep consistency with Sven Co-op's squadmaker entity.
+	// CMBaseMonster::KeyValue will process TriggerCondition/TriggerTarget
+	// keyvalues in the same way.
+	else if ( FStrEq(pkvd->szKeyName, "trigger_condition") )
+	{
+		m_iTriggerCondition = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if ( FStrEq(pkvd->szKeyName, "trigger_target") )
+	{
+		m_iszTriggerTarget = ALLOC_STRING(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -72,6 +101,17 @@ void CMMonsterMaker :: KeyValue( KeyValueData *pkvd )
 
 void CMMonsterMaker :: Spawn( )
 {
+	// likely omitted keyvalue, but it could truly be an alien grunt spawn
+	if ( m_iMonsterIndex == 0 )
+	{
+		if ( !monster_types[0].need_to_precache )
+		{
+			// monstertype was not defined
+			ALERT ( at_logged, "[MONSTER] Spawned a monstermaker entity without a monstertype! targetname: \"%s\"\n", STRING(pev->targetname) );
+			m_iMonsterIndex = -1;
+		}
+	}
+
 	pev->solid = SOLID_NOT;
 	
 	m_cLiveChildren = 0;
@@ -109,6 +149,7 @@ void CMMonsterMaker :: Spawn( )
 	m_fFadeChildren = TRUE;
 	
 	m_flGround = 0;
+	pev->classname = MAKE_STRING("monstermaker");
 }
 
 void CMMonsterMaker :: Precache( void )
@@ -122,8 +163,15 @@ void CMMonsterMaker :: Precache( void )
 //=========================================================
 void CMMonsterMaker::MakeMonster( void )
 {
+	// monstermaker incorrectly setup or intentionally empty
+	if ( m_iMonsterIndex == -1 )
+	{
+		ALERT ( at_console, "[MONSTER] NULL Ent in MonsterMaker!\n" );
+		return;
+	}
+
 	edict_t *pent;
-	pKVD keyvalue[1]; // sometimes, i don't know what am i doing. -Giegue
+	pKVD keyvalue[MAX_KEYVALUES]; // sometimes, i don't know what am i doing. -Giegue
 	int createSF = SF_MONSTER_FALL_TO_GROUND;
 
 	if ( m_iMaxLiveChildren > 0 && m_cLiveChildren >= m_iMaxLiveChildren )
@@ -157,6 +205,7 @@ void CMMonsterMaker::MakeMonster( void )
 	if ( pev->spawnflags & SF_MONSTERMAKER_MONSTERCLIP )
 		createSF |= SF_MONSTER_HITMONSTERCLIP;
 
+	/* KEYVALUES */
 	// Monster is to have a custom model?
 	if ( !FStringNull( m_iszCustomModel ) )
 	{
@@ -164,12 +213,46 @@ void CMMonsterMaker::MakeMonster( void )
 		strcpy(keyvalue[0].key, "model");
 		strcpy(keyvalue[0].value, STRING( m_iszCustomModel ));
 	}
+	// Override monster blood color?
+	if ( m_iMonsterBlood )
+	{
+		// setup blood keyvalue
+		strcpy(keyvalue[1].key, "bloodcolor");
+		sprintf(keyvalue[1].value, "%i", m_iMonsterBlood);
+	}
+	// Trigger conditions set?
+	if ( !FStringNull( m_iszTriggerTarget ) )
+	{
+		// setup trigger keyvalues
+		strcpy(keyvalue[2].key, "TriggerCondition");
+		sprintf(keyvalue[2].value, "%i", m_iTriggerCondition);
+		strcpy(keyvalue[3].key, "TriggerTarget");
+		strcpy(keyvalue[3].value, STRING( m_iszTriggerTarget ));
+	}
+	// Weapons (For hgrunt/massn/rgrunt/etc...)
+	if ( pev->weapons )
+	{
+		strcpy(keyvalue[4].key, "weapons");
+		sprintf(keyvalue[4].value, "%i", pev->weapons);
+	}
+	// Monster's Name
+	if ( !FStringNull( m_szMonsterName ) )
+	{
+		strcpy(keyvalue[5].key, "displayname");
+		strcpy(keyvalue[5].value, STRING( m_szMonsterName ));
+	}
+	// Classify override
+	if ( m_iClassifyOverride )
+	{
+		strcpy(keyvalue[6].key, "classify");
+		sprintf(keyvalue[6].value, "%i", m_iClassifyOverride);
+	}
 
 	// Attempt to spawn monster
 	pent = spawn_monster(m_iMonsterIndex, pev->origin, pev->angles, createSF, keyvalue);
 	if ( pent == NULL )
 	{
-		ALERT ( at_console, "NULL Ent in MonsterMaker!\n" );
+		ALERT ( at_console, "[MONSTER] MonsterMaker - failed to spawn monster! targetname: \"%s\"\n", STRING(pev->targetname) );
 		return;
 	}
 	
@@ -188,6 +271,23 @@ void CMMonsterMaker::MakeMonster( void )
 		pent->v.targetname = pev->netname;
 	}
 	
+	// Pass parent's rendering effects to child
+	pent->v.rendermode = pev->rendermode;
+	pent->v.renderfx = pev->renderfx;
+	pent->v.renderamt = pev->renderamt;
+	pent->v.rendercolor = pev->rendercolor;
+
+	// Soundlist isn't "exactly" a keyvalue so pass it here
+	if ( m_srSoundList != NULL )
+	{
+		// it needs to be allocated first
+		CMBaseMonster *pChild = GetClassPtr((CMBaseMonster *)VARS(pent));
+		pChild->m_srSoundList = (REPLACER::REPLACER*)calloc(MAX_REPLACEMENTS, sizeof(*pChild->m_srSoundList));
+
+		memcpy(pChild->m_srSoundList, m_srSoundList, sizeof(REPLACER::REPLACER));
+		pChild->m_isrSounds = m_isrSounds;
+	}
+
 	m_cLiveChildren++;// count this monster
 	m_cNumMonsters--;
 

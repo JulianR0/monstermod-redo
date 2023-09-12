@@ -17,6 +17,8 @@
 #include	"cmbase.h"
 #include	"decals.h"
 
+void EntvarsKeyvalue( entvars_t *pev, KeyValueData *pkvd );
+
 extern Vector VecBModelOrigin( entvars_t* pevBModel );
 extern DLL_GLOBAL Vector		g_vecAttackDir;
 
@@ -101,6 +103,15 @@ edict_t *CMBaseEntity::CreateEntity(char *classname)
    pev->euser4 = (edict_t *)this;
 
    return pent;
+}
+
+// process entvar keyvalue
+void CMBaseEntity :: KeyValue( KeyValueData* pkvd )
+{
+	if ( !pev || !pkvd )
+		return;
+
+	EntvarsKeyvalue( pev, pkvd );
 }
 
 // give health

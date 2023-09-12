@@ -145,11 +145,24 @@ void FireTargets( const char *targetName, edict_t *pActivator, edict_t *pCaller,
 		if (FNullEnt(pentTarget))
 			break;
 
+		// MonsterMod entity
 		CMBaseEntity *pTarget = CMBaseEntity::Instance( pentTarget );
-		if ( pTarget && !(pTarget->pev->flags & FL_KILLME) )	// Don't use dying ents
+		if ( pTarget && !(pTarget->pev->flags & FL_KILLME) )
 		{
 			ALERT( at_aiconsole, "Found: %s, firing (%s)\n", STRING(pTarget->pev->classname), targetName );
 			pTarget->Use( pActivator, pCaller, useType, value );
+		}
+		// Valid entity but not recognized by monstermod, must be a normal entity
+		else if (!(pentTarget->v.flags & FL_KILLME))
+		{
+			if (CVAR_GET_FLOAT("_glb_use")) // avoid "unknown command" spam
+			{
+				ALERT( at_aiconsole, "Found: %s, firing (%s)\n", STRING(pentTarget->v.classname), targetName );
+
+				char extCmd[64];
+				sprintf( extCmd, "_trigger %i %i %i %i %f\n", ENTINDEX( pentTarget ), ENTINDEX( ENT( pActivator ) ), ENTINDEX( ENT( pCaller ) ), useType, value );
+				SERVER_COMMAND( extCmd );
+			}
 		}
 	}
 }

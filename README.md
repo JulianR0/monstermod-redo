@@ -23,13 +23,13 @@ A small light is seen at the distance...
 
 MonsterMod is a MetaMod plugin. Its purpose was to allow multiplayer games to add monsters, where it wasn't possible to do so by normal means. The updates of the project became incredibly obscure: Getting the "up-to-date" versions containing the new additions (opposing force monsters, for example) were very difficult. And the only one who managed to bring the plugin even futher kept the progress of the plugin private.
 
-After 20 years (and a half) since botman's original plugin was released, the future of the project became nothing but a forgotten, ancient relic of the past.
+After 21 years since botman's original plugin was released, the future of the project became nothing but a forgotten, ancient relic of the past.
 
 Not anymore...
 
 The first goal of this project aims towards the recreation of the new features of the "obscured and updated" Monster Mod plugin. Taking botman's original 2002 plugin and working from the ground up, the mission is to rebuild it with the new features and monsters that only few were able to see.
 
-The source code is completely free for everyone to use: In the event that the development of this project falls and becomes stagnant again, the plugin will live on, as the project's second goal is its preservation. The original botman's page where you can download the 2002 plugin will not stay up forever.
+The source code is completely free for everyone to use: In the event that the development of this project falls and becomes stagnant again, the plugin will live on, as the project's second goal is its preservation. ~~The original botman's page where you can download the 2002 plugin will not stay up forever.~~ **April 2023 update**: The page is gone, the original 2002 plugin can no longer be found.
 
 Under no circumstances shall we allow this project to fade away and become lost amidst the gears of time.
 
@@ -43,11 +43,13 @@ The plugin -should- be able to be used out-of-the-box by simply downloading the 
 **Linux:**
 `linux addons/monstermod/monster_mm_i386.so`
 
-Additional configuration files are included in the release files, each explaining it's usage and installation instructions.
+To start adding monsters onto your maps, additional configuration files are included in the release files, each explaining its usage and installation instructions. Nevertheless, if you are felling lost, the [wiki](https://github.com/JulianR0/monstermod-redo/wiki) contains usage instructions, and how to configure MonsterMod to your liking.
+
+Extra MonsterMod features can be unlocked with additional AMX Mod X plugins which are located in the `extra` folder. All these plugins are optional, and only required based on your use-case.
 
 ## Build Instructions
 
-*TODO: Add build instructions.*
+The [Building](https://github.com/JulianR0/monstermod-redo/wiki) section of the wiki contains instructions on how to compile MonsterMod by yourself.
 
 ## MonsterMod and ReHLDS
 
@@ -55,121 +57,20 @@ Usage of ReHLDS is highly recommended, as you can use the command `rescount` whi
 
 Keeping track of the number of precached content will allow you to maximize the number of monsters you can use without risking going over the limits.
 
-## Using MonsterMod on Counter-Strike
-
-Counter-Strike precaches the sounds of all weapons. This means that sounds such as "clip-ins", "clip-outs" are added to the list, taking quite a bit of space in the precache count. Let it be a reminder that our good old Half-Life can only store a maximum of 512 precached resources. Most of these sounds are handled client-side by the models themselves, there is no need for all of them to be kept precached on the server. Only the weapons fire sounds are needed.
-
-MonsterMod does not have an integrated "Unprecacher" to remove those sounds, but you can remove them manually with AMX Mod X, using Fakemeta. Register forward **FM_PrecacheSound** and return **FMRES_SUPERCEDE** on the following sounds:
-
-```
-"weapons/ak47_boltpull.wav"
-"weapons/ak47_clipin.wav"
-"weapons/ak47_clipout.wav"
-"weapons/aug_boltpull.wav"
-"weapons/aug_boltslap.wav"
-"weapons/aug_clipin.wav"
-"weapons/aug_clipout.wav"
-"weapons/aug_forearm.wav"
-"weapons/awp_clipin.wav"
-"weapons/awp_clipout.wav"
-"weapons/awp_deploy.wav"
-"weapons/boltdown.wav"
-"weapons/boltpull1.wav"
-"weapons/boltup.wav"
-"weapons/clipin1.wav"
-"weapons/clipout1.wav"
-"weapons/de_clipin.wav"
-"weapons/de_clipout.wav"
-"weapons/de_deploy.wav"
-"weapons/elite_clipout.wav"
-"weapons/elite_deploy.wav"
-"weapons/elite_leftclipin.wav"
-"weapons/elite_reloadstart.wav"
-"weapons/elite_rightclipin.wav"
-"weapons/elite_sliderelease.wav"
-"weapons/elite_twirl.wav"
-"weapons/famas_boltpull.wav"
-"weapons/famas_boltslap.wav"
-"weapons/famas_clipin.wav"
-"weapons/famas_clipout.wav"
-"weapons/famas_forearm.wav"
-"weapons/fiveseven_clipin.wav"
-"weapons/fiveseven_clipout.wav"
-"weapons/fiveseven_slidepull.wav"
-"weapons/fiveseven_sliderelease.wav"
-"weapons/g3sg1_clipin.wav"
-"weapons/g3sg1_clipout.wav"
-"weapons/g3sg1_slide.wav"
-"weapons/galil_boltpull.wav"
-"weapons/galil_clipin.wav"
-"weapons/galil_clipout.wav"
-"weapons/m4a1_boltpull.wav"
-"weapons/m4a1_clipin.wav"
-"weapons/m4a1_clipout.wav"
-"weapons/m4a1_deploy.wav"
-"weapons/m4a1_silencer_off.wav"
-"weapons/m4a1_silencer_on.wav"
-"weapons/m249_boxin.wav"
-"weapons/m249_boxout.wav"
-"weapons/m249_chain.wav"
-"weapons/m249_coverdown.wav"
-"weapons/m249_coverup.wav"
-"weapons/mac10_boltpull.wav"
-"weapons/mac10_clipin.wav"
-"weapons/mac10_clipout.wav"
-"weapons/mp5_clipin.wav"
-"weapons/mp5_clipout.wav"
-"weapons/mp5_slideback.wav"
-"weapons/p90_boltpull.wav"
-"weapons/p90_clipin.wav"
-"weapons/p90_clipout.wav"
-"weapons/p90_cliprelease.wav"
-"weapons/p228_clipin.wav"
-"weapons/p228_clipout.wav"
-"weapons/p228_slidepull.wav"
-"weapons/p228_sliderelease.wav"
-"weapons/scout_bolt.wav"
-"weapons/scout_clipin.wav"
-"weapons/scout_clipout.wav"
-"weapons/sg550_boltpull.wav"
-"weapons/sg550_clipin.wav"
-"weapons/sg550_clipout.wav"
-"weapons/sg552_boltpull.wav"
-"weapons/sg552_clipin.wav"
-"weapons/sg552_clipout.wav"
-"weapons/slideback1.wav"
-"weapons/sliderelease1.wav"
-"weapons/ump45_boltslap.wav"
-"weapons/ump45_clipin.wav"
-"weapons/ump45_clipout.wav"
-"weapons/usp_clipin.wav"
-"weapons/usp_clipout.wav"
-"weapons/usp_silencer_off.wav"
-"weapons/usp_silencer_on.wav"
-"weapons/usp_slideback.wav"
-"weapons/usp_sliderelease.wav"
-```
-
-Doing this will free **85** sounds from the precache list that you can now use for additional monsters.
-
-## Known Bugs
+## Known Bugs and Issues
 
 I'm aware that the plugin is far from perfect, and there are a few things that need polishing *-especially the AI-*. I'll try to fix/will be fixing as the project evolves:
 
-- Human Grunts are unable to reload their weapons. As a workaround, infinite ammo has been given to them.
+- Rarely, Stukabats will become unable to fly towards their target, standing in air doing seemingly nothing.
 
-- Male Assassins share the same AI as HGrunts, so their ammo problem is still a thing, and the same workaround is used.
+- Monsters are very prone to gibbing when hurt during death animations.
 
-- Shock Troopers seems to be broken despite sharing HGrunts AI code. Despite having infinite ammo, they eventually stop firing. Worse, taking cover is absolutely broken, and they remain completely frozen in place when it happens.
-
-- If a Heavy Weapons Grunt is to lose their target while his minigun is still spinning, the next time it targets an enemy it will instantly fire instead of spinning up the minigun again.
+There are probably more issues that aren't listed here, I'll attempt to fix them as I find them. Of course, any bug report is welcome. If reporting a bug, try to explain step by step how the bug ocurred. The easier it is to replicate a bug, the easier it is to locate it and fix it.
 
 ## Milestones
 
 Attempting to recreate everything in one go is a daunting task.
 Let it be known that the original 2002 source code will NOT compile on today's compilers, and does NOT contain all the necessary files for compilation. The preliminary was to rewrite and provide as many files or lines of code to ensure it can compile again, and be usable on an actual HLDS installation.
-
-The original Visual C++ 6.0 DSP file exists in the repository but neither the file nor the code has been updated to newer formats. Don't expect it to compile on modern Visual Studio versions.
 
 Current milestones are separated by "Tiers", which are as follows:
 
@@ -200,16 +101,23 @@ Current milestones are separated by "Tiers", which are as follows:
 
 ### Tier 4
 
-- Implement reading entities within the BSP itself.
-- Model scaling. *-If possible.-*
-- Custom sound support, along with sentences.
-- Fix all pending bugs.
+- Implement reading entities within the BSP itself. **[DONE]**
+- Add build instructions. **[DONE]**
+- Global Model Replacement. **[DONE]**
+- Global Sound Replacement. **[DONE]**
+- Miscellaneous customization options, such as blood color. **[DONE]**
+- Individual sound replacement: "soundlist" keyvalue for monsters. **[DONE]**
+- Sentences support for speakable monsters. **[DONE]**
+- Attempt to fix bugs as they appear. **[DONE]**
 
 ### Tier 5
 
+- Enhance the AI.
 - Add configurations to change AI behaviour.
-- Optimize code and enhance the AI.
 - Create "tool" entities for easier map customization.
+- Optimize and clean the code.
+- Add a wiki with full documentation.
+- Fix **ALL** bugs, specially those not covered in Tier 4.
 
 
 What will the future hold after all Tiers has been completed?

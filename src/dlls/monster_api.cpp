@@ -48,7 +48,7 @@ static META_FUNCTIONS gMetaFunctionTable =
 	GetEntityAPI2_Post,						// pfnGetEntityAPI2_Post		META; called after game DLL
 	NULL,									// pfnGetNewDLLFunctions		HL SDK2; called before game DLL
 	NULL,									// pfnGetNewDLLFunctions_Post	META; called after game DLL
-	GetEngineFunctions,						// pfnGetEngineFunctions		META; called before HL engine
+	NULL,									// pfnGetEngineFunctions		META; called before HL engine
 	GetEngineFunctions_Post,				// pfnGetEngineFunctions_Post	META; called after HL engine
 };
 
@@ -56,8 +56,8 @@ static META_FUNCTIONS gMetaFunctionTable =
 plugin_info_t Plugin_info = {
    META_INTERFACE_VERSION,							// interface version
    "MonsterMod",									// name
-   "3.0",											// version
-   "24/02/2023",									// date in DD/MM/YYYY format
+   "4.0",											// version
+   "14/07/2023",									// date in DD/MM/YYYY format
    "botman, Rick90, Giegue",						// original authors + recreation by...
    "https://github.com/JulianR0/monstermod-redo",	// url
    "MONSTER",										// logtag
@@ -87,6 +87,16 @@ cvar_t init_monster_show_deaths = {"monster_show_deaths", "1", FCVAR_EXTDLL, 0, 
 cvar_t *monster_show_deaths = NULL;
 cvar_t init_monster_show_info = {"monster_show_info", "1", FCVAR_EXTDLL, 0, NULL};
 cvar_t *monster_show_info = NULL;
+cvar_t init_monster_turn_coeficient = {"monster_turn_coeficient", "1.75", FCVAR_EXTDLL, 0, NULL};
+cvar_t *monster_turn_coeficient = NULL;
+cvar_t init_monster_entity_config = {"monster_entity_config", "1", FCVAR_EXTDLL, 0, NULL};
+cvar_t *monster_entity_config = NULL;
+cvar_t init_globalmodellist = {"monster_gmr", "", FCVAR_EXTDLL, 0, NULL};
+cvar_t *globalmodellist = NULL;
+cvar_t init_globalsoundlist = {"monster_gsr", "", FCVAR_EXTDLL, 0, NULL};
+cvar_t *globalsoundlist = NULL;
+cvar_t init_monster_default_maxrange = {"monster_default_maxrange", "2048", FCVAR_EXTDLL, 0, NULL};
+cvar_t *monster_default_maxrange = NULL;
 
 
 // Metamod requesting info about this plugin:
@@ -146,6 +156,20 @@ C_DLLEXPORT int Meta_Attach(PLUG_LOADTIME now, META_FUNCTIONS *pFunctionTable, m
 	CVAR_REGISTER(&init_monster_show_info);
 	monster_show_info = CVAR_GET_POINTER("monster_show_info");
 	
+	CVAR_REGISTER(&init_monster_turn_coeficient);
+	monster_turn_coeficient = CVAR_GET_POINTER("monster_turn_coeficient");
+
+	CVAR_REGISTER(&init_monster_entity_config);
+	monster_entity_config = CVAR_GET_POINTER("monster_entity_config");
+	
+	CVAR_REGISTER(&init_globalmodellist);
+	globalmodellist = CVAR_GET_POINTER("monster_gmr");
+	CVAR_REGISTER(&init_globalsoundlist);
+	globalsoundlist = CVAR_GET_POINTER("monster_gsr");
+
+	CVAR_REGISTER(&init_monster_default_maxrange);
+	monster_default_maxrange = CVAR_GET_POINTER("monster_default_maxrange");
+
 	return(TRUE);
 }
 

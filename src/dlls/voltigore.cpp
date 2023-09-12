@@ -127,6 +127,8 @@ void CMVoltigoreEnergyBall::BallTouch(edict_t *pOther)
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 			pMonster->TakeDamage( pev, VARS( pev->owner ), gSkillData.voltigoreDmgBeam, DMG_SHOCK|DMG_ALWAYSGIB );
 		}
+		else
+			UTIL_TakeDamageExternal( pOther, pev, VARS(pev->owner), gSkillData.voltigoreDmgBeam, DMG_SHOCK | DMG_ALWAYSGIB );
 	}
 	pev->velocity = Vector(0,0,0);
 
@@ -154,6 +156,8 @@ void CMVoltigoreEnergyBall::FlyThink(void)
 					CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 					pMonster->TakeDamage( pev, pev, gSkillData.voltigoreDmgBeam/5, DMG_SHOCK );
 				}
+				else
+					UTIL_TakeDamageExternal( pEntity, pev, pev, gSkillData.voltigoreDmgBeam / 5, DMG_SHOCK );
 			}
 		}
 		
@@ -387,15 +391,15 @@ BOOL CMVoltigore::CheckRangeAttack1(float flDot, float flDist)
 {
 	if (IsMoving() && flDist >= 512)
 	{
-		// voltigore will far too far behind if he stops running to spit at this distance from the enemy.
+	// voltigore will far too far behind if he stops running to spit at this distance from the enemy.
 		return FALSE;
 	}
 
-	if (flDist > 64 && flDist <= 784 && flDot >= 0.5 && gpGlobals->time >= m_flNextZapTime)
+	if (flDist > 64 && flDist <= m_flDistTooFar && flDot >= 0.5 && gpGlobals->time >= m_flNextZapTime)
 	{
 		if (m_hEnemy != 0)
 		{
-			if (fabs(pev->origin.z - m_hEnemy->v.origin.z) > 256)
+			if (fabs(pev->origin.z - m_hEnemy->v.origin.z) > 512)
 			{
 				// don't try to spit at someone up really high or down really low.
 				return FALSE;
@@ -443,6 +447,13 @@ void CMVoltigore::GibMonster()
 	}
 	SetThink( &CMBaseEntity::SUB_Remove );
 	pev->nextthink = gpGlobals->time;
+}
+
+void CMVoltigore::UpdateOnRemove()
+{
+	CMBaseMonster::UpdateOnRemove();
+	DestroyBeams();
+	DestroyGlow();
 }
 
 //=========================================================
@@ -631,7 +642,7 @@ void CMVoltigore::Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->effects		= 0;
 	pev->health			= gSkillData.voltigoreHealth;
 	m_flFieldOfView		= 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
@@ -688,7 +699,7 @@ void CMVoltigore::PrecacheImpl(char *modelName)
 
 	PRECACHE_SOUND("debris/beamstart1.wav");
 
-	m_beamTexture = PRECACHE_MODEL(VOLTIGORE_ZAP_BEAM);
+	m_beamTexture = PRECACHE_MODELINDEX(VOLTIGORE_ZAP_BEAM);
 	PRECACHE_MODEL(VOLTIGORE_GLOW_SPRITE);
 	
 	PRECACHE_MODEL("sprites/lgtning.spr");
@@ -1020,6 +1031,8 @@ void CMVoltigore::GibBeamDamage()
 						CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pEntity));
 						pMonster->TakeDamage( pev, pev, flAdjustedDamage, DMG_SHOCK );
 					}
+					else
+						UTIL_TakeDamageExternal( pEntity, pev, pev, flAdjustedDamage, DMG_SHOCK );
 				}
 			}
 		}
@@ -1137,7 +1150,7 @@ void CMBabyVoltigore::Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->effects		= 0;
 	pev->health			= gSkillData.babyVoltigoreHealth;
 	m_flFieldOfView		= 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )

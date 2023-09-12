@@ -60,6 +60,9 @@ void CPitdroneSpike::Spawn(void)
 
 void CPitdroneSpike::SpikeTouch(edict_t *pOther)
 {
+	if (m_hOwner == NULL)
+		pev->owner = NULL;
+
 	int iPitch;
 	
 	// splat sound
@@ -89,7 +92,9 @@ void CPitdroneSpike::SpikeTouch(edict_t *pOther)
 	else
 	{
 		entvars_t *pevOwner = VARS(pev->owner);
-		
+		if (pevOwner == NULL)
+			pevOwner = pev;
+
 		if ( UTIL_IsPlayer( pOther ) )
 			UTIL_TakeDamage( pOther, pev, pevOwner, gSkillData.pitdroneDmgSpit, DMG_GENERIC | DMG_NEVERGIB );
 		else if ( pOther->v.euser4 != NULL )
@@ -97,7 +102,9 @@ void CPitdroneSpike::SpikeTouch(edict_t *pOther)
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 			pMonster->TakeDamage( pev, pevOwner, gSkillData.pitdroneDmgSpit, DMG_GENERIC | DMG_NEVERGIB );
 		}
-		
+		else
+			UTIL_TakeDamageExternal( pOther, pev, pevOwner, gSkillData.pitdroneDmgSpit, DMG_GENERIC | DMG_NEVERGIB );
+
 		if (RANDOM_LONG(0,1))
 			EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, "weapons/xbow_hitbod1.wav", 1, ATTN_NORM, 0, iPitch);
 		else
@@ -139,6 +146,7 @@ edict_t *CPitdroneSpike::Shoot(entvars_t *pevOwner, Vector vecStart, Vector vecV
 	pSpit->pev->velocity = vecVelocity;
 	pSpit->pev->angles = vecAngles;
 	pSpit->pev->owner = ENT( pevOwner );
+	pSpit->m_hOwner = ENT( pevOwner );
 
 	pSpit->SetThink(&CPitdroneSpike::StartTrail);
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;
@@ -568,7 +576,7 @@ void CMPitdrone::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	m_bloodColor = !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->effects = 0;
 	pev->health = gSkillData.pitdroneHealth;
 	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
@@ -603,7 +611,7 @@ void CMPitdrone::Precache()
 {
 	PRECACHE_MODEL("models/pit_drone.mdl");
 	PRECACHE_MODEL("models/pit_drone_gibs.mdl");
-	iPitdroneSpitSprite = PRECACHE_MODEL("sprites/tinyspit.spr");// client side spittle.
+	iPitdroneSpitSprite = PRECACHE_MODELINDEX("sprites/tinyspit.spr");// client side spittle.
 
 	PRECACHE_SOUND_ARRAY(pAttackMissSounds);
 	PRECACHE_SOUND_ARRAY(pIdleSounds);
@@ -640,7 +648,7 @@ void CMPitdrone::Precache()
 	PRECACHE_SOUND("weapons/xbow_hitbod2.wav");
 	PRECACHE_SOUND("weapons/xbow_hit1.wav");
 #if FEATURE_PITDRONE_SPIKE_TRAIL
-	iSpikeTrail = PRECACHE_MODEL("sprites/spike_trail.spr");
+	iSpikeTrail = PRECACHE_MODELINDEX("sprites/spike_trail.spr");
 #endif
 }
 

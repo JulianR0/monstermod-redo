@@ -216,7 +216,7 @@ int	CMStrooper::Classify()
 
 BOOL CMStrooper::CheckRangeAttack1(float flDot, float flDist)
 {
-	return m_cAmmoLoaded >= 1;// && CMHGrunt::CheckRangeAttack1(flDot, flDist);
+	return (m_cAmmoLoaded >= 1) && CMHGrunt::CheckRangeAttack1(flDot, flDist);
 }
 
 BOOL CMStrooper::CheckRangeAttack2( float flDot, float flDist )
@@ -288,34 +288,24 @@ void CMStrooper::HandleAnimEvent(MonsterEvent_t *pEvent)
 			UTIL_MakeVectors(pev->angles);
 			Vector vecShootOrigin = vecGunPos + gpGlobals->v_forward * 32;
 			Vector vecShootDir = ShootAtEnemy( vecShootOrigin );
-			vecGunAngles = UTIL_VecToAngles(vecShootDir);
-
-			//CBaseEntity *pShock = CBaseEntity::Create("shock_beam", vecShootOrigin, vecGunAngles, edict());
-			CMShock *pShock = CreateClassPtr((CMShock *)NULL);
-
+			vecGunAngles = UTIL_VecToAngles( vecShootDir );
+			vecGunAngles.z += RANDOM_FLOAT( -0.05, 0 );
+			
+			Vector vecVelocity = vecShootDir * 2000;
+			
+			edict_t *pShock = CMShock::Shoot( pev, vecGunAngles, vecShootOrigin, vecVelocity );
 			if (pShock != NULL)
 			{
-				pShock->pev->origin = vecShootOrigin;
+				m_cAmmoLoaded--;
+				SetBlending( 0, vecGunAngles.x );
 				
-				vecGunAngles.z += RANDOM_FLOAT( -0.05, 0 );
-				pShock->pev->angles = UTIL_VecToAngles( vecGunAngles );
-				pShock->pev->owner = edict();
-				
-				// Initialize these for entities who don't link to the world
-				pShock->pev->absmin = pShock->pev->origin - Vector(1,1,1);
-				pShock->pev->absmax = pShock->pev->origin + Vector(1,1,1);
-				
-				pShock->Spawn();
-				
-				pShock->pev->velocity = vecShootDir * 2000;
-				pShock->pev->nextthink = gpGlobals->time;
+				// Play fire sound.
+				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/shock_fire.wav", 1, ATTN_NORM);
 			}
-			
-			m_cAmmoLoaded--;
-			SetBlending( 0, vecGunAngles.x );
-
-			// Play fire sound.
-			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/shock_fire.wav", 1, ATTN_NORM);
+			else
+			{
+				ALERT( at_console, "Cannot create shock_beam!\n" );
+			}
 		}
 	}
 	break;
@@ -340,6 +330,8 @@ void CMStrooper::HandleAnimEvent(MonsterEvent_t *pEvent)
 				CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pHurt));
 				pMonster->TakeDamage( pev, pev, gSkillData.strooperDmgKick, DMG_CLUB );
 			}
+			else
+				UTIL_TakeDamageExternal( pHurt, pev, pev, gSkillData.strooperDmgKick, DMG_CLUB );
 		}
 
 		m_fRightClaw = !m_fRightClaw;
@@ -375,7 +367,7 @@ void CMStrooper::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	m_bloodColor = !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->effects = 0;
 	pev->health = gSkillData.strooperHealth;
 	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
@@ -451,7 +443,7 @@ void CMStrooper::Precache()
 {
 	PRECACHE_MODEL("models/strooper.mdl");
 	PRECACHE_MODEL("models/strooper_gibs.mdl");
-	iStrooperMuzzleFlash = PRECACHE_MODEL(STROOPER_MUZZLEFLASH);
+	iStrooperMuzzleFlash = PRECACHE_MODELINDEX(STROOPER_MUZZLEFLASH);
 	PRECACHE_SOUND("shocktrooper/shock_trooper_attack.wav");
 
 	PRECACHE_SOUND("shocktrooper/shock_trooper_die1.wav");
@@ -488,7 +480,7 @@ void CMStrooper::Precache()
 	else
 		m_voicePitch = 100;
 
-	m_iBrassShell = PRECACHE_MODEL("models/shell.mdl");// brass shell
+	m_iBrassShell = PRECACHE_MODELINDEX("models/shell.mdl");// brass shell
 }
 
 
@@ -590,12 +582,8 @@ void CMStrooper::DropShockRoach(bool gibbed)
 	CMShockRoach *roach = CreateClassPtr((CMShockRoach *)NULL);
 	if (roach != NULL)
 	{
-		roach->pev->origin = vecPos;
-		roach->pev->angles = UTIL_VecToAngles( vecDropAngles );
-		
-		// Initialize these for entities who don't link to the world
-		roach->pev->absmin = roach->pev->origin - Vector(1,1,1);
-		roach->pev->absmax = roach->pev->origin + Vector(1,1,1);
+		UTIL_SetOrigin(roach->pev, vecPos);
+		roach->pev->angles = vecDropAngles;
 		
 		roach->Spawn();
 		
@@ -744,6 +732,8 @@ Schedule_t *CMStrooper::GetSchedule(void)
 		// new enemy
 		if (HasConditions(bits_COND_NEW_ENEMY))
 		{
+			// pretty much a copypaste of hgrunt and so the same issues. -Giegue
+			/*
 			//!!!KELLY - the leader of a squad of grunts has just seen the player or a 
 			// monster and has made it the squad's enemy. You
 			// can check pev->flags for FL_CLIENT to determine whether this is the player
@@ -757,14 +747,14 @@ Schedule_t *CMStrooper::GetSchedule(void)
 				if ((m_hEnemy != 0) && UTIL_IsPlayer( m_hEnemy ))
 					// player
 					SENTENCEG_PlayRndSz(ENT(pev), "ST_ALERT", STROOPER_SENTENCE_VOLUME, STROOPER_ATTN, 0, m_voicePitch);
-/*
+
 				else if ((m_hEnemy != 0) &&
 					(m_hEnemy->Classify() != CLASS_PLAYER_ALLY) &&
 					(m_hEnemy->Classify() != CLASS_HUMAN_PASSIVE) &&
 					(m_hEnemy->Classify() != CLASS_MACHINE))
 					// monster
 					SENTENCEG_PlayRndSz(ENT(pev), "ST_MONST", STROOPER_SENTENCE_VOLUME, STROOPER_ATTN, 0, m_voicePitch);
-*/
+
 				JustSpoke();
 			}
 
@@ -776,6 +766,7 @@ Schedule_t *CMStrooper::GetSchedule(void)
 			{
 				return GetScheduleOfType(SCHED_STROOPER_ESTABLISH_LINE_OF_FIRE);
 			}
+			*/
 		}
 		// no ammo
 		else if (HasConditions(bits_COND_NO_AMMO_LOADED))
@@ -801,9 +792,9 @@ Schedule_t *CMStrooper::GetSchedule(void)
 				//!!!KELLY - this grunt was hit and is going to run to cover.
 				if (FOkToSpeak()) // && RANDOM_LONG(0,1))
 				{
-					//SENTENCEG_PlayRndSz( ENT(pev), "HG_COVER", HGRUNT_SENTENCE_VOLUME, GRUNT_ATTN, 0, m_voicePitch);
+					SENTENCEG_PlayRndSz( ENT(pev), "ST_COVER", STROOPER_SENTENCE_VOLUME, STROOPER_ATTN, 0, m_voicePitch);
 					m_iSentence = STROOPER_SENT_COVER;
-					//JustSpoke();
+					JustSpoke();
 				}
 				return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
 			}
@@ -828,8 +819,10 @@ Schedule_t *CMStrooper::GetSchedule(void)
 			}
 			else
 			{
+				return GetScheduleOfType(SCHED_RANGE_ATTACK1);
+
 				// hide!
-				return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
+				//return GetScheduleOfType(SCHED_TAKE_COVER_FROM_ENEMY);
 			}
 		}
 		// can't see enemy
@@ -847,6 +840,11 @@ Schedule_t *CMStrooper::GetSchedule(void)
 			}
 			else
 			{
+				return GetScheduleOfType(SCHED_STROOPER_ESTABLISH_LINE_OF_FIRE);
+			}
+			/*
+			else
+			{
 				//!!!KELLY - grunt is going to stay put for a couple seconds to see if
 				// the enemy wanders back out into the open, or approaches the
 				// grunt's covered position. Good place for a taunt, I guess?
@@ -857,6 +855,7 @@ Schedule_t *CMStrooper::GetSchedule(void)
 				}
 				return GetScheduleOfType(SCHED_STANDOFF);
 			}
+			*/
 		}
 
 		if (HasConditions(bits_COND_SEE_ENEMY) && !HasConditions(bits_COND_CAN_RANGE_ATTACK1))

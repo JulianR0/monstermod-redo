@@ -134,12 +134,14 @@ void CGonomeGuts :: GutsTouch( edict_t *pOther )
 	else
 	{
 		if (UTIL_IsPlayer(pOther))
-			UTIL_TakeDamage( pOther, pev, pev, gSkillData.gonomeDmgGuts, DMG_GENERIC );
+			UTIL_TakeDamage( pOther, pev, VARS(pev->owner), gSkillData.gonomeDmgGuts, DMG_GENERIC );
 		else if (pOther->v.euser4 != NULL)
 		{
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
-			pMonster->TakeDamage ( pev, pev, gSkillData.gonomeDmgGuts, DMG_GENERIC );
+			pMonster->TakeDamage ( pev, VARS(pev->owner), gSkillData.gonomeDmgGuts, DMG_GENERIC );
 		}
+		else
+			UTIL_TakeDamageExternal( pOther, pev, VARS(pev->owner), gSkillData.gonomeDmgGuts, DMG_GENERIC );
 	}
 	
 	SetThink( &CGonomeGuts::SUB_Remove );
@@ -349,16 +351,6 @@ int	CMGonome::Classify(void)
 //=========================================================
 int CMGonome::TakeDamage(entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType)
 {
-	// Take 15% damage from bullets
-	if( bitsDamageType == DMG_BULLET )
-	{
-		Vector vecDir = pev->origin - (pevInflictor->absmin + pevInflictor->absmax) * 0.5;
-		vecDir = vecDir.Normalize();
-		float flForce = DamageForce( flDamage );
-		pev->velocity = pev->velocity + vecDir * flForce;
-		flDamage *= 0.15;
-	}
-
 	// HACK HACK -- until we fix this.
 	if( IsAlive() )
 		PainSound();
@@ -621,7 +613,7 @@ void CMGonome::Spawn()
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_STEP;
-	m_bloodColor = BLOOD_COLOR_GREEN;
+	m_bloodColor = !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->effects = 0;
 	pev->health = gSkillData.gonomeHealth;
 	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )

@@ -220,7 +220,7 @@ void CMHAssassin :: Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_RED;
+	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_RED : m_bloodColor;
 	pev->effects		= 0;
 	pev->health			= gSkillData.hassassinHealth;
 	m_flFieldOfView		= VIEW_FIELD_WIDE; // indicates the width of this monster's forward view cone ( as a dotproduct result )
@@ -256,7 +256,7 @@ void CMHAssassin :: Precache()
 
 	PRECACHE_SOUND("debris/beamstart1.wav");
 
-	m_iShell = PRECACHE_MODEL ("models/shell.mdl");// brass shell
+	m_iShell = PRECACHE_MODELINDEX("models/shell.mdl");// brass shell
 }	
 	
 

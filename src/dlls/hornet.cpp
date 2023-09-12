@@ -104,8 +104,8 @@ void CMHornet :: Precache()
 	PRECACHE_SOUND( "hornet/ag_hornethit2.wav" );
 	PRECACHE_SOUND( "hornet/ag_hornethit3.wav" );
 
-	iHornetPuff = PRECACHE_MODEL( "sprites/muz1.spr" );
-	iHornetTrail = PRECACHE_MODEL("sprites/laserbeam.spr");
+	iHornetPuff = PRECACHE_MODELINDEX( "sprites/muz1.spr" );
+	iHornetTrail = PRECACHE_MODELINDEX("sprites/laserbeam.spr");
 }	
 
 //=========================================================
@@ -126,23 +126,14 @@ int CMHornet::IRelationship ( CMBaseEntity *pTarget )
 //=========================================================
 int CMHornet::Classify ( void )
 {
-	/*
-	if ( pev->owner && pev->owner->v.flags & FL_CLIENT)
-	{
-		return CLASS_PLAYER_BIOWEAPON;
-	}
-
-	return	CLASS_ALIEN_BIOWEAPON;
-	*/
-	
 	// Ensure classify is consistent with the owner, in the event
 	// it's classification was overriden.
-	if ( pev->owner == NULL )
-		return CLASS_ALIEN_BIOWEAPON;
-	
-	// Ain't this going to make the hornets code "slow"?
-	CMBaseMonster *pOwner = GetClassPtr((CMBaseMonster *)VARS(pev->owner));
-	return pOwner->Classify();
+	if (UTIL_IsValidEntity(pev->owner))
+	{
+		CMBaseMonster *pOwner = GetClassPtr((CMBaseMonster *)VARS(pev->owner));
+		return pOwner->Classify();
+	}
+	return CLASS_ALIEN_BIOWEAPON;
 }
 
 //=========================================================
@@ -372,6 +363,8 @@ void CMHornet::DieTouch ( edict_t *pOther )
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 			pMonster->TakeDamage( pev, VARS( pev->owner ), pev->dmg, DMG_BULLET );
 		}
+		else
+			UTIL_TakeDamageExternal( pOther, pev, VARS( pev->owner ), pev->dmg, DMG_BULLET );
 	}
 
 	pev->modelindex = 0;// so will disappear for the 0.1 secs we wait until NEXTTHINK gets rid

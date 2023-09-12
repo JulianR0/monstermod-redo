@@ -113,7 +113,7 @@ void CSquidSpit::Shoot( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity
 
 	pSpit->SetThink ( &CSquidSpit::Animate );
 	pSpit->pev->nextthink = gpGlobals->time + 0.1;
-   pSpit->SetTouch ( &CSquidSpit::SpitTouch );
+	pSpit->SetTouch ( &CSquidSpit::SpitTouch );
 }
 
 void CSquidSpit :: SpitTouch ( edict_t *pOther )
@@ -166,6 +166,8 @@ void CSquidSpit :: SpitTouch ( edict_t *pOther )
 			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pOther));
 			pMonster->TakeDamage ( pev, pev, gSkillData.bullsquidDmgSpit, DMG_GENERIC );
 		}
+		else
+			UTIL_TakeDamageExternal( pOther, pev, pev, gSkillData.bullsquidDmgSpit, DMG_GENERIC );
 	}
 
 	SetThink ( &CSquidSpit::SUB_Remove );
@@ -613,7 +615,7 @@ void CMBullsquid :: Spawn()
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->effects		= 0;
 	pev->health			= gSkillData.bullsquidHealth;
 	m_flFieldOfView		= 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
@@ -640,7 +642,7 @@ void CMBullsquid :: Precache()
 	
 	PRECACHE_MODEL("sprites/bigspit.spr");// spit projectile.
 	
-	iSquidSpitSprite = PRECACHE_MODEL("sprites/tinyspit.spr");// client side spittle.
+	iSquidSpitSprite = PRECACHE_MODELINDEX("sprites/tinyspit.spr");// client side spittle.
 
 	PRECACHE_SOUND("zombie/claw_miss2.wav");// because we use the basemonster SWIPE animation event
 

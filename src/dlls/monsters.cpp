@@ -39,7 +39,10 @@ extern DLL_GLOBAL	BOOL	g_fDrawLines;
 
 extern CGraph WorldGraph;// the world node graph
 
+extern cvar_t *monster_turn_coeficient;
+extern cvar_t *monster_default_maxrange;
 
+extern void process_monster_sound(edict_t *pMonster, char *fileName);
 
 //=========================================================
 // Eat - makes a monster full for a little while.
@@ -169,7 +172,7 @@ void CMBaseMonster :: Look ( int iDistance )
 				{
 					/* MonsterMod monster looking at another MonsterMod monster */
 					CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pSightEnt));
-
+					
 					// the looker will want to consider this entity
 					// don't check anything else about an entity that can't be seen, or an entity that you don't care about.
 					if ( IRelationship( pMonster ) != R_NO && UTIL_FInViewCone( pSightEnt, ENT(pev), m_flFieldOfView ) && !FBitSet( pSightEnt->v.flags, FL_NOTARGET ) && UTIL_FVisible( pSightEnt, ENT(pev) ) )
@@ -1552,7 +1555,7 @@ void CMBaseMonster :: Move ( float flInterval )
 				}
 				else
 				{
-//jlb					TaskFail();
+					TaskFail();
 					ALERT( at_aiconsole, "%s Failed to move (%d)!\n", STRING(pev->classname), HasMemory( bits_MEMORY_MOVE_FAILED ) );
 					//ALERT( at_aiconsole, "%f, %f, %f\n", pev->origin.z, (pev->origin + (vecDir * flCheckDist)).z, m_Route[m_iRouteIndex].vecLocation.z );
 				}
@@ -1661,8 +1664,9 @@ void CMBaseMonster :: MonsterInit ( void )
 	for (int i=0; i < MAX_OLD_ENEMIES; i++)
 		m_hOldEnemy[ i ] = NULL;
 
-	m_flDistTooFar		= 1024.0;
-	m_flDistLook		= 2048.0;
+	if (!m_flDistLook)
+		m_flDistLook = monster_default_maxrange->value;
+	m_flDistTooFar = m_flDistLook / 2; // always 50%
 
 	// set eye position
 	SetEyePosition();
@@ -2234,7 +2238,22 @@ float CMBaseMonster::ChangeYaw ( int yawSpeed )
 	ideal = pev->ideal_yaw;
 	if (current != ideal)
 	{
-		speed = (float)yawSpeed * gpGlobals->frametime * 10;
+		// -SamVanheer
+		if ( m_flLastYawTime == 0 )
+		{
+			m_flLastYawTime = gpGlobals->time - gpGlobals->frametime;
+		}
+
+		float delta = gpGlobals->time - m_flLastYawTime;
+		if ( delta > 0.25 )
+			delta = 0.25;
+		
+		// let server operators modify the multiplier coeficient -Giegue
+		float multiplier = monster_turn_coeficient->value;
+		if ( multiplier < 0.1 || multiplier > 10.0 )
+			multiplier = 1.75;
+
+		speed = (float)yawSpeed * delta * multiplier;
 		move = ideal - current;
 
 		if (ideal > current)
@@ -2609,9 +2628,34 @@ void CMBaseMonster :: KeyValue( KeyValueData *pkvd )
 		m_iClassifyOverride = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
-	else if (FStrEq(pkvd->szKeyName, "model"))
+	else if (FStrEq(pkvd->szKeyName, "bloodcolor"))
 	{
-		pev->model = ALLOC_STRING( pkvd->szValue );
+		switch ( atoi( pkvd->szValue ) )
+		{
+		case -1: m_bloodColor = DONT_BLEED; break;
+		case 1: m_bloodColor = BLOOD_COLOR_RED; break;
+		case 2: m_bloodColor = BLOOD_COLOR_YELLOW; break;
+		case 3: m_bloodColor = BLOOD_COLOR_BLUE; break;
+		case 4: m_bloodColor = BLOOD_COLOR_PINK; break;
+		case 5: m_bloodColor = BLOOD_COLOR_WHITE; break;
+		case 6: m_bloodColor = BLOOD_COLOR_ORANGE; break;
+		case 7: m_bloodColor = BLOOD_COLOR_BLACK; break;
+		case 8: m_bloodColor = BLOOD_COLOR_GREEN; break;
+		default: m_bloodColor = 0; break; // Invalid, set default
+		}
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "soundlist"))
+	{
+		if (strlen( pkvd->szValue ))
+		{
+			process_monster_sound(edict(), pkvd->szValue);
+		}
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "attackrange"))
+	{
+		m_flDistLook = atof(pkvd->szValue);
 		pkvd->fHandled = TRUE;
 	}
 	else

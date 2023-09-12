@@ -19,12 +19,12 @@
 #include	"extdll.h"
 #include	"util.h"
 #include	"cmbase.h"
-#include "cmbasemonster.h"
+#include	"cmbasemonster.h"
 #include	"monsters.h"
 #include	"schedule.h"
 #include	"weapons.h"
 #include	"hornet.h"
-#include "skill.h"
+#include	"skill.h"
 
 
 //=========================================================
@@ -85,6 +85,13 @@ const char *CMAGrunt::pAttackSounds[] =
 	"agrunt/ag_attack1.wav",
 	"agrunt/ag_attack2.wav",
 	"agrunt/ag_attack3.wav",
+};
+
+const char *CMAGrunt::pFireSounds[] =
+{
+	"agrunt/ag_fire1.wav",
+	"agrunt/ag_fire2.wav",
+	"agrunt/ag_fire3.wav",
 };
 
 const char *CMAGrunt::pDieSounds[] =
@@ -184,13 +191,8 @@ void CMAGrunt :: TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vec
 		if (flDamage <= 0)
 			flDamage = 0.1;// don't hurt the monster much, but allow bits_COND_LIGHT_DAMAGE to be generated
 	}
-	else
-	{
-		SpawnBlood(ptr->vecEndPos, BloodColor(), flDamage);// a little surface blood.
-		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
-	}
-
-	AddMultiDamage( pevAttacker, this->edict(), flDamage, bitsDamageType );
+	
+	CMBaseMonster::TraceAttack(pevAttacker, flDamage, vecDir, ptr, bitsDamageType);
 }
 
 //=========================================================
@@ -418,6 +420,8 @@ void CMAGrunt :: HandleAnimEvent( MonsterEvent_t *pEvent )
 				UTIL_MakeVectors ( pHornet->pev->angles );
 				pHornet->pev->velocity = gpGlobals->v_forward * 300;
 
+				EMIT_SOUND_DYN(ENT(pev), CHAN_WEAPON, pFireSounds[RANDOM_LONG(0, ARRAYSIZE(pFireSounds) - 1)], 1.0, ATTN_NORM, 0, 100);
+
 				CMBaseMonster *pHornetMonster = pHornet->MyMonsterPointer();
 
 				if ( pHornetMonster )
@@ -532,12 +536,12 @@ void CMAGrunt :: Spawn()
 {
 	Precache( );
 
-	SET_MODEL(ENT(pev), "models/agrunt.mdl");
+	SET_MODEL(ENT(pev), (!FStringNull( pev->model ) ? STRING( pev->model ) : "models/agrunt.mdl"));
 	UTIL_SetSize(pev, Vector(-32, -32, 0), Vector(32, 32, 64));
 
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
-	m_bloodColor		= BLOOD_COLOR_GREEN;
+	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->effects		= 0;
 	pev->health			= gSkillData.agruntHealth;
 	m_flFieldOfView		= 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
@@ -563,40 +567,23 @@ void CMAGrunt :: Spawn()
 //=========================================================
 void CMAGrunt :: Precache()
 {
-	int i;
-
 	PRECACHE_MODEL("models/agrunt.mdl");
 
-	for ( i = 0; i < ARRAYSIZE( pAttackHitSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackHitSounds[i]);
+	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
+	PRECACHE_SOUND_ARRAY( pAttackHitSounds );
+	PRECACHE_SOUND_ARRAY( pAttackMissSounds );
+	PRECACHE_SOUND_ARRAY( pIdleSounds );
+	PRECACHE_SOUND_ARRAY( pDieSounds );
+	PRECACHE_SOUND_ARRAY( pPainSounds );
+	PRECACHE_SOUND_ARRAY( pAttackSounds );
+	PRECACHE_SOUND_ARRAY( pAlertSounds );
 
-	for ( i = 0; i < ARRAYSIZE( pAttackMissSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackMissSounds[i]);
+	iAgruntMuzzleFlash = PRECACHE_MODELINDEX("sprites/muz4.spr");
 
-	for ( i = 0; i < ARRAYSIZE( pIdleSounds ); i++ )
-		PRECACHE_SOUND((char *)pIdleSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pDieSounds ); i++ )
-		PRECACHE_SOUND((char *)pDieSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pPainSounds ); i++ )
-		PRECACHE_SOUND((char *)pPainSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pAttackSounds ); i++ )
-		PRECACHE_SOUND((char *)pAttackSounds[i]);
-
-	for ( i = 0; i < ARRAYSIZE( pAlertSounds ); i++ )
-		PRECACHE_SOUND((char *)pAlertSounds[i]);
-
-
-	PRECACHE_SOUND( "hassault/hw_shoot1.wav" );
-
-	iAgruntMuzzleFlash = PRECACHE_MODEL( "sprites/muz4.spr" );
-
-   CMHornet hornet;
-   hornet.Precache();
+	CMHornet hornet;
+	hornet.Precache();
 }	
-	
+
 //=========================================================
 // AI Schedules Specific to this monster
 //=========================================================
@@ -1030,7 +1017,7 @@ Schedule_t *CMAGrunt :: GetSchedule ( void )
 	// zap player!
 			if ( HasConditions ( bits_COND_CAN_MELEE_ATTACK1 ) )
 			{
-				AttackSound();// this is a total hack. Should be parto f the schedule
+				AttackSound();// this is a total hack. Should be part of the schedule
 				return GetScheduleOfType ( SCHED_MELEE_ATTACK1 );
 			}
 

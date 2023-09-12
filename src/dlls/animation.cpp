@@ -163,7 +163,11 @@ int LookupSequence( void *pmodel, const char *label )
 
 	for (int i = 0; i < pstudiohdr->numseq; i++)
 	{
+#if defined (_WIN32)
+		if (_stricmp( pseqdesc[i].label, label ) == 0)
+#else
 		if (stricmp( pseqdesc[i].label, label ) == 0)
+#endif
 			return i;
 	}
 
@@ -209,7 +213,7 @@ void SequencePrecache( void *pmodel, const char *pSequenceName )
 					ALERT( at_error, "Bad sound event %d in sequence %s :: %s (sound is \"%s\")\n", pevent[i].event, pstudiohdr->name, pSequenceName, pevent[i].options );
 				}
 
-				PRECACHE_SOUND( (char *)(gpGlobals->pStringBase + ALLOC_STRING(pevent[i].options) ) );
+				PRECACHE_SOUND2( (char *)(gpGlobals->pStringBase + ALLOC_STRING(pevent[i].options) ) );
 			}
 		}
 	}
