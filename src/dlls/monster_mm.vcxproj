@@ -127,6 +127,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <ImportLibrary>.\Release/monster_mm.lib</ImportLibrary>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -186,6 +187,7 @@
     <ClCompile Include="util.cpp" />
     <ClCompile Include="voltigore.cpp" />
     <ClCompile Include="weapons.cpp" />
+    <ClCompile Include="xenmaker.cpp" />
     <ClCompile Include="zombie.cpp" />
   </ItemGroup>
   <ItemGroup>

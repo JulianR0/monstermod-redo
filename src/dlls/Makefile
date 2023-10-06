@@ -60,6 +60,7 @@ OBJ = \
 	util.o \
 	voltigore.o \
 	weapons.o \
+	xenmaker.o \
 	zombie.o
 
 monster_mm_i386.so: ${OBJ}

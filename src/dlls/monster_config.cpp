@@ -225,6 +225,22 @@ void scan_monster_cfg(FILE *fp)
 										monster = TRUE;
 									}
 								}
+								else if (strcmp(monster_types[mIndex].name, "env_xenmaker") == 0)
+								{
+									// A monster spawner, add it to the list
+									if (monster_spawn_count == MAX_MONSTERS)
+									{
+										// error.exe
+										LOG_MESSAGE(PLID, "ERROR: can't add monstermaker, reached MAX_MONSTERS!");
+										badent = TRUE;
+									}
+									else
+									{
+										monster_spawnpoint[monster_spawn_count].monster = mIndex;
+										monster_types[mIndex].need_to_precache = TRUE;
+										monster = TRUE;
+									}
+								}
 								else if (strcmp(monster_types[mIndex].name, "info_node") == 0)
 								{
 									// Normal node
@@ -391,8 +407,8 @@ void scan_monster_cfg(FILE *fp)
 							{
 								if (monster)
 								{
-									// this keyvalue is only valid for monstermaker entity
-									if (strcmp(data[kvd_index-1].value, "monstermaker") == 0 || strcmp(data[kvd_index-1].value, "squadmaker") == 0)
+									// this keyvalue is only valid for monstermaker entities
+									if (strcmp(data[kvd_index - 1].value, "monstermaker") == 0 || strcmp(data[kvd_index - 1].value, "squadmaker") == 0 || strcmp(data[kvd_index - 1].value, "env_xenmaker") == 0)
 									{
 										// process the entity precache here
 										int mIndex;
@@ -771,7 +787,7 @@ void scan_monster_bsp(void)
 						if (monster)
 						{
 							// this keyvalue is only valid for monstermaker entity
-							if (strcmp(data[classname_kvdI].value, "monstermaker") == 0 || strcmp(data[classname_kvdI].value, "squadmaker") == 0)
+							if (strcmp(data[classname_kvdI].value, "monstermaker") == 0 || strcmp(data[classname_kvdI].value, "squadmaker") == 0 || strcmp(data[classname_kvdI].value, "env_xenmaker") == 0)
 							{
 								// process the entity precache here
 								for (mIndex = 0; monster_types[mIndex].name[0]; mIndex++)

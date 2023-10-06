@@ -48,4 +48,46 @@ public:
 	BOOL m_fPlaying; // music is active
 };
 
+//=========================================================
+// XenMaker - spawns a monster with a teleportation effect.
+//=========================================================
+class CMXenMaker : public CMBaseMonster
+{
+public:
+	void Spawn(void);
+	void Precache(void);
+	void KeyValue(KeyValueData* pkvd);
+	void EXPORT CyclicUse(edict_t *pActivator, edict_t *pCaller, USE_TYPE useType, float value);
+	void EXPORT RetryThink(void);
+	void StartEffect(void);
+	void EXPORT MiddleEffect(void);
+	void EXPORT EndEffect(void);
+
+	int m_iMonsterIndex;// index of the monster that will be created.
+
+	float m_flGround; // z coord of the ground under me, used to make sure no monsters are under the spawner
+
+	float m_flBeamRadius; // Maximum beam strike radius.
+	int m_iBeamAlpha;
+	int m_iBeamCount; // Number of single beam instances.
+	Vector m_vBeamColor;
+	
+	float m_flLightRadius;
+	Vector m_vLightColor;
+
+	float m_flStartSpriteFramerate;
+	float m_flStartSpriteScale;
+	int m_iStartSpriteAlpha;
+	Vector m_vStartSpriteColor;
+
+	float m_flEndSpriteFramerate;
+	float m_flEndSpriteScale;
+	int m_iEndSpriteAlpha;
+	Vector m_vEndSpriteColor;
+
+private:
+	void SpawnBeam(void);
+	int m_iBeamIndex;
+};
+
 #endif // BASEEXTRA_H
