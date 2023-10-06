@@ -332,14 +332,18 @@ void CMSprite::SpriteInit( const char *pSpriteName, const Vector &origin )
 CMSprite *CMSprite::SpriteCreate( const char *pSpriteName, const Vector &origin, BOOL animate )
 {
 	CMSprite *pSprite = CreateClassPtr( (CMSprite *)NULL );
-	pSprite->SpriteInit( pSpriteName, origin );
-	pSprite->pev->classname = MAKE_STRING("env_sprite");
-	pSprite->pev->solid = SOLID_NOT;
-	pSprite->pev->movetype = MOVETYPE_NOCLIP;
-	if ( animate )
-		pSprite->TurnOn();
+	if (pSprite)
+	{
+		pSprite->SpriteInit(pSpriteName, origin);
+		pSprite->pev->classname = MAKE_STRING("env_sprite");
+		pSprite->pev->solid = SOLID_NOT;
+		pSprite->pev->movetype = MOVETYPE_NOCLIP;
+		if (animate)
+			pSprite->TurnOn();
 
-	return pSprite;
+		return pSprite;
+	}
+	return NULL;
 }
 
 

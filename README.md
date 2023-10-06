@@ -63,7 +63,9 @@ I'm aware that the plugin is far from perfect, and there are a few things that n
 
 - Rarely, Stukabats will become unable to fly towards their target, standing in air doing seemingly nothing.
 
-- Monsters are very prone to gibbing when hurt during death animations.
+- Monsters are very prone to gibbing.
+
+- Houndeyes and Hornets (Alien Grunts) do not get along. The server will crash if a houndeye damages a hornet.
 
 There are probably more issues that aren't listed here, I'll attempt to fix them as I find them. Of course, any bug report is welcome. If reporting a bug, try to explain step by step how the bug ocurred. The easier it is to replicate a bug, the easier it is to locate it and fix it.
 
