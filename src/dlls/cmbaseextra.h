@@ -65,8 +65,6 @@ public:
 
 	int m_iMonsterIndex;// index of the monster that will be created.
 
-	float m_flGround; // z coord of the ground under me, used to make sure no monsters are under the spawner
-
 	float m_flBeamRadius; // Maximum beam strike radius.
 	int m_iBeamAlpha;
 	int m_iBeamCount; // Number of single beam instances.

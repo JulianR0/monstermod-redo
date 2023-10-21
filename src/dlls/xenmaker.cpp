@@ -136,7 +136,6 @@ void CMXenMaker::Spawn()
 	SetUse(&CMXenMaker::CyclicUse); // drop one monster each time we fire
 	SetThink(&CMXenMaker::SUB_DoNothing);
 	
-	m_flGround = 0;
 	pev->classname = MAKE_STRING("env_xenmaker");
 }
 
@@ -158,15 +157,6 @@ void CMXenMaker::Precache(void)
 //=========================================================
 void CMXenMaker::StartEffect(void)
 {
-	if (!m_flGround)
-	{
-		// setup altitude
-		TraceResult tr;
-
-		UTIL_TraceLine(pev->origin, pev->origin - Vector(0, 0, 2048), ignore_monsters, ENT(pev), &tr);
-		m_flGround = tr.vecEndPos.z;
-	}
-
 	if (!FBitSet(pev->spawnflags, SF_XENMAKER_NO_SPAWN))
 	{
 		// monstermaker incorrectly setup
@@ -178,17 +168,15 @@ void CMXenMaker::StartEffect(void)
 
 		edict_t *pent;
 
-		Vector mins = pev->origin - Vector(34, 34, 0);
-		Vector maxs = pev->origin + Vector(34, 34, 0);
-		maxs.z = pev->origin.z;
-		mins.z = m_flGround;
+		Vector mins = pev->origin - Vector(34, 34, 34);
+		Vector maxs = pev->origin + Vector(34, 34, 34);
 
 		edict_t *pList[2];
 		int count = UTIL_EntitiesInBox(pList, 2, mins, maxs, FL_CLIENT | FL_MONSTER);
 		if (!count)
 		{
 			// Attempt to spawn monster
-			pent = spawn_monster(m_iMonsterIndex, pev->origin, pev->angles, SF_MONSTER_FALL_TO_GROUND, NULL);
+			pent = spawn_monster(m_iMonsterIndex, pev->origin, pev->angles, SF_MONSTER_FADECORPSE, NULL);
 			if (pent == NULL)
 			{
 				ALERT(at_console, "[MONSTER] XenMaker - failed to spawn monster! targetname: \"%s\"\n", STRING(pev->targetname));

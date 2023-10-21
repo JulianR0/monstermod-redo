@@ -78,11 +78,14 @@ public:
 	inline void SetBrightness( int brightness ) { pev->renderamt = brightness; }
 
 	inline void AnimateAndDie( float framerate ) 
-	{ 
-		SetThink(&CMSprite::AnimateUntilDead); 
+	{
+		pev->effects = 0;
+		SetThink(&CMSprite::AnimateUntilDead);
 		pev->framerate = framerate;
-		pev->dmgtime = gpGlobals->time + (m_maxFrame / framerate); 
-		pev->nextthink = gpGlobals->time; 
+		pev->dmgtime = gpGlobals->time + (m_maxFrame / framerate);
+		pev->nextthink = gpGlobals->time;
+		m_lastTime = gpGlobals->time;
+		pev->frame = 0;
 	}
 
 	void EXPORT AnimateUntilDead( void );
