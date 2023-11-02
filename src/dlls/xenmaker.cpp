@@ -176,11 +176,13 @@ void CMXenMaker::StartEffect(void)
 		if (!count)
 		{
 			// Attempt to spawn monster
-			pent = spawn_monster(m_iMonsterIndex, pev->origin, pev->angles, SF_MONSTER_FADECORPSE, NULL);
+			pent = spawn_monster(m_iMonsterIndex, pev->origin, pev->angles, 0, NULL);
 			if (pent == NULL)
 			{
 				ALERT(at_console, "[MONSTER] XenMaker - failed to spawn monster! targetname: \"%s\"\n", STRING(pev->targetname));
 			}
+			else
+				pent->v.spawnflags |= SF_MONSTER_FADECORPSE;
 		}
 		else if (!FBitSet(pev->spawnflags, SF_XENMAKER_TRY_ONCE))
 		{
