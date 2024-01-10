@@ -644,7 +644,7 @@ void CMVoltigore::Spawn()
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->effects		= 0;
-	pev->health			= gSkillData.voltigoreHealth;
+	if (!pev->health)	{ pev->health = gSkillData.voltigoreHealth; }
 	m_flFieldOfView		= 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 
@@ -1152,7 +1152,7 @@ void CMBabyVoltigore::Spawn()
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->effects		= 0;
-	pev->health			= gSkillData.babyVoltigoreHealth;
+	if (!pev->health)	{ pev->health = gSkillData.babyVoltigoreHealth; }
 	m_flFieldOfView		= 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 

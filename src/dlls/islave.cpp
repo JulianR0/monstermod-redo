@@ -423,7 +423,7 @@ void CMISlave :: Spawn()
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
 	pev->effects		= 0;
-	pev->health			= gSkillData.slaveHealth;
+	if (!pev->health)	{ pev->health = gSkillData.slaveHealth; }
 	pev->view_ofs		= Vector ( 0, 0, 64 );// position of the eyes relative to monster's origin.
 	m_flFieldOfView		= 0.5;
 	m_MonsterState		= MONSTERSTATE_NONE;

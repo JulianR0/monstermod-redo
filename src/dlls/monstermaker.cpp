@@ -247,6 +247,12 @@ void CMMonsterMaker::MakeMonster( void )
 		strcpy(keyvalue[6].key, "classify");
 		sprintf(keyvalue[6].value, "%i", m_iClassifyOverride);
 	}
+	// Custom health
+	if (pev->health)
+	{
+		strcpy(keyvalue[7].key, "health");
+		sprintf(keyvalue[7].value, "%f", pev->health);
+	}
 
 	// Attempt to spawn monster
 	pent = spawn_monster(m_iMonsterIndex, pev->origin, pev->angles, createSF, keyvalue);

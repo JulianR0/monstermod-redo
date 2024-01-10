@@ -88,4 +88,17 @@ private:
 	int m_iBeamIndex;
 };
 
+//=========================================================
+// Set CVar - Adjust a map CVar when triggered.
+//=========================================================
+class CMSetCVar : public CMBaseMonster
+{
+public:
+	void Spawn(void);
+	void KeyValue(KeyValueData* pkvd);
+	void EXPORT ActUse(edict_t *pActivator, edict_t *pCaller, USE_TYPE useType, float value);
+
+	string_t m_iszCVarToChange;
+};
+
 #endif // BASEEXTRA_H

@@ -974,10 +974,15 @@ int CMBaseMonster :: DeadTakeDamage( entvars_t *pevInflictor, entvars_t *pevAtta
 	vecDir = Vector( 0, 0, 0 );
 	if (!FNullEnt( pevInflictor ))
 	{
-		CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pevInflictor));
-		if (pMonster)
+		if (pevInflictor->euser4 != NULL)
 		{
-			vecDir = ( pMonster->Center() - Vector ( 0, 0, 10 ) - Center() ).Normalize();
+			CMBaseMonster *pMonster = GetClassPtr((CMBaseMonster *)VARS(pevInflictor));
+			vecDir = (pMonster->Center() - Vector(0, 0, 10) - Center()).Normalize();
+			vecDir = g_vecAttackDir = vecDir.Normalize();
+		}
+		else
+		{
+			vecDir = (UTIL_Center(ENT(pevInflictor)) - Vector(0, 0, 10) - Center()).Normalize();
 			vecDir = g_vecAttackDir = vecDir.Normalize();
 		}
 	}

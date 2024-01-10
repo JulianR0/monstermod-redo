@@ -131,7 +131,10 @@ int CMHornet::Classify ( void )
 	if (UTIL_IsValidEntity(pev->owner))
 	{
 		CMBaseMonster *pOwner = GetClassPtr((CMBaseMonster *)VARS(pev->owner));
-		return pOwner->Classify();
+		if (pOwner)
+			return pOwner->Classify();
+		else
+			return pev->owner->v.iuser4;
 	}
 	return CLASS_ALIEN_BIOWEAPON;
 }

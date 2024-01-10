@@ -324,7 +324,7 @@ void CMRGrunt::Spawn()
 	pev->movetype = MOVETYPE_STEP;
 	m_bloodColor = DONT_BLEED;
 	pev->effects = 0;
-	pev->health = gSkillData.rgruntHealth;
+	if (!pev->health) { pev->health = gSkillData.rgruntHealth; }
 	pev->max_health = pev->health; // to determine when sparks should be emitted
 	m_flFieldOfView = 0.2;// indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState = MONSTERSTATE_NONE;

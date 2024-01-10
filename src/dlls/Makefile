@@ -46,6 +46,7 @@ OBJ = \
 	rgrunt.o \
 	ripent.o \
 	scientist.o \
+	setcvar.o \
 	shock.o \
 	shockroach.o \
 	skill.o \

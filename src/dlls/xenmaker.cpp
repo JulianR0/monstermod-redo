@@ -14,6 +14,11 @@
 #define	SF_XENMAKER_TRY_ONCE	1 // only one attempt to spawn each time it is fired
 #define	SF_XENMAKER_NO_SPAWN	2 // don't spawn anything, only do effects
 
+#define SF_XENMAKER_NO_LIGHT	4 // don't do light effect
+#define SF_XENMAKER_NO_BEAMS	8 // don't do beam effects
+#define SF_XENMAKER_NO_SPRITE	16 // don't do sprite effects
+#define SF_XENMAKER_NO_SOUND	32 // don't do sound effect
+
 extern monster_type_t monster_types[];
 extern edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawnflags, pKVD *keyvalue);
 
@@ -35,7 +40,7 @@ void CMXenMaker::KeyValue(KeyValueData *pkvd)
 		}
 		if (monster_types[mIndex].name[0] == 0)
 		{
-			ALERT(at_logged, "[MONSTER] XenMaker - %s is not a valid monster type!\n", pkvd->szValue);
+			ALERT(at_console, "[MONSTER] XenMaker - %s is not a valid monster type!\n", pkvd->szValue);
 			m_iMonsterIndex = -1;
 		}
 		pkvd->fHandled = TRUE;
@@ -124,10 +129,16 @@ void CMXenMaker::Spawn()
 		{
 			// monstertype was not defined, it may be intentional if nothing is to spawn here
 			if (!FBitSet(pev->spawnflags, SF_XENMAKER_NO_SPAWN))
-				ALERT(at_logged, "[MONSTER] Spawned a env_xenmaker entity without a monstertype! targetname: \"%s\"\n", STRING(pev->targetname));
+				ALERT(at_console, "[MONSTER] Spawned a env_xenmaker entity without a monstertype! targetname: \"%s\"\n", STRING(pev->targetname));
 			m_iMonsterIndex = -1;
 		}
 	}
+
+	// fix uninitialized keyvalues (default per Sven Co-op's FGD)
+	if (!m_flStartSpriteScale) m_flStartSpriteScale = 1.0;
+	if (!m_flEndSpriteScale) m_flEndSpriteScale = 1.0;
+	if (!m_flStartSpriteFramerate) m_flStartSpriteFramerate = 12;
+	if (!m_flEndSpriteFramerate) m_flEndSpriteFramerate = 12;
 
 	pev->solid = SOLID_NOT;
 	
@@ -180,6 +191,7 @@ void CMXenMaker::StartEffect(void)
 			if (pent == NULL)
 			{
 				ALERT(at_console, "[MONSTER] XenMaker - failed to spawn monster! targetname: \"%s\"\n", STRING(pev->targetname));
+				return;
 			}
 			else
 				pent->v.spawnflags |= SF_MONSTER_FADECORPSE;
@@ -192,39 +204,54 @@ void CMXenMaker::StartEffect(void)
 			SetThink(&CMXenMaker::RetryThink);
 			return; // don't do effects
 		}
+		else
+		{
+			// no effects here, either
+			return;
+		}
 	}
 
 	// BEAM EFFECT
-	for (int beam = 0; beam < m_iBeamCount; beam++)
+	if (!FBitSet(pev->spawnflags, SF_XENMAKER_NO_BEAMS))
 	{
-		SpawnBeam();
+		for (int beam = 0; beam < m_iBeamCount; beam++)
+		{
+			SpawnBeam();
+		}
 	}
 	
 	// LIGHT EFFECT
-	MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
-	WRITE_BYTE(TE_DLIGHT);
-	WRITE_COORD(pev->origin.x);
-	WRITE_COORD(pev->origin.y);
-	WRITE_COORD(pev->origin.z);
-	WRITE_BYTE((int)(m_flLightRadius / 10));
-	WRITE_BYTE((int)m_vLightColor.x);
-	WRITE_BYTE((int)m_vLightColor.y);
-	WRITE_BYTE((int)m_vLightColor.z);
-	WRITE_BYTE(10); // life
-	WRITE_BYTE(0); // decay rate
-	MESSAGE_END();
+	if (!FBitSet(pev->spawnflags, SF_XENMAKER_NO_LIGHT))
+	{
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY);
+		WRITE_BYTE(TE_DLIGHT);
+		WRITE_COORD(pev->origin.x);
+		WRITE_COORD(pev->origin.y);
+		WRITE_COORD(pev->origin.z);
+		WRITE_BYTE((int)(m_flLightRadius / 10));
+		WRITE_BYTE((int)m_vLightColor.x);
+		WRITE_BYTE((int)m_vLightColor.y);
+		WRITE_BYTE((int)m_vLightColor.z);
+		WRITE_BYTE(10); // life
+		WRITE_BYTE(0); // decay rate
+		MESSAGE_END();
+	}
 
 	// SPRITE EFFECT
-	CMSprite *pSprite = CMSprite::SpriteCreate("sprites/fexplo1.spr", pev->origin, FALSE);
-	if (pSprite)
+	if (!FBitSet(pev->spawnflags, SF_XENMAKER_NO_SPRITE))
 	{
-		pSprite->SetScale(m_flStartSpriteScale);
-		pSprite->SetTransparency(kRenderGlow, (int)m_vStartSpriteColor.x, (int)m_vStartSpriteColor.y, (int)m_vStartSpriteColor.z, m_iStartSpriteAlpha, kRenderFxNoDissipation);
-		pSprite->AnimateAndDie(m_flStartSpriteFramerate);
+		CMSprite *pSprite = CMSprite::SpriteCreate("sprites/fexplo1.spr", pev->origin, FALSE);
+		if (pSprite)
+		{
+			pSprite->SetScale(m_flStartSpriteScale);
+			pSprite->SetTransparency(kRenderGlow, (int)m_vStartSpriteColor.x, (int)m_vStartSpriteColor.y, (int)m_vStartSpriteColor.z, m_iStartSpriteAlpha, kRenderFxNoDissipation);
+			pSprite->AnimateAndDie(m_flStartSpriteFramerate);
+		}
 	}
 
 	// SOUND EFFECT
-	EMIT_SOUND_DYN(ENT(pev), CHAN_AUTO, "debris/beamstart7.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+	if (!FBitSet(pev->spawnflags, SF_XENMAKER_NO_SOUND))
+		EMIT_SOUND_DYN(ENT(pev), CHAN_AUTO, "debris/beamstart7.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
 	pev->nextthink = gpGlobals->time + 0.5;
 	SetUse(NULL);
@@ -237,12 +264,15 @@ void CMXenMaker::StartEffect(void)
 void CMXenMaker::MiddleEffect(void)
 {
 	// SPRITE EFFECT
-	CMSprite *pSprite = CMSprite::SpriteCreate("sprites/xflare1.spr", pev->origin, FALSE);
-	if (pSprite)
+	if (!FBitSet(pev->spawnflags, SF_XENMAKER_NO_SPRITE))
 	{
-		pSprite->SetScale(m_flEndSpriteScale);
-		pSprite->SetTransparency(kRenderGlow, (int)m_vEndSpriteColor.x, (int)m_vEndSpriteColor.y, (int)m_vEndSpriteColor.z, m_iEndSpriteAlpha, kRenderFxNoDissipation);
-		pSprite->AnimateAndDie(m_flEndSpriteFramerate);
+		CMSprite *pSprite = CMSprite::SpriteCreate("sprites/xflare1.spr", pev->origin, FALSE);
+		if (pSprite)
+		{
+			pSprite->SetScale(m_flEndSpriteScale);
+			pSprite->SetTransparency(kRenderGlow, (int)m_vEndSpriteColor.x, (int)m_vEndSpriteColor.y, (int)m_vEndSpriteColor.z, m_iEndSpriteAlpha, kRenderFxNoDissipation);
+			pSprite->AnimateAndDie(m_flEndSpriteFramerate);
+		}
 	}
 
 	pev->nextthink = gpGlobals->time + 0.5;
@@ -255,7 +285,8 @@ void CMXenMaker::MiddleEffect(void)
 void CMXenMaker::EndEffect(void)
 {
 	// SOUND EFFECT
-	EMIT_SOUND_DYN(ENT(pev), CHAN_AUTO, "debris/beamstart2.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
+	if (!FBitSet(pev->spawnflags, SF_XENMAKER_NO_SOUND))
+		EMIT_SOUND_DYN(ENT(pev), CHAN_AUTO, "debris/beamstart2.wav", VOL_NORM, ATTN_NORM, 0, PITCH_NORM);
 
 	SetUse(&CMXenMaker::CyclicUse);
 	SetThink(&CMXenMaker::SUB_DoNothing);

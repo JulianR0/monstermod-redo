@@ -222,7 +222,7 @@ void CMHAssassin :: Spawn()
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_RED : m_bloodColor;
 	pev->effects		= 0;
-	pev->health			= gSkillData.hassassinHealth;
+	if (!pev->health)	{ pev->health = gSkillData.hassassinHealth; }
 	m_flFieldOfView		= VIEW_FIELD_WIDE; // indicates the width of this monster's forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
 	m_afCapability		= bits_CAP_MELEE_ATTACK1 | bits_CAP_DOORS_GROUP;

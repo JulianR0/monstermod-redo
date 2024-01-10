@@ -167,6 +167,7 @@ monster_type_t monster_types[]=
 	"monstermaker", FALSE, // Extra entities
 	"ambient_music", FALSE,
 	"env_xenmaker", FALSE,
+	"trigger_setcvar", FALSE,
 	"squadmaker", FALSE, // Aliases
 	"", FALSE
 };
@@ -713,6 +714,7 @@ edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawn
 		case 32: monsters[monster_index].pMonster = CreateClassPtr((CMMonsterMaker *)NULL); break;
 		case 33: monsters[monster_index].pMonster = CreateClassPtr((CMAmbientMusic *)NULL); break;
 		case 34: monsters[monster_index].pMonster = CreateClassPtr((CMXenMaker *)NULL); break;
+		case 35: monsters[monster_index].pMonster = CreateClassPtr((CMSetCVar *)NULL); break;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -1438,6 +1440,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 	CMMonsterMaker monstermaker; // 32
 	CMAmbientMusic ambientmusic;
 	CMXenMaker xenmaker;
+	CMSetCVar setcvar;
 
 	g_psv_gravity = CVAR_GET_POINTER( "sv_gravity" );
 
@@ -1489,6 +1492,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 				case 32: monstermaker.Precache(); break;
 				//case 33: ambientmusic.Precache(); break;
 				case 34: xenmaker.Precache(); break;
+				//case 35: setcvar.Precache(); break;
 			}
 		}
 	}

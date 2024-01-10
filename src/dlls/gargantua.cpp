@@ -684,7 +684,7 @@ void CMGargantua :: Spawn()
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
-	pev->health			= gSkillData.gargantuaHealth;
+	if (!pev->health)	{ pev->health = gSkillData.gargantuaHealth; }
 	//pev->view_ofs		= Vector ( 0, 0, 96 );// taken from mdl file
 	m_flFieldOfView		= -0.2;// width of forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;
@@ -1329,7 +1329,7 @@ void CMBabyGargantua::Spawn()
 	pev->solid			= SOLID_SLIDEBOX;
 	pev->movetype		= MOVETYPE_STEP;
 	m_bloodColor		= !m_bloodColor ? BLOOD_COLOR_YELLOW : m_bloodColor;
-	pev->health			= gSkillData.babygargHealth;
+	if (!pev->health)	{ pev->health = gSkillData.babygargHealth; }
 	//pev->view_ofs		= Vector ( 0, 0, 96 );// taken from mdl file
 	m_flFieldOfView		= -0.2;// width of forward view cone ( as a dotproduct result )
 	m_MonsterState		= MONSTERSTATE_NONE;

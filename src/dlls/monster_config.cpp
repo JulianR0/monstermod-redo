@@ -225,6 +225,20 @@ void scan_monster_cfg(FILE *fp)
 										monster = TRUE;
 									}
 								}
+								else if (strcmp(monster_types[mIndex].name, "trigger_setcvar") == 0)
+								{
+									if (monster_spawn_count == MAX_MONSTERS)
+									{
+										LOG_MESSAGE(PLID, "ERROR: can't add ambient_music, reached MAX_MONSTERS!");
+										badent = TRUE;
+									}
+									else
+									{
+										monster_spawnpoint[monster_spawn_count].monster = mIndex;
+										monster_types[mIndex].need_to_precache = TRUE;
+										monster = TRUE;
+									}
+								}
 								else if (strcmp(monster_types[mIndex].name, "env_xenmaker") == 0)
 								{
 									// A monster spawner, add it to the list

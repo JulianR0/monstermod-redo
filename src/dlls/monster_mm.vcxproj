@@ -173,6 +173,7 @@
     <ClCompile Include="rgrunt.cpp" />
     <ClCompile Include="ripent.cpp" />
     <ClCompile Include="scientist.cpp" />
+    <ClCompile Include="setcvar.cpp" />
     <ClCompile Include="shock.cpp" />
     <ClCompile Include="shockroach.cpp" />
     <ClCompile Include="skill.cpp" />

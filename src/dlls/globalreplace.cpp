@@ -56,6 +56,12 @@ bool AddGlobalSound(const char *from, const char *to)
 {
 	if (numSounds < MAX_REPLACEMENTS)
 	{
+		if (from[0] == '!')
+		{
+			// sentence sounds cannot be replaced, skip.
+			return false;
+		}
+
 		// allocate for the first time
 		if (!numSounds)
 			GSR = (REPLACER*)calloc(MAX_REPLACEMENTS, sizeof(*GSR));
