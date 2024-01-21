@@ -25,9 +25,10 @@
 #include "monsters.h"
 
 // Monstermaker spawnflags
-#define	SF_MONSTERMAKER_START_ON	1 // start active ( if has targetname )
-#define	SF_MONSTERMAKER_CYCLIC		4 // drop one monster every time fired.
-#define SF_MONSTERMAKER_MONSTERCLIP	8 // Children are blocked by monsterclip
+#define	SF_MONSTERMAKER_START_ON	1  // start active ( if has targetname )
+#define	SF_MONSTERMAKER_CYCLIC		4  // drop one monster every time fired.
+#define SF_MONSTERMAKER_MONSTERCLIP	8  // Children are blocked by monsterclip
+#define SF_MONSTERMAKER_PRISONER	16 // children won't attack or be attacked
 
 extern monster_type_t monster_types[];
 extern edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawnflags, pKVD *keyvalue);
@@ -171,7 +172,7 @@ void CMMonsterMaker::MakeMonster( void )
 	}
 
 	edict_t *pent;
-	pKVD keyvalue[MAX_KEYVALUES]; // sometimes, i don't know what am i doing. -Giegue
+	pKVD keyvalue[MAX_KEYVALUES];
 	int createSF = SF_MONSTER_FALL_TO_GROUND;
 
 	if ( m_iMaxLiveChildren > 0 && m_cLiveChildren >= m_iMaxLiveChildren )
@@ -204,6 +205,10 @@ void CMMonsterMaker::MakeMonster( void )
 	// Should children hit monsterclip brushes?
 	if ( pev->spawnflags & SF_MONSTERMAKER_MONSTERCLIP )
 		createSF |= SF_MONSTER_HITMONSTERCLIP;
+
+	// Should children be prisoner entities?
+	if (pev->spawnflags & SF_MONSTERMAKER_PRISONER)
+		createSF |= SF_MONSTER_PRISONER;
 
 	/* KEYVALUES */
 	// Monster is to have a custom model?
@@ -284,13 +289,13 @@ void CMMonsterMaker::MakeMonster( void )
 	pent->v.rendercolor = pev->rendercolor;
 
 	// Soundlist isn't "exactly" a keyvalue so pass it here
-	if ( m_srSoundList != NULL )
+	if (m_srSoundList != NULL)
 	{
 		// it needs to be allocated first
 		CMBaseMonster *pChild = GetClassPtr((CMBaseMonster *)VARS(pent));
 		pChild->m_srSoundList = (REPLACER::REPLACER*)calloc(MAX_REPLACEMENTS, sizeof(*pChild->m_srSoundList));
 
-		memcpy(pChild->m_srSoundList, m_srSoundList, sizeof(REPLACER::REPLACER));
+		memcpy(pChild->m_srSoundList, m_srSoundList, m_isrSounds * sizeof(*pChild->m_srSoundList));
 		pChild->m_isrSounds = m_isrSounds;
 	}
 

@@ -632,6 +632,7 @@ public:
 	void IdleSound( void );
 
 	void Killed( entvars_t *pevAttacker, int iGib );
+	void UpdateOnRemove();
 
     void StartTask ( Task_t *pTask );
 	Schedule_t *GetSchedule( void );

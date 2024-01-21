@@ -97,6 +97,7 @@ void CSmoker::Spawn( void )
 	UTIL_SetSize(pev, g_vecZero, g_vecZero );
 	pev->effects |= EF_NODRAW;
 	pev->angles = g_vecZero;
+	pev->classname = MAKE_STRING("env_smoker");
 }
 
 void CSmoker::Think( void )

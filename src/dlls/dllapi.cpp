@@ -715,6 +715,7 @@ edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawn
 		case 33: monsters[monster_index].pMonster = CreateClassPtr((CMAmbientMusic *)NULL); break;
 		case 34: monsters[monster_index].pMonster = CreateClassPtr((CMXenMaker *)NULL); break;
 		case 35: monsters[monster_index].pMonster = CreateClassPtr((CMSetCVar *)NULL); break;
+		default: LOG_MESSAGE(PLID, "ERROR: Invalid monster type! (%i)", monster_type); return NULL;
 	}
 
 	if (monsters[monster_index].pMonster == NULL)
@@ -734,7 +735,7 @@ edict_t* spawn_monster(int monster_type, Vector origin, Vector angles, int spawn
 	
 	// Pass spawnflags first if no keyvalue data exists for it
 	monster_pent->v.spawnflags = spawnflags;
-	
+
 	// Keyvalue data
 	if (keyvalue != NULL)
 	{
@@ -1243,6 +1244,28 @@ void SpawnViewerCommand(void)
 	LOG_MESSAGE(PLID, "spawns a node viewer at the player's location");
 }
 
+void DebugGetEntities(void)
+{
+	LOG_MESSAGE(PLID, "count: %i ents of max %i\n", monster_ents_used, MAX_MONSTER_ENTS);
+	for (int index = 0; index < MAX_MONSTER_ENTS; index++)
+	{
+		if (monsters[index].monster_index)
+		{
+			LOG_MESSAGE(PLID, "SLOT #%i:", index);
+			edict_t *pent = (*g_engfuncs.pfnPEntityOfEntIndex)(monsters[index].monster_index);
+
+			if (pent)
+			{
+				LOG_MESSAGE(PLID, "Class is \"%s\"\n", STRING(pent->v.classname));
+			}
+			else
+			{
+				LOG_MESSAGE(PLID, "NULL entity\n");
+			}
+		}
+	}
+}
+
 void mmGameDLLInit( void )
 {
 	// one time initialization stuff here...
@@ -1446,6 +1469,7 @@ void mmServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
 
 	(g_engfuncs.pfnAddServerCommand)("monster", MonsterCommand);
 	(g_engfuncs.pfnAddServerCommand)("node_viewer", SpawnViewerCommand);
+	(g_engfuncs.pfnAddServerCommand)("get_edicts", DebugGetEntities);
 	(g_engfuncs.pfnAddServerCommand)("_use", mmDispatchUse);
 
 	for (index = 0; monster_types[index].name[0]; index++)

@@ -107,7 +107,7 @@ void CMSporeGrenade::Explode(TraceResult *pTrace)
 
 	pev->owner = NULL; // can't traceline attack owner if this is set
 
-	RadiusDamage(pev, pevOwner, pev->dmg, CLASS_NONE, DMG_BLAST);
+	RadiusDamage(pev, pevOwner, pev->dmg, CLASS_NONE, DMG_BLAST | DMG_POISON);
 
 	// Place a decal on the surface that was hit.
 	UTIL_DecalTrace(pTrace, DECAL_SPIT1 + RANDOM_LONG(0, 1));

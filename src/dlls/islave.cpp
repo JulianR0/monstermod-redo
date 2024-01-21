@@ -168,6 +168,12 @@ void CMISlave::Killed( entvars_t *pevAttacker, int iGib )
 	CMBaseMonster::Killed( pevAttacker, iGib );
 }
 
+void CMISlave::UpdateOnRemove()
+{
+	CMBaseMonster::UpdateOnRemove();
+	ClearBeams();
+}
+
 //=========================================================
 // SetYawSpeed - allows each sequence to have a different
 // turn rate associated with it.

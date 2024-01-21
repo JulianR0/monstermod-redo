@@ -133,7 +133,6 @@ void process_monster_sound(edict_t *pMonster, char *fileName)
 
 	// SC soundlist path starts from sound/MAPNAME
 	sprintf(srPath, "%s/sound/%s/%s", game_dir, STRING(gpGlobals->mapname), fileName);
-
 	if (access(srPath, 0) == 0)
 	{
 		if ((fp = fopen(srPath, "r")) != NULL)
@@ -450,11 +449,11 @@ void scan_monster_cfg(FILE *fp)
 									{
 										// precache the sound here
 										PRECACHE_GENERIC(data[i].value);
-
-										// the entity will need the keyvalue
-										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
-										strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].value, data[i].value);
 									}
+
+									// common pev-field, an entity might need it
+									strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
+									strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].value, data[i].value);
 								}
 							}
 							else
@@ -828,11 +827,11 @@ void scan_monster_bsp(void)
 							{
 								// precache the sound here
 								PRECACHE_GENERIC(data[i].value);
-
-								// the entity will need the keyvalue
-								strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
-								strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].value, data[i].value);
 							}
+
+							// common pev-field, an entity might need it
+							strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].key, data[i].key);
+							strcpy(monster_spawnpoint[monster_spawn_count].keyvalue[i].value, data[i].value);
 						}
 					}
 					else
